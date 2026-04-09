@@ -1,0 +1,42 @@
+:root {
+  /* primary — olive */
+  --color-moss-dark:     #3A3812;
+  --color-moss-base:     #9E9A3C;
+  --color-moss-mid:      #C4C170;
+  --color-moss-light:    #E8E6B8;
+
+  /* secondary — cornflower */
+  --color-blue-dark:     #1A2A3F;
+  --color-blue-base:     #4A7FD4;
+  --color-blue-mid:      #8AAEE0;
+  --color-blue-light:    #C8DAF5;
+
+  /* backgrounds — peat bog */
+  --color-peat-dark:     #2E2820;
+  --color-peat-deep:     #786B64;
+  --color-peat-mid:      #D4CCBC;
+  --color-peat-light:    #F0EDE6;
+
+  /* semantic assignments */
+  --color-bg-app:        #786B64;
+  --color-bg-card:       #E8E4DC;
+  --color-bg-dark:       #221D17;
+  --color-bg-dark-card:  #2E2820;
+
+  --color-primary:       #9E9A3C;
+  --color-secondary:     #4A7FD4;
+  --color-text-primary:  #3A3812;
+  --color-text-muted:    #786B64;
+  --color-text-light:    #F0EDE6;
+
+  /* accent */
+  --color-accent:        #C9A0C2;
+  --color-accent-light:  #EDD9EA;
+  --color-accent-dark:   #7B5F78;
+
+  /* cycle phases */
+  --color-phase-menstrual:  #E8E4DC;
+  --color-phase-follicular: #C8DAF5;
+  --color-phase-ovulation:  #DCF0B8;
+  --color-phase-luteal:     #D4CCBC;
+}
