@@ -186,9 +186,9 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
       <div className="space-y-3">
         {/* Flow intensity — only during active period */}
         {isOnPeriod && (
-          <div className="flex items-center gap-4">
-            <span className="text-sm w-44 shrink-0" style={{ color: 'var(--color-peat-deep)' }}>Flow intensity</span>
-            <div className="flex gap-1">
+          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
+            <span className="text-sm sm:w-40 sm:shrink-0" style={{ color: 'var(--color-peat-deep)' }}>Flow intensity</span>
+            <div className="flex flex-wrap gap-1">
               {FLOW_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
@@ -208,9 +208,9 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
         )}
 
         {SYMPTOMS.map(({ key, label }) => (
-          <div key={key} className="flex items-center gap-4">
-            <span className="text-sm w-44 shrink-0" style={{ color: 'var(--color-peat-deep)' }}>{label}</span>
-            <div className="flex gap-1">
+          <div key={key} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
+            <span className="text-sm sm:w-40 sm:shrink-0" style={{ color: 'var(--color-peat-deep)' }}>{label}</span>
+            <div className="flex flex-wrap gap-1">
               {SEVERITIES.map(s => {
                 const active = values[key] === s;
                 const st = severityActive[s];
@@ -233,9 +233,9 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
           </div>
         ))}
         {/* Discharge */}
-        <div className="flex items-center gap-4">
-          <span className="text-sm w-44 shrink-0" style={{ color: 'var(--color-peat-deep)' }}>Discharge</span>
-          <div className="flex gap-1">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
+          <span className="text-sm sm:w-40 sm:shrink-0" style={{ color: 'var(--color-peat-deep)' }}>Discharge</span>
+          <div className="flex flex-wrap gap-1">
             {DISCHARGE_OPTIONS.map(opt => (
               <button
                 key={opt}
@@ -254,9 +254,9 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
         </div>
 
         {/* Bowel movements */}
-        <div className="flex items-center gap-4">
-          <span className="text-sm w-44 shrink-0" style={{ color: 'var(--color-peat-deep)' }}>Bowel movements</span>
-          <div className="flex gap-1">
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
+          <span className="text-sm sm:w-40 sm:shrink-0" style={{ color: 'var(--color-peat-deep)' }}>Bowel movements</span>
+          <div className="flex flex-wrap gap-1">
             {BOWEL_OPTIONS.map(opt => (
               <button
                 key={opt}
@@ -275,8 +275,8 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
         </div>
 
         {/* Food cravings */}
-        <div className="flex items-start gap-4">
-          <span className="text-sm w-44 shrink-0 pt-1" style={{ color: 'var(--color-peat-deep)' }}>Food cravings?</span>
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:gap-4">
+          <span className="text-sm sm:w-40 sm:shrink-0 sm:pt-1" style={{ color: 'var(--color-peat-deep)' }}>Food cravings?</span>
           <div className="flex flex-col gap-2 flex-1">
             <div className="flex gap-1">
               {([true, false] as const).map(val => (
