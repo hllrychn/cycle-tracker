@@ -6,17 +6,18 @@ import {
 import { format, subDays, toISODate, parseISO } from '../../lib/dateUtils';
 import type { SymptomLog, Severity } from '../../types';
 
-type Range = '7d' | '30d' | '90d' | '1y';
+type Range = '7d' | '30d' | '90d' | '12m' | '1y';
 
 interface Props {
   symptoms: SymptomLog[];
 }
 
 const RANGE_OPTIONS: { value: Range; label: string }[] = [
-  { value: '7d',  label: '7d'      },
-  { value: '30d', label: '30d'     },
-  { value: '90d', label: '90d'     },
-  { value: '1y',  label: '1 year'  },
+  { value: '7d',  label: '7d'       },
+  { value: '30d', label: '30d'      },
+  { value: '90d', label: '90d'      },
+  { value: '12m', label: '12 months'},
+  { value: '1y',  label: 'This year'},
 ];
 
 const SYMPTOM_KEYS = [
@@ -88,6 +89,25 @@ function buildData(symptoms: SymptomLog[], range: Range): ChartPoint[] {
         for (const k of SYMPTOM_KEYS) totals[k] += SEVERITY_SCORE[log[k]];
       }
       return { date: ws, label: format(parseISO(ws), 'MMM d'), logged: weekLogs.length > 0, ...totals };
+    });
+  }
+
+  // 12m — rolling last 12 months
+  if (range === '12m') {
+    return Array.from({ length: 12 }, (_, i) => {
+      const d = new Date(today.getFullYear(), today.getMonth() - 11 + i, 1);
+      const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const monthLogs = symptoms.filter(s => s.log_date.startsWith(monthKey));
+      const totals = emptyScores();
+      for (const log of monthLogs) {
+        for (const k of SYMPTOM_KEYS) totals[k] += SEVERITY_SCORE[log[k]];
+      }
+      return {
+        date:   monthKey,
+        label:  format(d, 'MMM yy'),
+        logged: monthLogs.length > 0,
+        ...totals,
+      };
     });
   }
 
