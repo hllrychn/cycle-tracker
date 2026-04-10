@@ -5,6 +5,7 @@ import { useSymptoms } from '../hooks/useSymptoms';
 import { usePredictions } from '../hooks/usePredictions';
 import { useSettings } from '../hooks/useSettings';
 import { PeriodEntry } from '../components/period/PeriodEntry';
+import { SymptomBarChart } from '../components/symptoms/SymptomBarChart';
 import { format, parseISO, differenceInDays } from '../lib/dateUtils';
 import type { Cycle, SymptomLog, Severity } from '../types';
 
@@ -246,6 +247,9 @@ export function HistoryPage() {
           {format(new Date(), 'EEEE, MMMM d')}
         </p>
       </div>
+
+      {/* Symptom bar chart */}
+      <SymptomBarChart symptoms={symptoms} />
 
       {/* Stats strip */}
       <div className="flex gap-3">
