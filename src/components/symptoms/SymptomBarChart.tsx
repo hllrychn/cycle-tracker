@@ -101,12 +101,24 @@ function SeverityTooltip({ active, payload, label }: { active?: boolean; payload
   );
 }
 
-function OtherTooltip({ active, payload }: { active?: boolean; payload?: TooltipItem[] }) {
+function CustomYTick({ x, y, payload }: { x?: number; y?: number; payload?: { value: string } }) {
+  const label = payload?.value ?? '';
+  const maxChars = 20;
+  const display = label.length > maxChars ? label.slice(0, maxChars - 1) + '…' : label;
+  return (
+    <text x={x} y={y} dy={4} textAnchor="end" fontSize={10} fill="var(--color-peat-deep)">
+      {display}
+    </text>
+  );
+}
+
+function OtherTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipItem[]; label?: string }) {
   if (!active || !payload?.length) return null;
   const p = payload[0];
   return (
-    <div className="rounded-lg px-3 py-2 text-xs shadow-md" style={{ background: '#fff', border: '1px solid var(--color-peat-mid)' }}>
-      <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{p.value}×</span>
+    <div className="rounded-lg px-3 py-2 text-xs shadow-md" style={{ background: '#fff', border: '1px solid var(--color-peat-mid)', maxWidth: 200 }}>
+      <p className="font-medium mb-0.5" style={{ color: 'var(--color-text-primary)' }}>{label}</p>
+      <p style={{ color: 'var(--color-peat-deep)' }}>{p.value}×</p>
     </div>
   );
 }
@@ -214,8 +226,8 @@ export function SymptomBarChart({ symptoms }: Props) {
                 <YAxis
                   type="category"
                   dataKey="name"
-                  width={120}
-                  tick={{ fontSize: 10, fill: 'var(--color-peat-deep)' }}
+                  width={145}
+                  tick={<CustomYTick />}
                   axisLine={false}
                   tickLine={false}
                 />
