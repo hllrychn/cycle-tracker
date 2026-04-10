@@ -136,45 +136,45 @@ export function WineFoodPairingCard({ cycles, prediction }: Props) {
   return (
     <div className="flex flex-col">
       {/* Header */}
-      <div className="px-5 pt-3 pb-2.5 flex items-center justify-between gap-3 shrink-0"
+      <div className="px-5 pt-3 pb-2.5 flex flex-col gap-2 shrink-0"
         style={{ borderBottom: '1px solid var(--color-peat-light)' }}>
-        <div>
+        <div className="flex items-center justify-between gap-2">
           <p className="text-sm font-semibold" style={{ color: labelColor }}>Food & wine pairings</p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--color-peat-deep)' }}>
-            {hasPhase ? 'Highlighted for your phase · large dot = perfect match' : 'Log a period to personalise · large dot = perfect match'}
-          </p>
+          <div className="flex items-center gap-2 shrink-0">
+            {canNavigate && !isToday && (
+              <button
+                onClick={() => setViewPhase(null)}
+                className="text-xs px-2 py-0.5 rounded-full"
+                style={{ color: 'var(--color-blue-base)', border: '1px solid var(--color-blue-mid)' }}
+              >
+                ↩ Today
+              </button>
+            )}
+            {hasPhase && (
+              <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: meta.color, color: meta.text }}>
+                {meta.label}
+              </span>
+            )}
+            {canNavigate && (
+              <div className="flex items-center gap-0.5">
+                <button onClick={() => goToPhase(-1)} className="w-6 h-6 flex items-center justify-center rounded-md text-sm" style={{ color: labelColor }}>‹</button>
+                <button onClick={() => goToPhase(1)}  className="w-6 h-6 flex items-center justify-center rounded-md text-sm" style={{ color: labelColor }}>›</button>
+              </div>
+            )}
+            <div className="w-7 h-7 rounded-xl flex items-center justify-center text-sm" style={{ background: 'var(--color-phase-menstrual)' }}>🍽️</div>
+          </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {canNavigate && !isToday && (
-            <button
-              onClick={() => setViewPhase(null)}
-              className="text-xs px-2 py-0.5 rounded-full"
-              style={{ color: 'var(--color-blue-base)', border: '1px solid var(--color-blue-mid)' }}
-            >
-              ↩ Today
-            </button>
-          )}
-          {hasPhase && (
-            <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: meta.color, color: meta.text }}>
-              {meta.label}
-            </span>
-          )}
-          {canNavigate && (
-            <div className="flex items-center gap-0.5">
-              <button onClick={() => goToPhase(-1)} className="w-6 h-6 flex items-center justify-center rounded-md text-sm" style={{ color: labelColor }}>‹</button>
-              <button onClick={() => goToPhase(1)}  className="w-6 h-6 flex items-center justify-center rounded-md text-sm" style={{ color: labelColor }}>›</button>
-            </div>
-          )}
-          <div className="w-7 h-7 rounded-xl flex items-center justify-center text-sm" style={{ background: 'var(--color-phase-menstrual)' }}>🍽️</div>
-        </div>
+        <p className="text-xs" style={{ color: 'var(--color-peat-deep)' }}>
+          {hasPhase ? 'Highlighted for your phase · large dot = perfect match' : 'Log a period to personalise · large dot = perfect match'}
+        </p>
       </div>
 
       {/* Scrollable matrix */}
-      <div onMouseLeave={() => { setHoveredRow(null); setHoveredCol(null); }}>
-        <table style={{ borderCollapse: 'collapse', minWidth: '100%', tableLayout: 'fixed' }}>
+      <div className="overflow-x-auto" onMouseLeave={() => { setHoveredRow(null); setHoveredCol(null); }}>
+        <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 460, tableLayout: 'fixed' }}>
           <thead>
             <tr>
-              <th style={{ width: 118, minWidth: 118 }} />
+              <th style={{ width: 100, minWidth: 100 }} />
               {WINES.map((w, wi) => {
                 const isPhaseWine  = phaseW.has(wi);
                 const isHoveredCol = hoveredCol === wi;
