@@ -171,6 +171,18 @@ function SymptomRow({ log, phase }: { log: SymptomLog; phase: Phase | null }) {
 export function HistoryPage() {
   const [tab, setTab] = useState<Tab>('periods');
 
+  const currentYear  = new Date().getFullYear().toString();
+  const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+
+  const [collapsedYears,  setCollapsedYears]  = useState<Set<string>>(new Set());
+  const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(new Set());
+
+  const toggleYear  = (yr: string)  => setCollapsedYears(s  => { const n = new Set(s); n.has(yr)  ? n.delete(yr)  : n.add(yr);  return n; });
+  const toggleMonth = (mo: string)  => setCollapsedMonths(s => { const n = new Set(s); n.has(mo)  ? n.delete(mo)  : n.add(mo);  return n; });
+
+  const isYearCollapsed  = (yr: string) => collapsedYears.has(yr)  && yr  !== currentYear;
+  const isMonthCollapsed = (mo: string) => collapsedMonths.has(mo) && mo  !== currentMonth;
+
   const { cycles, loading: cyclesLoading, removeCycle, addOrUpdateCycle } = useCycles();
   const { symptoms, loading: symptomsLoading } = useSymptoms();
   const { customCycleLength, customPeriodDuration, nextPeriodDelayDays, resetDelay, setCustomCycleLength, setCustomPeriodDuration } = useSettings();
@@ -300,30 +312,40 @@ export function HistoryPage() {
             )}
 
             {/* Grouped by year */}
-            {periodYears.map(({ label: yr, cycles: yc }) => (
-              <div key={yr}>
-                <div className="px-4 py-1.5" style={{ background: 'var(--color-peat-light)', borderBottom: '1px solid var(--color-peat-mid)' }}>
-                  <span className="text-xs font-semibold" style={{ color: 'var(--color-peat-deep)' }}>{yr}</span>
+            {periodYears.map(({ label: yr, cycles: yc }) => {
+              const collapsed = isYearCollapsed(yr);
+              return (
+                <div key={yr}>
+                  <button
+                    onClick={() => toggleYear(yr)}
+                    className="w-full px-4 py-1.5 flex items-center justify-between"
+                    style={{ background: 'var(--color-peat-light)', borderBottom: '1px solid var(--color-peat-mid)' }}
+                  >
+                    <span className="text-xs font-semibold" style={{ color: 'var(--color-peat-deep)' }}>{yr}</span>
+                    <span className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>
+                      {collapsed ? `${yc.length} period${yc.length > 1 ? 's' : ''} ›` : '›'}
+                    </span>
+                  </button>
+                  {!collapsed && yc.map((cycle, i) => {
+                    const allPast = pastCycles;
+                    const globalIdx = allPast.findIndex(c => c.id === cycle.id);
+                    const nextCycleStart = globalIdx === 0
+                      ? (nextPeriodISO ?? undefined)
+                      : allPast[globalIdx - 1]?.start_date;
+                    return (
+                      <div key={cycle.id} style={{ borderBottom: i < yc.length - 1 ? '1px solid var(--color-peat-light)' : undefined }}>
+                        <PeriodEntry
+                          cycle={cycle}
+                          nextCycleStart={nextCycleStart}
+                          onDelete={removeCycle}
+                          onEdit={async (data, opts) => { await addOrUpdateCycle(data, opts); }}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
-                {yc.map((cycle, i) => {
-                  const allPast = pastCycles;
-                  const globalIdx = allPast.findIndex(c => c.id === cycle.id);
-                  const nextCycleStart = globalIdx === 0
-                    ? (nextPeriodISO ?? undefined)
-                    : allPast[globalIdx - 1]?.start_date;
-                  return (
-                    <div key={cycle.id} style={{ borderBottom: i < yc.length - 1 ? '1px solid var(--color-peat-light)' : undefined }}>
-                      <PeriodEntry
-                        cycle={cycle}
-                        nextCycleStart={nextCycleStart}
-                        onDelete={removeCycle}
-                        onEdit={async (data, opts) => { await addOrUpdateCycle(data, opts); }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+              );
+            })}
 
             {pastCycles.length === 0 && (
               <div className="px-4 py-8 text-center">
@@ -344,21 +366,31 @@ export function HistoryPage() {
                 </NavLink>
               </div>
             ) : (
-              symptomMonths.map(({ label: month, items }) => (
-                <div key={month}>
-                  <div className="px-4 py-1.5 flex items-center justify-between" style={{ background: 'var(--color-peat-light)', borderBottom: '1px solid var(--color-peat-mid)' }}>
-                    <span className="text-xs font-semibold" style={{ color: 'var(--color-peat-deep)' }}>{month}</span>
-                    <span className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>{items.length} log{items.length > 1 ? 's' : ''}</span>
+              symptomMonths.map(({ label: month, items }) => {
+                const monthKey = items[0].log_date.slice(0, 7);
+                const collapsed = isMonthCollapsed(monthKey);
+                return (
+                  <div key={month}>
+                    <button
+                      onClick={() => toggleMonth(monthKey)}
+                      className="w-full px-4 py-1.5 flex items-center justify-between"
+                      style={{ background: 'var(--color-peat-light)', borderBottom: '1px solid var(--color-peat-mid)' }}
+                    >
+                      <span className="text-xs font-semibold" style={{ color: 'var(--color-peat-deep)' }}>{month}</span>
+                      <span className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>
+                        {collapsed ? `${items.length} log${items.length > 1 ? 's' : ''} ›` : `${items.length} log${items.length > 1 ? 's' : ''}`}
+                      </span>
+                    </button>
+                    {!collapsed && items.map(log => (
+                      <SymptomRow
+                        key={log.id}
+                        log={log}
+                        phase={getSymptomPhase(log.log_date, cycles, avgLen, avgDur)}
+                      />
+                    ))}
                   </div>
-                  {items.map(log => (
-                    <SymptomRow
-                      key={log.id}
-                      log={log}
-                      phase={getSymptomPhase(log.log_date, cycles, avgLen, avgDur)}
-                    />
-                  ))}
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}
