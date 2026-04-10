@@ -189,14 +189,14 @@ export function SymptomBarChart({ symptoms }: Props) {
                 <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No symptoms logged in this period</p>
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={160}>
-                <BarChart data={data} barSize={32} barCategoryGap="30%">
-                  <XAxis dataKey="symptom" tick={{ fontSize: 10, fill: 'var(--color-peat-deep)' }} axisLine={false} tickLine={false} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }} axisLine={false} tickLine={false} width={20} />
+              <ResponsiveContainer width="100%" height={data.length * 36}>
+                <BarChart data={data} layout="vertical" barSize={16} barCategoryGap="25%">
+                  <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="symptom" width={70} tick={{ fontSize: 10, fill: 'var(--color-peat-deep)' }} axisLine={false} tickLine={false} />
                   <Tooltip content={<SeverityTooltip />} cursor={{ fill: 'var(--color-peat-light)', radius: 4 }} />
                   <Bar dataKey="mild"     stackId="a" fill={MILD_COLOR}     name="mild"     />
                   <Bar dataKey="moderate" stackId="a" fill={MODERATE_COLOR} name="moderate" />
-                  <Bar dataKey="severe"   stackId="a" fill={SEVERE_COLOR}   name="severe"   radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="severe"   stackId="a" fill={SEVERE_COLOR}   name="severe"   radius={[0, 3, 3, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             )}
