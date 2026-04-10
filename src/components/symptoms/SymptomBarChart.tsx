@@ -220,7 +220,7 @@ export function SymptomBarChart({ symptoms }: Props) {
               <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No other symptoms logged in this period</p>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={otherData.length * 28}>
+            <ResponsiveContainer width="100%" height={otherData.length * 36}>
               <BarChart data={otherData} layout="vertical" barSize={14} barCategoryGap="20%">
                 <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }} axisLine={false} tickLine={false} />
                 <YAxis
@@ -230,6 +230,7 @@ export function SymptomBarChart({ symptoms }: Props) {
                   tick={<CustomYTick />}
                   axisLine={false}
                   tickLine={false}
+                  interval={0}
                 />
                 <Tooltip content={<OtherTooltip />} cursor={{ fill: 'var(--color-peat-light)', radius: 4 }} />
                 <Bar dataKey="count" fill={OTHER_COLOR} radius={[0, 3, 3, 0]} />
