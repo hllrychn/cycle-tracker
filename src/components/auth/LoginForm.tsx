@@ -3,7 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 
 export function LoginForm() {
   const { signInWithPassword, signUp, signInWithOtp, signInWithGoogle } = useAuth();
-  const [tab, setTab] = useState<'password' | 'magic'>('password');
+  const [tab, setTab] = useState<'password' | 'magic'>('magic');
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
