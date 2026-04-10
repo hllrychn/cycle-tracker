@@ -113,9 +113,10 @@ function OtherTooltip({ active, payload }: { active?: boolean; payload?: Tooltip
 
 export function SymptomBarChart({ symptoms }: Props) {
   const [range, setRange] = useState<Range>('30d');
-  const data      = buildData(symptoms, range);
+  const allData   = buildData(symptoms, range);
+  const data      = allData.filter(d => d.total > 0);
   const otherData = buildOtherData(symptoms, range);
-  const hasAny    = data.some(d => d.total > 0);
+  const hasAny    = data.length > 0;
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-moss-base)' }}>
