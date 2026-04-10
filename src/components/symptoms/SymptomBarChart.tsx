@@ -111,12 +111,17 @@ function OtherTooltip({ active, payload }: { active?: boolean; payload?: Tooltip
   );
 }
 
+type View = 'symptoms' | 'other';
+
 export function SymptomBarChart({ symptoms }: Props) {
   const [range, setRange] = useState<Range>('30d');
+  const [view, setView]   = useState<View>('symptoms');
+
   const allData   = buildData(symptoms, range);
   const data      = allData.filter(d => d.total > 0);
   const otherData = buildOtherData(symptoms, range);
   const hasAny    = data.length > 0;
+  const hasOther  = otherData.length > 0;
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-moss-base)' }}>
@@ -144,44 +149,65 @@ export function SymptomBarChart({ symptoms }: Props) {
         </div>
       </div>
 
-      {/* Main symptom chart */}
-      <div className="px-4 pt-4 pb-2">
-        {!hasAny ? (
-          <div className="h-36 flex items-center justify-center">
-            <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No symptoms logged in this period</p>
-          </div>
-        ) : (
-          <ResponsiveContainer width="100%" height={160}>
-            <BarChart data={data} barSize={32} barCategoryGap="30%">
-              <XAxis dataKey="symptom" tick={{ fontSize: 10, fill: 'var(--color-peat-deep)' }} axisLine={false} tickLine={false} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }} axisLine={false} tickLine={false} width={20} />
-              <Tooltip content={<SeverityTooltip />} cursor={{ fill: 'var(--color-peat-light)', radius: 4 }} />
-              <Bar dataKey="mild"     stackId="a" fill={MILD_COLOR}     name="mild"     />
-              <Bar dataKey="moderate" stackId="a" fill={MODERATE_COLOR} name="moderate" />
-              <Bar dataKey="severe"   stackId="a" fill={SEVERE_COLOR}   name="severe"   radius={[3, 3, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        )}
+      {/* View toggle */}
+      <div className="px-5 pt-3 pb-0">
+        <div className="flex rounded-lg p-0.5 w-fit" style={{ background: 'var(--color-peat-light)' }}>
+          {([['symptoms', 'Symptoms'] , ['other', 'Other']] as [View, string][]).map(([v, label]) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className="px-3 py-1 rounded-md text-xs font-medium transition-colors"
+              style={view === v
+                ? { background: 'var(--color-peat-dark)', color: 'var(--color-text-light)' }
+                : { color: 'var(--color-peat-deep)' }
+              }
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Severity legend */}
-      <div className="px-5 pb-4 flex items-center gap-4">
-        {([['mild', MILD_COLOR], ['moderate', MODERATE_COLOR], ['severe', SEVERE_COLOR]] as const).map(([label, color]) => (
-          <div key={label} className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: color }} />
-            <span className="text-xs capitalize" style={{ color: 'var(--color-peat-deep)' }}>{label}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Other symptoms section */}
-      {otherData.length > 0 && (
+      {/* Symptoms chart */}
+      {view === 'symptoms' && (
         <>
-          <div className="px-5 py-2.5 flex items-center justify-between" style={{ borderTop: '1px solid var(--color-peat-light)', background: 'var(--color-peat-light)' }}>
-            <p className="text-xs font-semibold" style={{ color: 'var(--color-peat-deep)' }}>Other symptoms</p>
-            <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>Top {otherData.length}</p>
+          <div className="px-4 pt-4 pb-2">
+            {!hasAny ? (
+              <div className="h-36 flex items-center justify-center">
+                <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No symptoms logged in this period</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={data} barSize={32} barCategoryGap="30%">
+                  <XAxis dataKey="symptom" tick={{ fontSize: 10, fill: 'var(--color-peat-deep)' }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }} axisLine={false} tickLine={false} width={20} />
+                  <Tooltip content={<SeverityTooltip />} cursor={{ fill: 'var(--color-peat-light)', radius: 4 }} />
+                  <Bar dataKey="mild"     stackId="a" fill={MILD_COLOR}     name="mild"     />
+                  <Bar dataKey="moderate" stackId="a" fill={MODERATE_COLOR} name="moderate" />
+                  <Bar dataKey="severe"   stackId="a" fill={SEVERE_COLOR}   name="severe"   radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
-          <div className="px-4 pt-3 pb-4">
+          <div className="px-5 pb-4 flex items-center gap-4">
+            {([['mild', MILD_COLOR], ['moderate', MODERATE_COLOR], ['severe', SEVERE_COLOR]] as const).map(([label, color]) => (
+              <div key={label} className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: color }} />
+                <span className="text-xs capitalize" style={{ color: 'var(--color-peat-deep)' }}>{label}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Other symptoms chart */}
+      {view === 'other' && (
+        <div className="px-4 pt-4 pb-4">
+          {!hasOther ? (
+            <div className="h-36 flex items-center justify-center">
+              <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No other symptoms logged in this period</p>
+            </div>
+          ) : (
             <ResponsiveContainer width="100%" height={otherData.length * 28}>
               <BarChart data={otherData} layout="vertical" barSize={14} barCategoryGap="20%">
                 <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }} axisLine={false} tickLine={false} />
@@ -197,8 +223,8 @@ export function SymptomBarChart({ symptoms }: Props) {
                 <Bar dataKey="count" fill={OTHER_COLOR} radius={[0, 3, 3, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          </div>
-        </>
+          )}
+        </div>
       )}
     </div>
   );
