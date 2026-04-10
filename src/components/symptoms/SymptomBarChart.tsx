@@ -16,8 +16,8 @@ const RANGE_OPTIONS: { value: Range; label: string }[] = [
   { value: '7d',  label: '7d'        },
   { value: '30d', label: '30d'       },
   { value: '90d', label: '90d'       },
-  { value: '12m', label: '12 months' },
-  { value: '1y',  label: 'This year' },
+  { value: '12m', label: 'LTM' },
+  { value: '1y',  label: 'YTD' },
 ];
 
 const SYMPTOM_KEYS = [
