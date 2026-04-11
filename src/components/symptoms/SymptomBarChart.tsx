@@ -164,7 +164,7 @@ export function SymptomBarChart({ symptoms }: Props) {
       {/* View toggle */}
       <div className="px-5 pt-3 pb-0">
         <div className="flex rounded-lg p-0.5 w-fit" style={{ background: 'var(--color-peat-light)' }}>
-          {([['symptoms', 'Symptoms'] , ['other', 'Other']] as [View, string][]).map(([v, label]) => (
+          {([['symptoms', 'Symptoms'] , ['other', 'Additional']] as [View, string][]).map(([v, label]) => (
             <button
               key={v}
               onClick={() => setView(v)}
@@ -192,7 +192,7 @@ export function SymptomBarChart({ symptoms }: Props) {
               <ResponsiveContainer width="100%" height={data.length * 36}>
                 <BarChart data={data} layout="vertical" barSize={16} barCategoryGap="25%">
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }} axisLine={false} tickLine={false} />
-                  <YAxis type="category" dataKey="symptom" width={70} tick={{ fontSize: 10, fill: 'var(--color-peat-deep)' }} axisLine={false} tickLine={false} />
+                  <YAxis type="category" dataKey="symptom" width={70} tick={{ fontSize: 10, fill: 'var(--color-peat-deep)' }} axisLine={false} tickLine={false} interval={0} />
                   <Tooltip content={<SeverityTooltip />} cursor={{ fill: 'var(--color-peat-light)', radius: 4 }} />
                   <Bar dataKey="mild"     stackId="a" fill={MILD_COLOR}     name="mild"     />
                   <Bar dataKey="moderate" stackId="a" fill={MODERATE_COLOR} name="moderate" />
@@ -217,7 +217,7 @@ export function SymptomBarChart({ symptoms }: Props) {
         <div className="px-4 pt-4 pb-4">
           {!hasOther ? (
             <div className="h-36 flex items-center justify-center">
-              <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No other symptoms logged in this period</p>
+              <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No additional symptoms logged in this period</p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={otherData.length * 36}>

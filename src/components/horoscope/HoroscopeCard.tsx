@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { Cycle, Prediction } from '../../types';
-import { differenceInDays, parseISO, startOfToday } from '../../lib/dateUtils';
+import { differenceInDays, format, parseLocalDate, startOfToday } from '../../lib/dateUtils';
 import { HOROSCOPE_DATA } from '../../data/horoscopeData';
 
 interface Props {
@@ -20,16 +20,16 @@ function getPhase(cycleDay: number, avgCycleLength: number, avgPeriodDuration: n
 }
 
 function getCurrentCycleDay(cycles: Cycle[], prediction: Prediction | null): number | null {
-  const todayISO = new Date().toISOString().slice(0, 10);
+  const todayISO = format(startOfToday(), 'yyyy-MM-dd');
   const pastCycles = cycles.filter(c => c.start_date <= todayISO);
   if (pastCycles.length > 0) {
     const latest = [...pastCycles].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
-    const day = differenceInDays(startOfToday(), parseISO(latest.start_date)) + 1;
+    const day = differenceInDays(startOfToday(), parseLocalDate(latest.start_date)) + 1;
     return day >= 1 ? day : null;
   }
   if (prediction) {
     const daysUntil = differenceInDays(prediction.nextPeriodStart, startOfToday());
-    if (daysUntil >= 0) return Math.max(1, prediction.avgCycleLength - daysUntil);
+    if (daysUntil >= 0) return Math.max(1, prediction.avgCycleLength - daysUntil + 1);
   }
   return null;
 }

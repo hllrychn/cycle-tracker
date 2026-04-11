@@ -6,7 +6,7 @@ import { usePredictions } from '../hooks/usePredictions';
 import { useSettings } from '../hooks/useSettings';
 import { PeriodEntry } from '../components/period/PeriodEntry';
 import { SymptomBarChart } from '../components/symptoms/SymptomBarChart';
-import { format, parseISO, differenceInDays } from '../lib/dateUtils';
+import { format, parseISO, differenceInDays, todayLocalISO } from '../lib/dateUtils';
 import type { Cycle, SymptomLog, Severity } from '../types';
 
 type Tab = 'periods' | 'symptoms';
@@ -148,7 +148,7 @@ function SymptomRow({ log, phase }: { log: SymptomLog; phase: Phase | null }) {
             )}
             {otherCount > 0 && (
               <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--color-peat-mid)', color: 'var(--color-peat-dark)' }}>
-                +{otherCount} other{otherCount > 1 ? 's' : ''}
+                +{otherCount} additional
               </span>
             )}
           </div>
@@ -173,7 +173,7 @@ export function HistoryPage() {
   const [tab, setTab] = useState<Tab>('periods');
 
   const currentYear  = new Date().getFullYear().toString();
-  const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+  const currentMonth = todayLocalISO().slice(0, 7); // YYYY-MM
 
   const [collapsedYears,  setCollapsedYears]  = useState<Set<string>>(new Set());
   const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(new Set());
@@ -199,7 +199,7 @@ export function HistoryPage() {
     );
   }
 
-  const todayISO = new Date().toISOString().slice(0, 10);
+  const todayISO = todayLocalISO();
   const pastCycles = [...cycles]
     .filter(c => c.start_date <= todayISO)
     .sort((a, b) => b.start_date.localeCompare(a.start_date));

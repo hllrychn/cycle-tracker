@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { Cycle, Prediction } from '../types';
-import { parseISO, differenceInDays, addDays, subDays, startOfToday } from '../lib/dateUtils';
+import { parseLocalDate, differenceInDays, addDays, subDays, startOfToday, format } from '../lib/dateUtils';
 
 interface Options {
   customCycleLength?: number | null;
@@ -13,7 +13,7 @@ export function computePrediction(cycles: Cycle[], options: Options = {}): Predi
 
   const { customCycleLength = null, customPeriodDuration = null, delayDays = 0 } = options;
 
-  const todayISO = new Date().toISOString().slice(0, 10);
+  const todayISO = format(startOfToday(), 'yyyy-MM-dd');
   const sorted = [...cycles].sort((a, b) => a.start_date.localeCompare(b.start_date));
 
   // Split into past cycles (started today or earlier) and future logged cycles
@@ -26,7 +26,7 @@ export function computePrediction(cycles: Cycle[], options: Options = {}): Predi
   // Cycle lengths between consecutive starts (past cycles only)
   const rawLengths: number[] = [];
   for (let i = 0; i < statCycles.length - 1; i++) {
-    const len = differenceInDays(parseISO(statCycles[i + 1].start_date), parseISO(statCycles[i].start_date));
+    const len = differenceInDays(parseLocalDate(statCycles[i + 1].start_date), parseLocalDate(statCycles[i].start_date));
     if (len >= 15 && len <= 49) rawLengths.push(len);
   }
 
@@ -34,7 +34,7 @@ export function computePrediction(cycles: Cycle[], options: Options = {}): Predi
   const rawDurations: number[] = [];
   for (const c of statCycles) {
     if (c.end_date) {
-      const dur = differenceInDays(parseISO(c.end_date), parseISO(c.start_date)) + 1;
+      const dur = differenceInDays(parseLocalDate(c.end_date), parseLocalDate(c.start_date)) + 1;
       if (dur >= 1 && dur <= 14) rawDurations.push(dur);
     }
   }
@@ -70,12 +70,12 @@ export function computePrediction(cycles: Cycle[], options: Options = {}): Predi
   let nextPeriodEnd: Date;
   const nextLogged = futureCycles[0] ?? null;
   if (nextLogged) {
-    nextPeriodStart = parseISO(nextLogged.start_date);
+    nextPeriodStart = parseLocalDate(nextLogged.start_date);
     nextPeriodEnd = nextLogged.end_date
-      ? parseISO(nextLogged.end_date)
+      ? parseLocalDate(nextLogged.end_date)
       : addDays(nextPeriodStart, avgPeriodDuration - 1);
   } else {
-    const lastStart = parseISO(statCycles[statCycles.length - 1].start_date);
+    const lastStart = parseLocalDate(statCycles[statCycles.length - 1].start_date);
     const baseNextPeriodStart = addDays(lastStart, avgCycleLength);
     nextPeriodStart = addDays(baseNextPeriodStart, delayDays);
     nextPeriodEnd = addDays(nextPeriodStart, avgPeriodDuration - 1);

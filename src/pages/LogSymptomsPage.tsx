@@ -9,7 +9,7 @@ import { toISODate, differenceInDays, addDays, parseISO, startOfToday } from '..
 import type { SymptomLog } from '../types';
 
 export function LogSymptomsPage() {
-  const { symptoms, logSymptoms } = useSymptoms();
+  const { symptoms, loading: symptomsLoading, logSymptoms } = useSymptoms();
   const { cycles, addOrUpdateCycle, removeCycle } = useCycles();
   const { resetDelay } = useSettings();
   const prediction = usePredictions(cycles, {});
@@ -103,6 +103,15 @@ export function LogSymptomsPage() {
   const isLuteal = cycleDay !== null && prediction
     ? cycleDay > prediction.avgCycleLength - 11 && cycleDay <= prediction.avgCycleLength
     : false;
+
+  if (symptomsLoading) {
+    return (
+      <div className="max-w-xl mx-auto space-y-4">
+        <div className="h-8 w-48 rounded-lg animate-pulse" style={{ background: 'var(--color-peat-mid)' }} />
+        <div className="rounded-2xl h-64 animate-pulse" style={{ background: 'var(--color-peat-mid)' }} />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-xl mx-auto space-y-4">

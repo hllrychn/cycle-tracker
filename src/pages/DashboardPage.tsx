@@ -13,7 +13,7 @@ import { MakeTodayBetterCard } from '../components/horoscope/MakeTodayBetterCard
 import { SymptomStreakCard } from '../components/symptoms/SymptomStreakCard';
 import { FunFactPopup } from '../components/facts/FunFactPopup';
 import { NavLink } from 'react-router-dom';
-import { differenceInDays, addDays, parseISO, toISODate, startOfToday, format } from '../lib/dateUtils';
+import { differenceInDays, addDays, toISODate, startOfToday, format, parseLocalDate } from '../lib/dateUtils';
 
 export function DashboardPage() {
   const [showFunFact, setShowFunFact]           = useState(false);
@@ -32,9 +32,9 @@ export function DashboardPage() {
       .sort((a, b) => a.start_date.localeCompare(b.start_date))[0] ?? null;
 
     if (nextLogged) {
-      const newStart = toISODate(addDays(parseISO(nextLogged.start_date), 1));
+      const newStart = toISODate(addDays(parseLocalDate(nextLogged.start_date), 1));
       const newEnd = nextLogged.end_date
-        ? toISODate(addDays(parseISO(nextLogged.end_date), 1))
+        ? toISODate(addDays(parseLocalDate(nextLogged.end_date), 1))
         : null;
       await removeCycle(nextLogged.id);
       await addOrUpdateCycle(
@@ -69,7 +69,7 @@ export function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      {(daysUntilNext === 14 || new URLSearchParams(window.location.search).get('preview') === 'cyclecheck') && prediction && (
+      {(daysUntilNext != null && daysUntilNext >= 1 && daysUntilNext <= 5 || new URLSearchParams(window.location.search).get('preview') === 'cyclecheck') && prediction && (
         <CycleCheckPopup
           nextPeriodStart={prediction.nextPeriodStart}
           forceShow={new URLSearchParams(window.location.search).get('preview') === 'cyclecheck'}

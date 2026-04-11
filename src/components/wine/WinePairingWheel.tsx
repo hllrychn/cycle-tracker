@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import type { Cycle, Prediction } from '../../types';
-import { differenceInDays, parseISO, startOfToday } from '../../lib/dateUtils';
+import { differenceInDays, parseLocalDate, startOfToday, todayLocalISO } from '../../lib/dateUtils';
 
 type Phase = 'menstrual' | 'follicular' | 'ovulatory' | 'luteal' | 'unknown';
 type Level = 0 | 1 | 2;
@@ -14,11 +14,11 @@ function getPhase(day: number, len: number, dur: number): Phase {
   return 'unknown';
 }
 function getCurrentPhase(cycles: Cycle[], prediction: Prediction | null, len: number, dur: number): Phase {
-  const iso = new Date().toISOString().slice(0, 10);
+  const iso = todayLocalISO();
   const past = cycles.filter(c => c.start_date <= iso);
   if (past.length > 0) {
     const latest = [...past].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
-    const d = differenceInDays(startOfToday(), parseISO(latest.start_date)) + 1;
+    const d = differenceInDays(startOfToday(), parseLocalDate(latest.start_date)) + 1;
     if (d >= 1) return getPhase(d, len, dur);
   }
   if (prediction) {

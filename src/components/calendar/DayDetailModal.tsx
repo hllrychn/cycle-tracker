@@ -182,7 +182,7 @@ export function DayDetailModal({ date, symptomLog, phase, isLogged, isOvulationD
                   )}
                   {(symptomLog?.other_symptoms?.length ?? 0) > 0 && (
                     <div className="pt-1">
-                      <span className="text-sm block mb-1.5" style={{ color: 'var(--color-peat-deep)' }}>Other symptoms</span>
+                      <span className="text-sm block mb-1.5" style={{ color: 'var(--color-peat-deep)' }}>Additional symptoms</span>
                       <div className="flex flex-wrap gap-1.5">
                         {symptomLog!.other_symptoms!.map(s => (
                           <span

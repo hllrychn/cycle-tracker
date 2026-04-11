@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   startOfMonth, endOfMonth, eachDayOfInterval, getDay,
-  isSameMonth, isSameDay, format, isWithinInterval, addDays, differenceInDays, startOfToday, parseISO,
+  isSameMonth, isSameDay, format, isWithinInterval, addDays, differenceInDays, startOfToday, parseISO, parseLocalDate,
 } from '../../lib/dateUtils';
 import { DayCell } from './DayCell';
 import type { CyclePhase } from './DayCell';
@@ -122,9 +122,9 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
         .sort((a, b) => b.start_date.localeCompare(a.start_date))[0] ?? null
     : null;
   const cycleDay = latestCycle
-    ? Math.max(1, differenceInDays(startOfToday(), parseISO(latestCycle.start_date)) + 1)
+    ? Math.max(1, differenceInDays(startOfToday(), parseLocalDate(latestCycle.start_date)) + 1)
     : prediction
-      ? Math.max(1, prediction.avgCycleLength - differenceInDays(prediction.nextPeriodStart, startOfToday()))
+      ? Math.max(1, prediction.avgCycleLength - differenceInDays(prediction.nextPeriodStart, startOfToday()) + 1)
       : null;
 
   return (

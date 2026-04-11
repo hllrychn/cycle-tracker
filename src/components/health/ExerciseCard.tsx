@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Cycle, Prediction } from '../../types';
-import { differenceInDays, parseISO, startOfToday } from '../../lib/dateUtils';
+import { differenceInDays, parseLocalDate, startOfToday, todayLocalISO } from '../../lib/dateUtils';
 
 interface Props {
   cycles: Cycle[];
@@ -27,11 +27,11 @@ function getPhase(cycleDay: number, avgCycleLength: number, avgPeriodDuration: n
 }
 
 function getCurrentCycleDay(cycles: Cycle[], prediction: Prediction | null): number | null {
-  const todayISO = new Date().toISOString().slice(0, 10);
+  const todayISO = todayLocalISO();
   const pastCycles = cycles.filter(c => c.start_date <= todayISO);
   if (pastCycles.length > 0) {
     const latest = [...pastCycles].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
-    const day = differenceInDays(startOfToday(), parseISO(latest.start_date)) + 1;
+    const day = differenceInDays(startOfToday(), parseLocalDate(latest.start_date)) + 1;
     return day >= 1 ? day : null;
   }
   if (prediction) {
