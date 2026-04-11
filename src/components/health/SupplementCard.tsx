@@ -11,6 +11,15 @@ type Phase = 'menstrual' | 'follicular' | 'ovulatory' | 'luteal' | 'unknown';
 type SupType = 'mineral' | 'vitamin' | 'omega' | 'herb' | 'probiotic';
 type Filter = 'all' | SupType;
 
+const CYCLE_PHASES: Exclude<Phase, 'unknown'>[] = ['menstrual', 'follicular', 'ovulatory', 'luteal'];
+
+const PHASE_LABELS: Record<Exclude<Phase, 'unknown'>, string> = {
+  menstrual:  'Menstrual',
+  follicular: 'Follicular',
+  ovulatory:  'Ovulatory',
+  luteal:     'Luteal',
+};
+
 interface Supplement {
   emoji: string;
   name: string;
@@ -130,17 +139,37 @@ const FILTER_OPTIONS: { value: Filter; label: string }[] = [
 const DISCLAIMER = 'Always consult a healthcare professional before starting or changing supplements.';
 
 export function SupplementCard({ cycles, prediction }: Props) {
-  const [filter, setFilter] = useState<Filter>('all');
+  const [filter, setFilter]       = useState<Filter>('all');
+  const [viewPhase, setViewPhase] = useState<Exclude<Phase, 'unknown'> | null>(null);
 
-  const cycleDay = getCurrentCycleDay(cycles, prediction);
+  const cycleDay          = getCurrentCycleDay(cycles, prediction);
   const avgCycleLength    = prediction?.avgCycleLength    ?? 28;
   const avgPeriodDuration = prediction?.avgPeriodDuration ?? 5;
-  const phase = cycleDay != null
+  const todayPhase        = cycleDay != null
     ? getPhase(cycleDay, avgCycleLength, avgPeriodDuration)
     : 'unknown';
 
-  const { headline, sub, items } = SUPPLEMENTS[phase];
-  const style = PHASE_STYLE[phase];
+  // Active phase: explicit selection, or today's phase, or menstrual as default for browsing
+  const activePhase: Exclude<Phase, 'unknown'> = viewPhase
+    ?? (todayPhase !== 'unknown' ? todayPhase : 'menstrual');
+  const isToday = viewPhase === null;
+
+  const navigate = (dir: 1 | -1) => {
+    const idx = CYCLE_PHASES.indexOf(activePhase);
+    const next = CYCLE_PHASES[(idx + dir + CYCLE_PHASES.length) % CYCLE_PHASES.length];
+    // If navigating back to today's actual phase, clear the override
+    if (next === todayPhase) {
+      setViewPhase(null);
+    } else {
+      setViewPhase(next);
+    }
+    setFilter('all');
+  };
+
+  const goToToday = () => { setViewPhase(null); setFilter('all'); };
+
+  const { headline, sub, items } = SUPPLEMENTS[activePhase];
+  const style = PHASE_STYLE[activePhase];
 
   const filtered = filter === 'all' ? items : items.filter(s => s.type === filter);
 
@@ -151,7 +180,7 @@ export function SupplementCard({ cycles, prediction }: Props) {
     >
       {/* Header */}
       <div className="px-5 pt-5 pb-4" style={{ background: style.headerBg }}>
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-start justify-between gap-3 mb-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide mb-0.5" style={{ color: 'var(--color-peat-deep)' }}>
               Supplements
@@ -161,9 +190,51 @@ export function SupplementCard({ cycles, prediction }: Props) {
           </div>
           <div className="text-2xl shrink-0">💊</div>
         </div>
+
+        {/* Phase navigation */}
+        <div className="flex items-center gap-2">
+          {!isToday && (
+            <button
+              onClick={goToToday}
+              className="text-xs px-2 py-0.5 rounded-full transition-colors shrink-0"
+              style={{ color: 'var(--color-blue-base)', border: '1px solid var(--color-blue-mid)' }}
+            >
+              ↩ Today
+            </button>
+          )}
+          <div className="flex items-center gap-1.5 ml-auto">
+            <button
+              onClick={() => navigate(-1)}
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-base transition-colors"
+              style={{ background: 'rgba(255,255,255,0.4)', color: 'var(--color-peat-deep)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.65)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.4)')}
+            >
+              ‹
+            </button>
+            <span
+              className="text-xs font-medium px-2.5 py-0.5 rounded-full"
+              style={{ background: 'rgba(255,255,255,0.5)', color: 'var(--color-text-primary)' }}
+            >
+              {PHASE_LABELS[activePhase]}
+              {isToday && todayPhase !== 'unknown' && (
+                <span style={{ color: 'var(--color-peat-deep)', fontWeight: 400 }}> · Today</span>
+              )}
+            </span>
+            <button
+              onClick={() => navigate(1)}
+              className="w-7 h-7 flex items-center justify-center rounded-lg text-base transition-colors"
+              style={{ background: 'rgba(255,255,255,0.4)', color: 'var(--color-peat-deep)' }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.65)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.4)')}
+            >
+              ›
+            </button>
+          </div>
+        </div>
       </div>
 
-      {phase === 'unknown' ? (
+      {todayPhase === 'unknown' && viewPhase === null ? (
         <div className="px-5 py-8 text-center">
           <p className="text-xs" style={{ color: 'var(--color-peat-deep)' }}>
             Log your first period to unlock phase-specific supplement recommendations.
