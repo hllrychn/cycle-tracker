@@ -106,7 +106,7 @@ export function DashboardPage() {
           forceShow={new URLSearchParams(window.location.search).get('preview') === 'cyclecheck'}
         />
       )}
-      {(daysUntilNext === 1 || new URLSearchParams(window.location.search).get('preview') === 'delay') && prediction && (
+      {((daysUntilNext === 1 || daysUntilNext === 0) || new URLSearchParams(window.location.search).get('preview') === 'delay') && prediction && (
         <DelayPopup
           nextPeriodStart={prediction.nextPeriodStart}
           onDelayOneDay={handleDelayOneDay}
