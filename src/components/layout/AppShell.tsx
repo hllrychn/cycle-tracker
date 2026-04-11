@@ -122,8 +122,8 @@ export function AppShell() {
             Cycle
           </span>
 
-          {/* Nav — scrollable on mobile */}
-          <nav className="flex items-center gap-1 overflow-x-auto scrollbar-none">
+          {/* Nav — desktop only */}
+          <nav className="hidden sm:flex items-center gap-1 overflow-x-auto scrollbar-none">
             {NAV_ITEMS.map(({ to, label, end }) => (
               <NavLink
                 key={to}
@@ -144,9 +144,9 @@ export function AppShell() {
           {/* Spacer */}
           <div className="flex-1 min-w-0" />
 
-          {/* Cycle day + phase — hidden on mobile */}
+          {/* Cycle day + phase */}
           {cycleDay != null && (
-            <div className="hidden sm:flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2 shrink-0">
               <span className="text-xs" style={{ color: 'var(--color-peat-deep)' }}>Day</span>
               <span
                 className="text-sm font-semibold"
@@ -165,10 +165,10 @@ export function AppShell() {
             </div>
           )}
 
-          {/* Next period — hidden on mobile */}
+          {/* Next period */}
           {nextPeriodDate && (
             <div
-              className="hidden sm:flex items-center gap-1.5 shrink-0 pl-4"
+              className="flex items-center gap-1.5 shrink-0 pl-3 sm:pl-4"
               style={{ borderLeft: divider }}
             >
               <span className="text-xs" style={{ color: 'var(--color-peat-deep)' }}>Next</span>
@@ -176,14 +176,14 @@ export function AppShell() {
                 {nextPeriodDate}
               </span>
               {daysUntilNext !== null && daysUntilNext >= 0 && (
-                <span className="text-xs" style={{ color: 'var(--color-peat-deep)' }}>
+                <span className="hidden sm:inline text-xs" style={{ color: 'var(--color-peat-deep)' }}>
                   in {daysUntilNext}d
                 </span>
               )}
             </div>
           )}
 
-          {/* Today's mood — hidden on mobile */}
+          {/* Today's mood — desktop only */}
           <div
             className="hidden sm:flex items-center gap-2 shrink-0 pl-4"
             style={{ borderLeft: divider }}
