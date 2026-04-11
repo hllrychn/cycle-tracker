@@ -19,12 +19,31 @@ import { differenceInDays, addDays, toISODate, startOfToday, format, parseLocalD
 export function DashboardPage() {
   const [showFunFact, setShowFunFact]           = useState(false);
   const [showPredictions, setShowPredictions]   = useState(false);
+  const [dismissedDay1Banner, setDismissedDay1Banner]   = useState(false);
+  const [dismissedEndBanner,  setDismissedEndBanner]    = useState(false);
   const { cycles, loading: cyclesLoading, addOrUpdateCycle, removeCycle } = useCycles();
   const { symptoms, loading: symptomsLoading, logSymptoms } = useSymptoms();
   const {
     customCycleLength, customPeriodDuration, nextPeriodDelayDays, recurringCyclesCount,
     setCustomCycleLength, setCustomPeriodDuration, addDelayDay, setRecurringCyclesCount, resetDelay,
   } = useSettings();
+
+  const handleDelayCurrentPeriod = async (latestPeriod: { id: string; start_date: string; end_date: string | null; flow: import('../types').FlowIntensity; notes?: string | null }) => {
+    const newStart = toISODate(addDays(parseLocalDate(latestPeriod.start_date), 1));
+    const newEnd = latestPeriod.end_date
+      ? toISODate(addDays(parseLocalDate(latestPeriod.end_date), 1))
+      : null;
+    await removeCycle(latestPeriod.id);
+    await addOrUpdateCycle(
+      { start_date: newStart, end_date: newEnd, flow: latestPeriod.flow, notes: latestPeriod.notes },
+      { excludeId: latestPeriod.id },
+    );
+  };
+
+  const handleEndPeriod = async (latestPeriod: { start_date: string; flow: import('../types').FlowIntensity; notes?: string | null }) => {
+    const todayISO = todayLocalISO();
+    await addOrUpdateCycle({ start_date: latestPeriod.start_date, end_date: todayISO, flow: latestPeriod.flow, notes: latestPeriod.notes });
+  };
 
   const handleStartToday = async () => {
     const todayISO = todayLocalISO();
@@ -97,6 +116,20 @@ export function DashboardPage() {
   const isOvulationDay = prediction
     ? format(prediction.ovulationDay, 'yyyy-MM-dd') === todayISO
     : false;
+
+  const latestPeriod = [...cycles]
+    .filter(c => c.start_date <= todayISO)
+    .sort((a, b) => b.start_date.localeCompare(a.start_date))[0] ?? null;
+  const avgDuration = prediction?.avgPeriodDuration ?? 7;
+  const periodCycleDay = latestPeriod
+    ? differenceInDays(startOfToday(), parseLocalDate(latestPeriod.start_date)) + 1
+    : null;
+  const isDay1OfPeriod = latestPeriod?.start_date === todayISO;
+  const isActivePeriodDay2Plus = !isDay1OfPeriod && latestPeriod != null && (
+    latestPeriod.end_date
+      ? latestPeriod.end_date >= todayISO
+      : periodCycleDay !== null && periodCycleDay <= avgDuration
+  );
 
   return (
     <div className="space-y-6">
@@ -195,6 +228,60 @@ export function DashboardPage() {
 
       {showFunFact && (
         <FunFactPopup forceShow onClose={() => setShowFunFact(false)} />
+      )}
+
+      {/* Day 1 of period — delay banner */}
+      {isDay1OfPeriod && !dismissedDay1Banner && latestPeriod && (
+        <div className="rounded-2xl p-4" style={{ background: 'var(--color-phase-menstrual)', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-peat-deep)' }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium" style={{ color: 'var(--color-peat-deep)' }}>Day 1 of period</p>
+            <button
+              onClick={() => setDismissedDay1Banner(true)}
+              className="text-xs transition-colors"
+              style={{ color: 'var(--color-peat-deep)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text-primary)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-peat-deep)')}
+            >
+              Dismiss
+            </button>
+          </div>
+          <button
+            onClick={() => handleDelayCurrentPeriod(latestPeriod).then(() => setDismissedDay1Banner(true))}
+            className="w-full py-2 text-sm rounded-lg transition-colors"
+            style={{ background: 'var(--color-peat-dark)', color: 'var(--color-text-light)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-text-primary)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-peat-dark)')}
+          >
+            Not yet — delay 1 day
+          </button>
+        </div>
+      )}
+
+      {/* Active period day 2+ — end period banner */}
+      {isActivePeriodDay2Plus && !dismissedEndBanner && latestPeriod && (
+        <div className="rounded-2xl p-4" style={{ background: 'var(--color-phase-menstrual)', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-peat-deep)' }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium" style={{ color: 'var(--color-peat-deep)' }}>Period in progress</p>
+            <button
+              onClick={() => setDismissedEndBanner(true)}
+              className="text-xs transition-colors"
+              style={{ color: 'var(--color-peat-deep)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text-primary)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-peat-deep)')}
+            >
+              Dismiss
+            </button>
+          </div>
+          <button
+            onClick={() => handleEndPeriod(latestPeriod).then(() => setDismissedEndBanner(true))}
+            className="w-full py-2 text-sm rounded-lg transition-colors"
+            style={{ background: 'var(--color-peat-dark)', color: 'var(--color-text-light)' }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-text-primary)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-peat-dark)')}
+          >
+            End period today
+          </button>
+        </div>
       )}
 
       {/* Empty state */}
