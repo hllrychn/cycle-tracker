@@ -14,12 +14,15 @@ export function LogSymptomsPage() {
   const { resetDelay } = useSettings();
   const prediction = usePredictions(cycles, {});
   const navigate = useNavigate();
-  const [starting, setStarting]         = useState(false);
-  const [startError, setStartError]     = useState<string | null>(null);
-  const [dismissed, setDismissed]       = useState(false);
-  const [ending, setEnding]             = useState(false);
-  const [endError, setEndError]         = useState<string | null>(null);
-  const [dismissedEnd, setDismissedEnd] = useState(false);
+  const [starting, setStarting]               = useState(false);
+  const [startError, setStartError]           = useState<string | null>(null);
+  const [dismissed, setDismissed]             = useState(false);
+  const [ending, setEnding]                   = useState(false);
+  const [endError, setEndError]               = useState<string | null>(null);
+  const [dismissedEnd, setDismissedEnd]       = useState(false);
+  const [delaying, setDelaying]               = useState(false);
+  const [delayError, setDelayError]           = useState<string | null>(null);
+  const [dismissedDelay, setDismissedDelay]   = useState(false);
 
   const today = toISODate(new Date());
   const existing = symptoms.find(s => s.log_date === today) ?? null;
@@ -28,23 +31,47 @@ export function LogSymptomsPage() {
   const latestPeriod = [...cycles]
     .filter(c => c.start_date <= today)
     .sort((a, b) => b.start_date.localeCompare(a.start_date))[0] ?? null;
+  const isDay1OfPeriod = latestPeriod?.start_date === today;
   const hasActivePeriod = latestPeriod != null && (
     latestPeriod.end_date
       ? latestPeriod.end_date >= today
       : differenceInDays(startOfToday(), parseISO(latestPeriod.start_date)) <= avgDuration
   );
+  const isDay2PlusOfPeriod = hasActivePeriod && !isDay1OfPeriod;
 
   const handleEndPeriod = async () => {
     if (!latestPeriod) return;
     setEnding(true);
     setEndError(null);
     try {
-      await addOrUpdateCycle({ ...latestPeriod, end_date: today });
+      await addOrUpdateCycle({ start_date: latestPeriod.start_date, end_date: today, flow: latestPeriod.flow, notes: latestPeriod.notes });
       navigate('/');
     } catch (e) {
       setEndError((e as Error).message);
     } finally {
       setEnding(false);
+    }
+  };
+
+  const handleDelayCurrentPeriod = async () => {
+    if (!latestPeriod) return;
+    setDelaying(true);
+    setDelayError(null);
+    try {
+      const newStart = toISODate(addDays(parseISO(latestPeriod.start_date), 1));
+      const newEnd = latestPeriod.end_date
+        ? toISODate(addDays(parseISO(latestPeriod.end_date), 1))
+        : null;
+      await removeCycle(latestPeriod.id);
+      await addOrUpdateCycle(
+        { start_date: newStart, end_date: newEnd, flow: latestPeriod.flow, notes: latestPeriod.notes },
+        { excludeId: latestPeriod.id },
+      );
+      navigate('/');
+    } catch (e) {
+      setDelayError((e as Error).message);
+    } finally {
+      setDelaying(false);
     }
   };
 
@@ -119,7 +146,35 @@ export function LogSymptomsPage() {
         {existing ? "Update today's symptoms" : 'Log symptoms'}
       </h1>
 
-      {hasActivePeriod && !dismissedEnd && (
+      {isDay1OfPeriod && !dismissedDelay && (
+        <div className="rounded-2xl p-4" style={{ background: 'var(--color-phase-menstrual)', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-peat-deep)' }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-medium" style={{ color: 'var(--color-peat-deep)' }}>Day 1 of period</p>
+            <button
+              onClick={() => setDismissedDelay(true)}
+              className="text-xs transition-colors"
+              style={{ color: 'var(--color-peat-deep)' }}
+              onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text-primary)')}
+              onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-peat-deep)')}
+            >
+              Dismiss
+            </button>
+          </div>
+          <button
+            onClick={handleDelayCurrentPeriod}
+            disabled={delaying}
+            className="w-full py-2 text-sm rounded-lg transition-colors disabled:opacity-60"
+            style={{ background: 'var(--color-peat-dark)', color: 'var(--color-text-light)' }}
+            onMouseEnter={e => { if (!delaying) e.currentTarget.style.background = 'var(--color-text-primary)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-peat-dark)'; }}
+          >
+            {delaying ? 'Saving…' : 'Not yet — delay 1 day'}
+          </button>
+          {delayError && <p className="text-xs mt-2" style={{ color: '#C0392B' }}>{delayError}</p>}
+        </div>
+      )}
+
+      {isDay2PlusOfPeriod && !dismissedEnd && (
         <div className="rounded-2xl p-4" style={{ background: 'var(--color-phase-menstrual)', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-peat-deep)' }}>
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium" style={{ color: 'var(--color-peat-deep)' }}>Period in progress</p>
