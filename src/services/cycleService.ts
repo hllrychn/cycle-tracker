@@ -37,3 +37,10 @@ export async function deleteCycle(id: string): Promise<void> {
   const { error } = await supabase.from('cycles').delete().eq('id', id);
   if (error) throw error;
 }
+
+export async function clearAllCycles(): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+  const { error } = await supabase.from('cycles').delete().eq('user_id', user.id);
+  if (error) throw error;
+}

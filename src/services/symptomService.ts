@@ -79,3 +79,10 @@ export async function deleteSymptomLog(id: string): Promise<void> {
   const { error } = await supabase.from('symptoms').delete().eq('id', id);
   if (error) throw error;
 }
+
+export async function clearAllSymptoms(): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+  const { error } = await supabase.from('symptoms').delete().eq('user_id', user.id);
+  if (error) throw error;
+}

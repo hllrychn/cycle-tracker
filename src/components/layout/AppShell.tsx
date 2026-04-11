@@ -1,5 +1,7 @@
+import { useState, useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { SparkleCursor } from '../cursor/SparkleCursor';
+import { ClearHistoryModal } from '../account/ClearHistoryModal';
 import { useAuth } from '../../hooks/useAuth';
 import { useCycles } from '../../hooks/useCycles';
 import { useSymptoms } from '../../hooks/useSymptoms';
@@ -33,6 +35,12 @@ const NAV_ITEMS = [
 export function AppShell() {
   const { signOut } = useAuth();
   const navigate    = useNavigate();
+  const [showClearModal, setShowClearModal] = useState(false);
+  const [menuOpen, setMenuOpen]             = useState(false);
+  const menuTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openMenu  = () => { if (menuTimeout.current) clearTimeout(menuTimeout.current); setMenuOpen(true); };
+  const closeMenu = () => { menuTimeout.current = setTimeout(() => setMenuOpen(false), 120); };
   const { cycles }  = useCycles();
   const { symptoms } = useSymptoms();
   const { customCycleLength, customPeriodDuration, nextPeriodDelayDays } = useSettings();
@@ -187,18 +195,50 @@ export function AppShell() {
             )}
           </div>
 
-          {/* Sign out */}
-          <button
-            onClick={handleSignOut}
-            className="text-xs transition-colors shrink-0 pl-3 sm:pl-4"
-            style={{ borderLeft: divider, color: 'var(--color-peat-deep)' }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-peat-mid)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-peat-deep)')}
+          {/* Account menu */}
+          <div
+            className="relative shrink-0 pl-3 sm:pl-4"
+            style={{ borderLeft: divider }}
+            onMouseEnter={openMenu}
+            onMouseLeave={closeMenu}
           >
-            Sign out
-          </button>
+            <button
+              className="text-xs transition-colors"
+              style={{ color: 'var(--color-peat-deep)' }}
+            >
+              Account
+            </button>
+            {menuOpen && (
+              <div
+                className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden z-50"
+                style={{ background: '#fff', boxShadow: '0 4px 16px rgba(46,40,32,0.15)', minWidth: 140, border: '1px solid var(--color-peat-light)' }}
+              >
+                <button
+                  onClick={() => { setMenuOpen(false); setShowClearModal(true); }}
+                  className="w-full text-left px-4 py-2.5 text-xs transition-colors"
+                  style={{ color: 'var(--color-peat-deep)' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-peat-light)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  Clear history
+                </button>
+                <div style={{ height: 1, background: 'var(--color-peat-light)' }} />
+                <button
+                  onClick={handleSignOut}
+                  className="w-full text-left px-4 py-2.5 text-xs transition-colors"
+                  style={{ color: 'var(--color-accent-dark)' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-accent-light)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  Sign out
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </header>
+
+      {showClearModal && <ClearHistoryModal onClose={() => setShowClearModal(false)} />}
 
       {/* ── Main content ── */}
       <main
