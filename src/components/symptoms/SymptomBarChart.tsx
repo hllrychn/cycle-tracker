@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
   ResponsiveContainer, Cell,
 } from 'recharts';
-import { subDays, toISODate, differenceInDays, parseISO } from '../../lib/dateUtils';
+import { subDays, toISODate, differenceInDays, parseLocalDate } from '../../lib/dateUtils';
 import type { SymptomLog, Cycle, BowelMovement } from '../../types';
 
 type Range = '7d' | '30d' | '90d' | '12m' | '1y';
@@ -117,7 +117,7 @@ function getBowelPhase(logDate: string, cycles: Cycle[], avgLen: number, avgDur:
   const past = cycles.filter(c => c.start_date <= logDate);
   if (past.length === 0) return null;
   const latest = [...past].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
-  const day = differenceInDays(parseISO(logDate), parseISO(latest.start_date)) + 1;
+  const day = differenceInDays(parseLocalDate(logDate), parseLocalDate(latest.start_date)) + 1;
   if (day < 1 || day > avgLen + 7) return null;
   if (day <= avgDur)       return 'Menstrual';
   if (day <= avgLen - 16)  return 'Follicular';
