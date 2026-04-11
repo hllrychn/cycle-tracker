@@ -189,7 +189,7 @@ export function SymptomBarChart({ symptoms }: Props) {
                 <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No symptoms logged in this period</p>
               </div>
             ) : (
-              <ResponsiveContainer width="100%" height={data.length * 36}>
+              <ResponsiveContainer width="100%" height={Math.max(80, data.length * 44)}>
                 <BarChart data={data} layout="vertical" barSize={16} barCategoryGap="25%">
                   <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }} axisLine={false} tickLine={false} />
                   <YAxis type="category" dataKey="symptom" width={70} tick={{ fontSize: 10, fill: 'var(--color-peat-deep)' }} axisLine={false} tickLine={false} interval={0} />
@@ -220,7 +220,7 @@ export function SymptomBarChart({ symptoms }: Props) {
               <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No additional symptoms logged in this period</p>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={otherData.length * 36}>
+            <ResponsiveContainer width="100%" height={Math.max(80, otherData.length * 44)}>
               <BarChart data={otherData} layout="vertical" barSize={14} barCategoryGap="20%">
                 <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }} axisLine={false} tickLine={false} />
                 <YAxis

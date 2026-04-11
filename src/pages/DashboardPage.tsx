@@ -7,6 +7,7 @@ import { StatsTickerStrip } from '../components/predictions/StatsTickerStrip';
 import { PredictionsPopup } from '../components/predictions/PredictionsPopup';
 import { CycleCheckPopup } from '../components/predictions/CycleCheckPopup';
 import { DelayPopup } from '../components/predictions/DelayPopup';
+import { EarlyPeriodPopup } from '../components/predictions/EarlyPeriodPopup';
 import { CycleCalendar } from '../components/calendar/CycleCalendar';
 import { HoroscopeCard } from '../components/horoscope/HoroscopeCard';
 import { MakeTodayBetterCard } from '../components/horoscope/MakeTodayBetterCard';
@@ -22,8 +23,34 @@ export function DashboardPage() {
   const { symptoms, loading: symptomsLoading, logSymptoms } = useSymptoms();
   const {
     customCycleLength, customPeriodDuration, nextPeriodDelayDays, recurringCyclesCount,
-    setCustomCycleLength, setCustomPeriodDuration, addDelayDay, setRecurringCyclesCount,
+    setCustomCycleLength, setCustomPeriodDuration, addDelayDay, setRecurringCyclesCount, resetDelay,
   } = useSettings();
+
+  const handleStartToday = async () => {
+    const todayISO = todayLocalISO();
+    const nextLogged = [...cycles]
+      .filter(c => c.start_date > todayISO)
+      .sort((a, b) => a.start_date.localeCompare(b.start_date))[0] ?? null;
+
+    if (nextLogged) {
+      const duration = nextLogged.end_date
+        ? differenceInDays(parseLocalDate(nextLogged.end_date), parseLocalDate(nextLogged.start_date))
+        : null;
+      await removeCycle(nextLogged.id);
+      await addOrUpdateCycle(
+        {
+          start_date: todayISO,
+          end_date: duration != null ? toISODate(addDays(new Date(), duration)) : null,
+          flow: nextLogged.flow,
+          notes: nextLogged.notes,
+        },
+        { excludeId: nextLogged.id },
+      );
+    } else {
+      await addOrUpdateCycle({ start_date: todayISO, flow: 'medium' });
+    }
+    resetDelay();
+  };
 
   const handleDelayOneDay = async () => {
     const todayISO = toISODate(new Date());
@@ -79,8 +106,23 @@ export function DashboardPage() {
           forceShow={new URLSearchParams(window.location.search).get('preview') === 'cyclecheck'}
         />
       )}
-      {daysUntilNext === 1 && prediction && (
-        <DelayPopup nextPeriodStart={prediction.nextPeriodStart} onDelayOneDay={handleDelayOneDay} />
+      {(daysUntilNext === 1 || new URLSearchParams(window.location.search).get('preview') === 'delay') && prediction && (
+        <DelayPopup
+          nextPeriodStart={prediction.nextPeriodStart}
+          onDelayOneDay={handleDelayOneDay}
+          forceShow={new URLSearchParams(window.location.search).get('preview') === 'delay'}
+        />
+      )}
+      {(
+        (daysUntilNext !== null && daysUntilNext >= 2 && daysUntilNext <= 5) ||
+        new URLSearchParams(window.location.search).get('preview') === 'earlyperiod'
+      ) && prediction && (
+        <EarlyPeriodPopup
+          nextPeriodStart={prediction.nextPeriodStart}
+          daysUntilNext={daysUntilNext ?? 3}
+          onStartToday={handleStartToday}
+          forceShow={new URLSearchParams(window.location.search).get('preview') === 'earlyperiod'}
+        />
       )}
 
       {/* Page header */}
