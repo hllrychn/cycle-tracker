@@ -1,15 +1,19 @@
 import { useState } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
-  ResponsiveContainer,
+  ResponsiveContainer, Cell,
 } from 'recharts';
-import { subDays, toISODate } from '../../lib/dateUtils';
-import type { SymptomLog } from '../../types';
+import { subDays, toISODate, differenceInDays, parseISO } from '../../lib/dateUtils';
+import type { SymptomLog, Cycle, BowelMovement } from '../../types';
 
 type Range = '7d' | '30d' | '90d' | '12m' | '1y';
+type View  = 'symptoms' | 'other' | 'bowel';
 
 interface Props {
-  symptoms: SymptomLog[];
+  symptoms:          SymptomLog[];
+  cycles?:           Cycle[];
+  avgCycleLength?:   number;
+  avgPeriodDuration?: number;
 }
 
 const RANGE_OPTIONS: { value: Range; label: string }[] = [
@@ -20,25 +24,49 @@ const RANGE_OPTIONS: { value: Range; label: string }[] = [
   { value: '1y',  label: 'YTD' },
 ];
 
+// ── Symptom tab ───────────────────────────────────────────────────────────────
+
 const SYMPTOM_KEYS = [
   'cramps', 'bloating', 'headache', 'fatigue', 'breast_tenderness', 'spotting',
 ] as const;
-
 type SymptomKey = typeof SYMPTOM_KEYS[number];
 
 const SYMPTOM_LABELS: Record<SymptomKey, string> = {
-  cramps:            'Cramps',
-  bloating:          'Bloating',
-  headache:          'Headache',
-  fatigue:           'Fatigue',
-  breast_tenderness: 'Breast',
-  spotting:          'Spotting',
+  cramps: 'Cramps', bloating: 'Bloating', headache: 'Headache',
+  fatigue: 'Fatigue', breast_tenderness: 'Breast', spotting: 'Spotting',
 };
 
 const MILD_COLOR     = '#A8C5A0';
 const MODERATE_COLOR = '#E8B87A';
 const SEVERE_COLOR   = '#C47878';
 const OTHER_COLOR    = '#A088C4';
+
+// ── Bowel tab ─────────────────────────────────────────────────────────────────
+
+const BM_TYPES: BowelMovement[] = ['normal', 'constipated', 'loose', 'diarrhea'];
+
+const BM_COLORS: Record<BowelMovement, string> = {
+  normal:      '#A8C5A0',
+  constipated: '#E8C07A',
+  loose:       '#A088C4',
+  diarrhea:    '#C47878',
+};
+
+const BM_LABELS: Record<BowelMovement, string> = {
+  normal: 'Normal', constipated: 'Constipated', loose: 'Loose', diarrhea: 'Diarrhea',
+};
+
+type BowelPhase = 'Menstrual' | 'Follicular' | 'Ovulatory' | 'Luteal';
+const BOWEL_PHASES: BowelPhase[] = ['Menstrual', 'Follicular', 'Ovulatory', 'Luteal'];
+
+const PHASE_BG: Record<BowelPhase, string> = {
+  Menstrual:  'var(--color-phase-menstrual)',
+  Follicular: 'var(--color-phase-follicular)',
+  Ovulatory:  'var(--color-phase-ovulation)',
+  Luteal:     'var(--color-phase-luteal)',
+};
+
+// ── Shared helpers ────────────────────────────────────────────────────────────
 
 function filterByRange(symptoms: SymptomLog[], range: Range): SymptomLog[] {
   const today = new Date();
@@ -53,6 +81,8 @@ function filterByRange(symptoms: SymptomLog[], range: Range): SymptomLog[] {
   const yearStart = `${today.getFullYear()}-01-01`;
   return symptoms.filter(s => s.log_date >= yearStart && s.log_date <= todayISO);
 }
+
+// ── Symptom chart data ────────────────────────────────────────────────────────
 
 type ChartPoint = { symptom: string; key: SymptomKey; mild: number; moderate: number; severe: number; total: number };
 type OtherPoint = { name: string; count: number };
@@ -80,6 +110,48 @@ function buildOtherData(symptoms: SymptomLog[], range: Range): OtherPoint[] {
     .slice(0, 8)
     .map(([name, count]) => ({ name, count }));
 }
+
+// ── Bowel chart data ──────────────────────────────────────────────────────────
+
+function getBowelPhase(logDate: string, cycles: Cycle[], avgLen: number, avgDur: number): BowelPhase | null {
+  const past = cycles.filter(c => c.start_date <= logDate);
+  if (past.length === 0) return null;
+  const latest = [...past].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
+  const day = differenceInDays(parseISO(logDate), parseISO(latest.start_date)) + 1;
+  if (day < 1 || day > avgLen + 7) return null;
+  if (day <= avgDur)       return 'Menstrual';
+  if (day <= avgLen - 16)  return 'Follicular';
+  if (day <= avgLen - 11)  return 'Ovulatory';
+  if (day <= avgLen)       return 'Luteal';
+  return null;
+}
+
+type BowelPoint = { phase: BowelPhase } & Record<BowelMovement, number> & { total: number };
+
+function buildBowelData(symptoms: SymptomLog[], cycles: Cycle[], range: Range, avgLen: number, avgDur: number): BowelPoint[] {
+  const filtered = filterByRange(symptoms, range).filter(s => s.bowel_movement);
+  const counts: Record<BowelPhase, Record<BowelMovement, number>> = {
+    Menstrual:  { normal: 0, constipated: 0, loose: 0, diarrhea: 0 },
+    Follicular: { normal: 0, constipated: 0, loose: 0, diarrhea: 0 },
+    Ovulatory:  { normal: 0, constipated: 0, loose: 0, diarrhea: 0 },
+    Luteal:     { normal: 0, constipated: 0, loose: 0, diarrhea: 0 },
+  };
+  for (const log of filtered) {
+    const phase = getBowelPhase(log.log_date, cycles, avgLen, avgDur);
+    if (!phase || !log.bowel_movement) continue;
+    counts[phase][log.bowel_movement]++;
+  }
+  return BOWEL_PHASES.map(phase => ({
+    phase,
+    normal:      counts[phase].normal,
+    constipated: counts[phase].constipated,
+    loose:       counts[phase].loose,
+    diarrhea:    counts[phase].diarrhea,
+    total:       BM_TYPES.reduce((s, t) => s + counts[phase][t], 0),
+  }));
+}
+
+// ── Tooltips ──────────────────────────────────────────────────────────────────
 
 interface TooltipItem { dataKey: string; value: number; color: string }
 
@@ -123,17 +195,52 @@ function OtherTooltip({ active, payload, label }: { active?: boolean; payload?: 
   );
 }
 
-type View = 'symptoms' | 'other';
+function BMTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipItem[]; label?: string }) {
+  if (!active || !payload?.length) return null;
+  const items = payload.filter(p => p.value > 0);
+  if (!items.length) return null;
+  const total = items.reduce((s, p) => s + p.value, 0);
+  return (
+    <div className="rounded-lg px-3 py-2 text-xs shadow-md" style={{ background: '#fff', border: '1px solid var(--color-peat-mid)', minWidth: 140 }}>
+      <p className="font-semibold mb-1.5" style={{ color: 'var(--color-text-primary)' }}>
+        {label} <span style={{ color: 'var(--color-peat-deep)' }}>({total}×)</span>
+      </p>
+      {items.map(p => (
+        <div key={p.dataKey} className="flex items-center gap-2 mb-0.5">
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.color }} />
+          <span style={{ color: 'var(--color-peat-deep)' }}>{BM_LABELS[p.dataKey as BowelMovement]}</span>
+          <span className="ml-auto font-medium" style={{ color: 'var(--color-text-primary)' }}>{p.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
-export function SymptomBarChart({ symptoms }: Props) {
+function BowelPhaseTick({ x, y, payload }: { x?: number; y?: number; payload?: { value: string } }) {
+  const phase = (payload?.value ?? '') as BowelPhase;
+  return (
+    <g transform={`translate(${x ?? 0},${y ?? 0})`}>
+      <rect x={-26} y={4} width={52} height={16} rx={8} fill={PHASE_BG[phase] ?? 'transparent'} />
+      <text x={0} y={16} textAnchor="middle" fontSize={9} fill="var(--color-peat-deep)" fontWeight={500}>
+        {phase}
+      </text>
+    </g>
+  );
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, avgPeriodDuration = 5 }: Props) {
   const [range, setRange] = useState<Range>('30d');
-  const [view, setView]   = useState<View>('symptoms');
+  const [view,  setView]  = useState<View>('symptoms');
 
-  const allData   = buildData(symptoms, range);
-  const data      = allData.filter(d => d.total > 0);
-  const otherData = buildOtherData(symptoms, range);
-  const hasAny    = data.length > 0;
-  const hasOther  = otherData.length > 0;
+  const allData    = buildData(symptoms, range);
+  const data       = allData.filter(d => d.total > 0);
+  const otherData  = buildOtherData(symptoms, range);
+  const bowelData  = buildBowelData(symptoms, cycles, range, avgCycleLength, avgPeriodDuration);
+  const hasAny     = data.length > 0;
+  const hasOther   = otherData.length > 0;
+  const hasBowel   = bowelData.some(d => d.total > 0);
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-moss-base)' }}>
@@ -164,7 +271,7 @@ export function SymptomBarChart({ symptoms }: Props) {
       {/* View toggle */}
       <div className="px-5 pt-3 pb-0">
         <div className="flex rounded-lg p-0.5 w-fit" style={{ background: 'var(--color-peat-light)' }}>
-          {([['symptoms', 'Symptoms'] , ['other', 'Additional']] as [View, string][]).map(([v, label]) => (
+          {([['symptoms', 'Symptoms'], ['other', 'Additional'], ['bowel', 'Bowel']] as [View, string][]).map(([v, label]) => (
             <button
               key={v}
               onClick={() => setView(v)}
@@ -212,7 +319,7 @@ export function SymptomBarChart({ symptoms }: Props) {
         </>
       )}
 
-      {/* Other symptoms chart */}
+      {/* Additional symptoms chart */}
       {view === 'other' && (
         <div className="px-4 pt-4 pb-4">
           {!hasOther ? (
@@ -223,21 +330,55 @@ export function SymptomBarChart({ symptoms }: Props) {
             <ResponsiveContainer width="100%" height={Math.max(80, otherData.length * 44)}>
               <BarChart data={otherData} layout="vertical" barSize={14} barCategoryGap="20%">
                 <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }} axisLine={false} tickLine={false} />
-                <YAxis
-                  type="category"
-                  dataKey="name"
-                  width={145}
-                  tick={<CustomYTick />}
-                  axisLine={false}
-                  tickLine={false}
-                  interval={0}
-                />
+                <YAxis type="category" dataKey="name" width={145} tick={<CustomYTick />} axisLine={false} tickLine={false} interval={0} />
                 <Tooltip content={<OtherTooltip />} cursor={{ fill: 'var(--color-peat-light)', radius: 4 }} />
                 <Bar dataKey="count" fill={OTHER_COLOR} radius={[0, 3, 3, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
         </div>
+      )}
+
+      {/* Bowel movement chart */}
+      {view === 'bowel' && (
+        <>
+          <div className="px-4 pt-4 pb-2">
+            {!hasBowel ? (
+              <div className="h-36 flex items-center justify-center">
+                <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No bowel movement data logged in this period</p>
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={bowelData} barSize={28} barCategoryGap="30%">
+                  <XAxis
+                    dataKey="phase"
+                    tick={<BowelPhaseTick />}
+                    axisLine={false}
+                    tickLine={false}
+                    height={28}
+                  />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }} axisLine={false} tickLine={false} width={24} />
+                  <Tooltip content={<BMTooltip />} cursor={{ fill: 'var(--color-peat-light)', radius: 4 }} />
+                  {BM_TYPES.map((type, i) => (
+                    <Bar key={type} dataKey={type} stackId="a" fill={BM_COLORS[type]} radius={i === BM_TYPES.length - 1 ? [3, 3, 0, 0] : undefined}>
+                      {bowelData.map(entry => (
+                        <Cell key={entry.phase} fill={BM_COLORS[type]} />
+                      ))}
+                    </Bar>
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+          <div className="px-5 pb-4 flex items-center gap-4 flex-wrap">
+            {BM_TYPES.map(type => (
+              <div key={type} className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: BM_COLORS[type] }} />
+                <span className="text-xs" style={{ color: 'var(--color-peat-deep)' }}>{BM_LABELS[type]}</span>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
