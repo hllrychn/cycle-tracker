@@ -17,33 +17,15 @@ import { NavLink } from 'react-router-dom';
 import { differenceInDays, addDays, toISODate, startOfToday, format, parseLocalDate, todayLocalISO } from '../lib/dateUtils';
 
 export function DashboardPage() {
-  const [showFunFact, setShowFunFact]           = useState(false);
-  const [showPredictions, setShowPredictions]   = useState(false);
-  const [dismissedDay1Banner, setDismissedDay1Banner]   = useState(false);
-  const [dismissedEndBanner,  setDismissedEndBanner]    = useState(false);
+  const [showFunFact, setShowFunFact]         = useState(false);
+  const [showPredictions, setShowPredictions] = useState(false);
+  const [dismissedEndBanner, setDismissedEndBanner] = useState(false);
   const { cycles, loading: cyclesLoading, addOrUpdateCycle, removeCycle } = useCycles();
   const { symptoms, loading: symptomsLoading, logSymptoms } = useSymptoms();
   const {
     customCycleLength, customPeriodDuration, nextPeriodDelayDays, recurringCyclesCount,
     setCustomCycleLength, setCustomPeriodDuration, addDelayDay, setRecurringCyclesCount, resetDelay,
   } = useSettings();
-
-  const handleDelayCurrentPeriod = async (latestPeriod: { id: string; start_date: string; end_date: string | null; flow: import('../types').FlowIntensity; notes?: string | null }) => {
-    const newStart = toISODate(addDays(parseLocalDate(latestPeriod.start_date), 1));
-    const newEnd = latestPeriod.end_date
-      ? toISODate(addDays(parseLocalDate(latestPeriod.end_date), 1))
-      : null;
-    await removeCycle(latestPeriod.id);
-    await addOrUpdateCycle(
-      { start_date: newStart, end_date: newEnd, flow: latestPeriod.flow, notes: latestPeriod.notes },
-      { excludeId: latestPeriod.id },
-    );
-  };
-
-  const handleEndPeriod = async (latestPeriod: { start_date: string; flow: import('../types').FlowIntensity; notes?: string | null }) => {
-    const todayISO = todayLocalISO();
-    await addOrUpdateCycle({ start_date: latestPeriod.start_date, end_date: todayISO, flow: latestPeriod.flow, notes: latestPeriod.notes });
-  };
 
   const handleStartToday = async () => {
     const todayISO = todayLocalISO();
@@ -72,7 +54,24 @@ export function DashboardPage() {
   };
 
   const handleDelayOneDay = async () => {
-    const todayISO = toISODate(new Date());
+    const todayISO = todayLocalISO();
+
+    // Day 1 of a logged period — shift that period forward
+    const todayPeriod = cycles.find(c => c.start_date === todayISO);
+    if (todayPeriod) {
+      const newStart = toISODate(addDays(parseLocalDate(todayPeriod.start_date), 1));
+      const newEnd = todayPeriod.end_date
+        ? toISODate(addDays(parseLocalDate(todayPeriod.end_date), 1))
+        : null;
+      await removeCycle(todayPeriod.id);
+      await addOrUpdateCycle(
+        { start_date: newStart, end_date: newEnd, flow: todayPeriod.flow, notes: todayPeriod.notes },
+        { excludeId: todayPeriod.id },
+      );
+      return;
+    }
+
+    // Shift a future logged period, or add a prediction delay day
     const nextLogged = [...cycles]
       .filter(c => c.start_date > todayISO)
       .sort((a, b) => a.start_date.localeCompare(b.start_date))[0] ?? null;
@@ -139,10 +138,11 @@ export function DashboardPage() {
           forceShow={new URLSearchParams(window.location.search).get('preview') === 'cyclecheck'}
         />
       )}
-      {((daysUntilNext === 1 || daysUntilNext === 0) || new URLSearchParams(window.location.search).get('preview') === 'delay') && prediction && (
+      {((isDay1OfPeriod || daysUntilNext === 1 || daysUntilNext === 0) || new URLSearchParams(window.location.search).get('preview') === 'delay') && prediction && (
         <DelayPopup
-          nextPeriodStart={prediction.nextPeriodStart}
+          nextPeriodStart={isDay1OfPeriod ? startOfToday() : prediction.nextPeriodStart}
           onDelayOneDay={handleDelayOneDay}
+          startedToday={isDay1OfPeriod}
           forceShow={new URLSearchParams(window.location.search).get('preview') === 'delay'}
         />
       )}
@@ -230,33 +230,6 @@ export function DashboardPage() {
         <FunFactPopup forceShow onClose={() => setShowFunFact(false)} />
       )}
 
-      {/* Day 1 of period — delay banner */}
-      {isDay1OfPeriod && !dismissedDay1Banner && latestPeriod && (
-        <div className="rounded-2xl p-4" style={{ background: 'var(--color-phase-menstrual)', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-peat-deep)' }}>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-medium" style={{ color: 'var(--color-peat-deep)' }}>Day 1 of period</p>
-            <button
-              onClick={() => setDismissedDay1Banner(true)}
-              className="text-xs transition-colors"
-              style={{ color: 'var(--color-peat-deep)' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text-primary)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-peat-deep)')}
-            >
-              Dismiss
-            </button>
-          </div>
-          <button
-            onClick={() => handleDelayCurrentPeriod(latestPeriod).then(() => setDismissedDay1Banner(true))}
-            className="w-full py-2 text-sm rounded-lg transition-colors"
-            style={{ background: 'var(--color-peat-dark)', color: 'var(--color-text-light)' }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-text-primary)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-peat-dark)')}
-          >
-            Not yet — delay 1 day
-          </button>
-        </div>
-      )}
-
       {/* Active period day 2+ — end period banner */}
       {isActivePeriodDay2Plus && !dismissedEndBanner && latestPeriod && (
         <div className="rounded-2xl p-4" style={{ background: 'var(--color-phase-menstrual)', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-peat-deep)' }}>
@@ -273,7 +246,11 @@ export function DashboardPage() {
             </button>
           </div>
           <button
-            onClick={() => handleEndPeriod(latestPeriod).then(() => setDismissedEndBanner(true))}
+            onClick={async () => {
+              if (!latestPeriod) return;
+              await addOrUpdateCycle({ start_date: latestPeriod.start_date, end_date: todayISO, flow: latestPeriod.flow, notes: latestPeriod.notes });
+              setDismissedEndBanner(true);
+            }}
             className="w-full py-2 text-sm rounded-lg transition-colors"
             style={{ background: 'var(--color-peat-dark)', color: 'var(--color-text-light)' }}
             onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-text-primary)')}

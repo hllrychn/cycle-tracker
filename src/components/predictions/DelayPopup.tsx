@@ -5,11 +5,12 @@ interface Props {
   nextPeriodStart: Date;
   onDelayOneDay: () => void | Promise<void>;
   forceShow?: boolean;
+  startedToday?: boolean;
 }
 
 const STORAGE_KEY_PREFIX = 'delayPopupDismissed_';
 
-export function DelayPopup({ nextPeriodStart, onDelayOneDay, forceShow }: Props) {
+export function DelayPopup({ nextPeriodStart, onDelayOneDay, forceShow, startedToday }: Props) {
   const key = STORAGE_KEY_PREFIX + format(nextPeriodStart, 'yyyy-MM-dd');
   const [visible, setVisible] = useState(() => forceShow || !localStorage.getItem(key));
 
@@ -51,15 +52,20 @@ export function DelayPopup({ nextPeriodStart, onDelayOneDay, forceShow }: Props)
         </div>
 
         <h2 className="text-base font-semibold text-center" style={{ color: 'var(--color-text-primary)' }}>
-          Period expected tomorrow
+          {startedToday ? 'Period starts today' : 'Period expected tomorrow'}
         </h2>
 
         <p className="text-sm leading-relaxed" style={{ color: 'var(--color-peat-deep)' }}>
-          Your next period is predicted for{' '}
-          <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
-            {format(nextPeriodStart, 'MMMM d')}
-          </span>
-          . If you're not feeling it yet, you can push the prediction back by a day.
+          {startedToday
+            ? "Your period is logged as starting today. Not feeling it yet? Push it back by a day."
+            : <>
+                Your next period is predicted for{' '}
+                <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                  {format(nextPeriodStart, 'MMMM d')}
+                </span>
+                . If you're not feeling it yet, you can push the prediction back by a day.
+              </>
+          }
         </p>
 
         <div className="flex flex-col gap-2 pt-1">
