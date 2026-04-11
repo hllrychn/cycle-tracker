@@ -6,6 +6,7 @@ import { usePredictions } from '../hooks/usePredictions';
 import { useSettings } from '../hooks/useSettings';
 import { PeriodEntry } from '../components/period/PeriodEntry';
 import { SymptomBarChart } from '../components/symptoms/SymptomBarChart';
+import { BowelMovementChart } from '../components/symptoms/BowelMovementChart';
 import { format, parseISO, differenceInDays, todayLocalISO } from '../lib/dateUtils';
 import type { Cycle, SymptomLog, Severity } from '../types';
 
@@ -250,6 +251,14 @@ export function HistoryPage() {
 
       {/* Symptom bar chart */}
       <SymptomBarChart symptoms={symptoms} />
+
+      {/* Bowel movement by cycle phase */}
+      <BowelMovementChart
+        symptoms={symptoms}
+        cycles={cycles}
+        avgCycleLength={avgLen}
+        avgPeriodDuration={avgDur}
+      />
 
       {/* Stats strip */}
       <div className="flex gap-3">
