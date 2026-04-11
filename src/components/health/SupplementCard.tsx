@@ -203,7 +203,7 @@ export function SupplementCard({ cycles, prediction }: Props) {
                     {s.emoji}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <div className="flex items-center gap-2 flex-wrap mb-1.5">
                       <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{s.name}</p>
                       <span
                         className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
@@ -212,9 +212,15 @@ export function SupplementCard({ cycles, prediction }: Props) {
                         {TYPE_LABELS[s.type]}
                       </span>
                     </div>
-                    <p className="text-xs font-medium mb-1" style={{ color: 'var(--color-peat-deep)' }}>
-                      {s.dose}
-                    </p>
+                    <div className="flex items-center gap-1.5 mb-1.5">
+                      <span className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>Dose</span>
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-md font-medium"
+                        style={{ background: 'var(--color-peat-light)', color: 'var(--color-text-primary)' }}
+                      >
+                        {s.dose}
+                      </span>
+                    </div>
                     <p className="text-xs leading-relaxed" style={{ color: 'var(--color-peat-deep)', fontWeight: 300 }}>
                       {s.reason}
                     </p>
