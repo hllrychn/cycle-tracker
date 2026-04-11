@@ -3,6 +3,7 @@ import { useSymptoms } from '../hooks/useSymptoms';
 import { usePredictions } from '../hooks/usePredictions';
 import { useSettings } from '../hooks/useSettings';
 import { ExerciseCard } from '../components/health/ExerciseCard';
+import { SupplementCard } from '../components/health/SupplementCard';
 import { HealthContentTabs } from '../components/health/HealthContentTabs';
 import { HormoneChart } from '../components/hormones/HormoneChart';
 import { TodaySymptomsCard } from '../components/symptoms/TodaySymptomsCard';
@@ -49,6 +50,8 @@ export function HealthPage() {
       <HealthContentTabs cycles={cycles} prediction={prediction} />
 
       <ExerciseCard cycles={cycles} prediction={prediction} />
+
+      <SupplementCard cycles={cycles} prediction={prediction} />
     </div>
   );
 }
