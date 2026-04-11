@@ -13,7 +13,7 @@ import { MakeTodayBetterCard } from '../components/horoscope/MakeTodayBetterCard
 import { SymptomStreakCard } from '../components/symptoms/SymptomStreakCard';
 import { FunFactPopup } from '../components/facts/FunFactPopup';
 import { NavLink } from 'react-router-dom';
-import { differenceInDays, addDays, toISODate, startOfToday, format, parseLocalDate } from '../lib/dateUtils';
+import { differenceInDays, addDays, toISODate, startOfToday, format, parseLocalDate, todayLocalISO } from '../lib/dateUtils';
 
 export function DashboardPage() {
   const [showFunFact, setShowFunFact]           = useState(false);
@@ -63,13 +63,17 @@ export function DashboardPage() {
 
   const isEmpty = cycles.length === 0;
   const today = new Date();
+  const todayISO = todayLocalISO();
   const daysUntilNext = prediction
     ? differenceInDays(prediction.nextPeriodStart, startOfToday())
     : null;
+  const isOvulationDay = prediction
+    ? format(prediction.ovulationDay, 'yyyy-MM-dd') === todayISO
+    : false;
 
   return (
     <div className="space-y-6">
-      {(daysUntilNext != null && daysUntilNext >= 1 && daysUntilNext <= 5 || new URLSearchParams(window.location.search).get('preview') === 'cyclecheck') && prediction && (
+      {(isOvulationDay || new URLSearchParams(window.location.search).get('preview') === 'cyclecheck') && prediction && (
         <CycleCheckPopup
           nextPeriodStart={prediction.nextPeriodStart}
           forceShow={new URLSearchParams(window.location.search).get('preview') === 'cyclecheck'}
