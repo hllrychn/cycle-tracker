@@ -32,6 +32,14 @@ const NAV_ITEMS = [
   { to: '/history',      label: 'History',      end: false },
 ];
 
+const BOTTOM_TABS = [
+  { to: '/',              label: 'Home',     icon: '🏠', end: true  },
+  { to: '/health',        label: 'Health',   icon: '🌿', end: false },
+  { to: '/log/symptoms',  label: 'Symptoms', icon: '✏️', end: false },
+  { to: '/log/period',    label: 'Period',   icon: '🩸', end: false },
+  { to: '/history',       label: 'History',  icon: '📋', end: false },
+];
+
 export function AppShell() {
   const { signOut } = useAuth();
   const navigate    = useNavigate();
@@ -254,10 +262,37 @@ export function AppShell() {
           backgroundColor: '#786B64',
         }}
       >
-        <div className="max-w-5xl mx-auto px-4 py-4 sm:py-8">
+        <div className="max-w-5xl mx-auto px-4 pt-4 pb-24 sm:pt-8 sm:pb-8">
           <Outlet />
         </div>
       </main>
+
+      {/* ── Mobile bottom tab bar ── */}
+      <nav
+        className="sm:hidden fixed bottom-0 left-0 right-0 z-50 flex"
+        style={{
+          background: 'rgba(46, 40, 32, 0.95)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
+      >
+        {BOTTOM_TABS.map(({ to, label, icon, end }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className="flex-1 flex flex-col items-center justify-center py-2.5 gap-1 transition-colors"
+            style={({ isActive }) => ({
+              color: isActive ? 'var(--color-moss-base)' : 'var(--color-peat-deep)',
+            })}
+          >
+            <span className="text-xl leading-none">{icon}</span>
+            <span style={{ fontSize: '10px', fontWeight: 500, lineHeight: 1 }}>{label}</span>
+          </NavLink>
+        ))}
+      </nav>
     </div>
   );
 }
