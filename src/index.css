@@ -21,9 +21,8 @@ html, body {
 }
 
 h1 {
-  font-family: 'IBM Plex Serif', Georgia, serif;
-  font-weight: 200;
-  font-style: italic;
+  font-family: 'IBM Plex Sans', ui-sans-serif, sans-serif;
+  font-weight: 400;
   font-size: 30px;
 }
 
