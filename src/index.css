@@ -23,6 +23,7 @@ html, body {
 h1 {
   font-family: 'IBM Plex Serif', Georgia, serif;
   font-weight: 200;
+  font-style: italic;
   font-size: 30px;
 }
 
