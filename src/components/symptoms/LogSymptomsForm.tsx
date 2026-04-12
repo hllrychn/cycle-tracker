@@ -167,7 +167,7 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
               key={emoji}
               type="button"
               onClick={() => setSelectedEmoji(prev => prev === emoji ? null : emoji)}
-              className="text-xl leading-none p-1.5 rounded-lg transition-all"
+              className="flex items-center justify-center w-full text-xl leading-none p-1.5 rounded-lg transition-all"
               style={selectedEmoji === emoji
                 ? { background: 'var(--color-accent-light)', outline: '2px solid var(--color-accent)', transform: 'scale(1.1)' }
                 : undefined
