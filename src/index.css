@@ -20,6 +20,12 @@ html, body {
   background: #786B64;
 }
 
+h1 {
+  font-family: 'IBM Plex Serif', Georgia, serif;
+  font-weight: 200;
+  font-size: 30px;
+}
+
 @keyframes sparkle-float {
   0%   { opacity: 1; translate: 0px 0px; }
   100% { opacity: 0; translate: var(--dx, 0px) -36px; }
