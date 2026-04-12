@@ -90,7 +90,7 @@ export function MakeTodayBetterCard({ cycles, prediction }: Props) {
       style={{ background: style.fill, boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: `4px solid ${style.border}` }}
     >
       <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-semibold" style={{ color: style.text }}>
+        <p className="text-sm font-semibold" style={{ color: style.text }}>
           Make today better
         </p>
         <div className="w-6 h-6 rounded-lg flex items-center justify-center text-xs" style={{ background: 'rgba(255,255,255,0.4)' }}>🌱</div>

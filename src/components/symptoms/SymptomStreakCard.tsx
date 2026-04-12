@@ -79,7 +79,7 @@ export function SymptomStreakCard({ symptoms, onLogSymptoms }: Props) {
       {/* Header */}
       <div className="px-4 pt-4 pb-3" style={{ borderBottom: '1px solid var(--color-peat-light)' }}>
         <div className="flex items-center justify-between mb-0.5">
-          <p className="text-xs font-semibold" style={{ color: 'var(--color-text-primary)' }}>How you've felt</p>
+          <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>How you've felt</p>
           {streak > 0 && (
             <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--color-moss-light)', color: 'var(--color-moss-dark)' }}>
               🔥 {streak}d
