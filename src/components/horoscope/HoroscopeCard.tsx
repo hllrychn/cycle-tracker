@@ -158,31 +158,31 @@ export function HoroscopeCard({ cycles, prediction }: Props) {
     <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-accent)' }}>
 
       {/* Header */}
-      <div className="px-5 pt-5 pb-4 flex items-center justify-between gap-3">
+      <div className="px-5 pt-5 pb-4 flex items-center gap-2">
         <p className="text-sm font-semibold shrink-0" style={{ color: labelColor }}>Hormone Horoscope</p>
-        <div className="flex items-center gap-2 ml-auto">
+        <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
           {canNavigate && !isToday && (
             <button
               onClick={() => setViewDay(null)}
-              className="text-xs px-2 py-0.5 rounded-full transition-colors"
+              className="text-xs px-2 py-0.5 rounded-full transition-colors shrink-0"
               style={{ color: 'var(--color-blue-base)', border: '1px solid var(--color-blue-mid)' }}
             >
               ↩ Today
             </button>
           )}
-          {activeDay != null && <span className="text-xs" style={{ color: labelColor }}>Day {activeDay}</span>}
+          {activeDay != null && <span className="text-xs shrink-0" style={{ color: labelColor }}>Day {activeDay}</span>}
           {activeDay != null && (
-            <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: phaseMeta.color, color: phaseMeta.text }}>
+            <span className="text-xs px-2.5 py-0.5 rounded-full shrink-0" style={{ background: phaseMeta.color, color: phaseMeta.text }}>
               {phaseMeta.label}
             </span>
           )}
-          {canNavigate && (
-            <div className="flex items-center gap-1">
-              <button onClick={() => goToDay((activeDay ?? 1) - 1)} className="w-6 h-6 flex items-center justify-center rounded-md text-sm" style={navColor(false)}>‹</button>
-              <button onClick={() => goToDay((activeDay ?? 1) + 1)} className="w-6 h-6 flex items-center justify-center rounded-md text-sm" style={navColor(false)}>›</button>
-            </div>
-          )}
         </div>
+        {canNavigate && (
+          <div className="flex items-center gap-1 shrink-0">
+            <button onClick={() => goToDay((activeDay ?? 1) - 1)} className="w-6 h-6 flex items-center justify-center rounded-md text-sm" style={navColor(false)}>‹</button>
+            <button onClick={() => goToDay((activeDay ?? 1) + 1)} className="w-6 h-6 flex items-center justify-center rounded-md text-sm" style={navColor(false)}>›</button>
+          </div>
+        )}
       </div>
 
       {/* Tab strip — scrollable on mobile */}
