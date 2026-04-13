@@ -1,8 +1,4 @@
 import { useState } from 'react';
-import {
-  BarChart, Bar, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, Cell,
-} from 'recharts';
 import { subDays, toISODate, differenceInDays, parseISO } from '../../lib/dateUtils';
 import type { SymptomLog, Cycle, BowelMovement } from '../../types';
 
@@ -18,12 +14,13 @@ const RANGE_OPTIONS: { value: Range; label: string }[] = [
 ];
 
 const BM_TYPES: BowelMovement[] = ['normal', 'constipated', 'loose', 'diarrhea'];
+const PHASES: Phase[] = ['Menstrual', 'Follicular', 'Ovulatory', 'Luteal'];
 
 const BM_COLORS: Record<BowelMovement, string> = {
-  normal:      '#A8C5A0',
-  constipated: '#E8C07A',
-  loose:       '#A088C4',
-  diarrhea:    '#C47878',
+  normal:      '#6B9E63',
+  constipated: '#C4924A',
+  loose:       '#7A6AB8',
+  diarrhea:    '#B85858',
 };
 
 const BM_LABELS: Record<BowelMovement, string> = {
@@ -33,14 +30,14 @@ const BM_LABELS: Record<BowelMovement, string> = {
   diarrhea:    'Diarrhea',
 };
 
-const PHASES: Phase[] = ['Menstrual', 'Follicular', 'Ovulatory', 'Luteal'];
-
 const PHASE_BG: Record<Phase, string> = {
   Menstrual:  'var(--color-phase-menstrual)',
   Follicular: 'var(--color-phase-follicular)',
   Ovulatory:  'var(--color-phase-ovulation)',
   Luteal:     'var(--color-phase-luteal)',
 };
+
+// ── Data helpers ──────────────────────────────────────────────────────────────
 
 function filterByRange(symptoms: SymptomLog[], range: Range): SymptomLog[] {
   const today = new Date();
@@ -56,69 +53,48 @@ function filterByRange(symptoms: SymptomLog[], range: Range): SymptomLog[] {
   return symptoms.filter(s => s.log_date >= yearStart && s.log_date <= todayISO);
 }
 
-function getPhase(logDate: string, cycles: Cycle[], avgLen: number, avgDur: number): Phase | null {
+function getPhaseForDate(logDate: string, cycles: Cycle[], avgLen: number, avgDur: number): Phase | null {
   const past = cycles.filter(c => c.start_date <= logDate);
   if (past.length === 0) return null;
   const latest = [...past].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
   const day = differenceInDays(parseISO(logDate), parseISO(latest.start_date)) + 1;
   if (day < 1 || day > avgLen + 7) return null;
-  if (day <= avgDur)       return 'Menstrual';
-  if (day <= avgLen - 16)  return 'Follicular';
-  if (day <= avgLen - 11)  return 'Ovulatory';
-  if (day <= avgLen)       return 'Luteal';
+  if (day <= avgDur)      return 'Menstrual';
+  if (day <= avgLen - 16) return 'Follicular';
+  if (day <= avgLen - 11) return 'Ovulatory';
+  if (day <= avgLen)      return 'Luteal';
   return null;
 }
 
-type ChartPoint = { phase: Phase } & Record<BowelMovement, number> & { total: number };
+type HeatMatrix = Record<BowelMovement, Record<Phase, number>>;
 
-function buildData(symptoms: SymptomLog[], cycles: Cycle[], range: Range, avgLen: number, avgDur: number): ChartPoint[] {
-  const filtered = filterByRange(symptoms, range).filter(s => s.bowel_movement);
-
-  const counts: Record<Phase, Record<BowelMovement, number>> = {
-    Menstrual:  { normal: 0, constipated: 0, loose: 0, diarrhea: 0 },
-    Follicular: { normal: 0, constipated: 0, loose: 0, diarrhea: 0 },
-    Ovulatory:  { normal: 0, constipated: 0, loose: 0, diarrhea: 0 },
-    Luteal:     { normal: 0, constipated: 0, loose: 0, diarrhea: 0 },
+function buildMatrix(symptoms: SymptomLog[], cycles: Cycle[], range: Range, avgLen: number, avgDur: number): HeatMatrix {
+  const matrix: HeatMatrix = {
+    normal:      { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 },
+    constipated: { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 },
+    loose:       { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 },
+    diarrhea:    { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 },
   };
-
+  const filtered = filterByRange(symptoms, range).filter(s => s.bowel_movement);
   for (const log of filtered) {
-    const phase = getPhase(log.log_date, cycles, avgLen, avgDur);
-    if (!phase || !log.bowel_movement) continue;
-    counts[phase][log.bowel_movement]++;
+    const phase = getPhaseForDate(log.log_date, cycles, avgLen, avgDur);
+    if (phase && log.bowel_movement) matrix[log.bowel_movement][phase]++;
   }
-
-  return PHASES.map(phase => ({
-    phase,
-    normal:      counts[phase].normal,
-    constipated: counts[phase].constipated,
-    loose:       counts[phase].loose,
-    diarrhea:    counts[phase].diarrhea,
-    total:       BM_TYPES.reduce((s, t) => s + counts[phase][t], 0),
-  }));
+  return matrix;
 }
 
-interface TooltipItem { dataKey: string; value: number; color: string }
-
-function BMTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipItem[]; label?: string }) {
-  if (!active || !payload?.length) return null;
-  const items = payload.filter(p => p.value > 0);
-  if (!items.length) return null;
-  const total = items.reduce((s, p) => s + p.value, 0);
-  return (
-    <div className="rounded-lg px-3 py-2 text-xs shadow-md" style={{ background: '#fff', border: '1px solid var(--color-peat-mid)', minWidth: 140 }}>
-      <p className="font-semibold mb-1.5" style={{ color: 'var(--color-text-primary)' }}>
-        {label} <span style={{ color: 'var(--color-peat-deep)' }}>({total}×)</span>
-      </p>
-      {items.map(p => (
-        <div key={p.dataKey} className="flex items-center gap-2 mb-0.5">
-          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.color }} />
-          <span className="capitalize" style={{ color: 'var(--color-peat-deep)' }}>{BM_LABELS[p.dataKey as BowelMovement]}</span>
-          <span className="ml-auto font-medium" style={{ color: 'var(--color-text-primary)' }}>{p.value}</span>
-        </div>
-      ))}
-    </div>
-  );
+// Scale opacity per-row so each BM type's max is always fully saturated
+function rowMax(matrix: HeatMatrix, bm: BowelMovement): number {
+  return Math.max(...PHASES.map(p => matrix[bm][p]));
 }
+
+function cellOpacity(count: number, max: number): number {
+  if (count === 0 || max === 0) return 0;
+  // 0.18 minimum so even count=1 is clearly visible; scales to 1.0 at max
+  return 0.18 + 0.82 * (count / max);
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
 
 interface Props {
   symptoms: SymptomLog[];
@@ -129,9 +105,12 @@ interface Props {
 
 export function BowelMovementChart({ symptoms, cycles, avgCycleLength, avgPeriodDuration }: Props) {
   const [range, setRange] = useState<Range>('30d');
+  const [hovered, setHovered] = useState<{ bm: BowelMovement; phase: Phase } | null>(null);
 
-  const data = buildData(symptoms, cycles, range, avgCycleLength, avgPeriodDuration);
-  const hasAny = data.some(d => d.total > 0);
+  const matrix = buildMatrix(symptoms, cycles, range, avgCycleLength, avgPeriodDuration);
+  const hasAny = BM_TYPES.some(bm => PHASES.some(p => matrix[bm][p] > 0));
+
+  const hoveredCount = hovered ? matrix[hovered.bm][hovered.phase] : null;
 
   return (
     <div
@@ -145,7 +124,7 @@ export function BowelMovementChart({ symptoms, cycles, avgCycleLength, avgPeriod
       >
         <div>
           <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>Bowel movement by cycle phase</p>
-          <p className="text-xs mt-0.5" style={{ color: 'var(--color-peat-deep)' }}>Frequency and type across your cycle</p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--color-peat-deep)' }}>Frequency across your cycle · darker = more frequent</p>
         </div>
         <div className="flex items-center gap-1 flex-wrap">
           {RANGE_OPTIONS.map(({ value, label }) => (
@@ -164,67 +143,109 @@ export function BowelMovementChart({ symptoms, cycles, avgCycleLength, avgPeriod
         </div>
       </div>
 
-      {/* Chart */}
+      {/* Heatmap */}
       <div className="px-4 pt-4 pb-2">
         {!hasAny ? (
           <div className="h-36 flex items-center justify-center">
             <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No bowel movement data logged in this period</p>
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={data} barSize={28} barCategoryGap="30%">
-              <XAxis
-                dataKey="phase"
-                tick={({ x, y, payload }) => {
-                  const phase = payload.value as Phase;
-                  return (
-                    <g transform={`translate(${x},${y})`}>
-                      <rect x={-26} y={4} width={52} height={16} rx={8} fill={PHASE_BG[phase]} />
-                      <text x={0} y={16} textAnchor="middle" fontSize={9} fill="var(--color-peat-deep)" fontWeight={500}>
-                        {phase}
-                      </text>
-                    </g>
-                  );
-                }}
-                axisLine={false}
-                tickLine={false}
-                height={28}
-              />
-              <YAxis
-                allowDecimals={false}
-                tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }}
-                axisLine={false}
-                tickLine={false}
-                width={24}
-              />
-              <Tooltip content={<BMTooltip />} cursor={{ fill: 'var(--color-peat-light)', radius: 4 }} />
-              {BM_TYPES.map((type, i) => (
-                <Bar
-                  key={type}
-                  dataKey={type}
-                  stackId="a"
-                  fill={BM_COLORS[type]}
-                  radius={i === BM_TYPES.length - 1 ? [3, 3, 0, 0] : undefined}
+          <div>
+            {/* Column headers (phases) */}
+            <div className="grid mb-2" style={{ gridTemplateColumns: '88px repeat(4, 1fr)', gap: '4px' }}>
+              <div /> {/* empty corner */}
+              {PHASES.map(phase => (
+                <div
+                  key={phase}
+                  className="text-center py-1 rounded-lg text-xs font-medium"
+                  style={{ background: PHASE_BG[phase], color: 'var(--color-peat-deep)', fontSize: '10px' }}
                 >
-                  {data.map((entry) => (
-                    <Cell key={entry.phase} fill={BM_COLORS[type]} />
-                  ))}
-                </Bar>
+                  {phase}
+                </div>
               ))}
-            </BarChart>
-          </ResponsiveContainer>
-        )}
-      </div>
+            </div>
 
-      {/* Legend */}
-      <div className="px-5 pb-4 flex items-center gap-4 flex-wrap">
-        {BM_TYPES.map(type => (
-          <div key={type} className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: BM_COLORS[type] }} />
-            <span className="text-xs capitalize" style={{ color: 'var(--color-peat-deep)' }}>{BM_LABELS[type]}</span>
+            {/* Rows (BM types × phase cells) */}
+            <div className="space-y-1">
+              {BM_TYPES.map(bm => {
+                const max = rowMax(matrix, bm);
+                const color = BM_COLORS[bm];
+                return (
+                  <div key={bm} className="grid items-center" style={{ gridTemplateColumns: '88px repeat(4, 1fr)', gap: '4px' }}>
+                    {/* Row label */}
+                    <div className="flex items-center gap-1.5 pr-2">
+                      <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
+                      <span className="text-xs" style={{ color: 'var(--color-peat-deep)', fontSize: '11px' }}>
+                        {BM_LABELS[bm]}
+                      </span>
+                    </div>
+
+                    {/* Cells */}
+                    {PHASES.map(phase => {
+                      const count = matrix[bm][phase];
+                      const opacity = cellOpacity(count, max);
+                      const isHovered = hovered?.bm === bm && hovered?.phase === phase;
+                      return (
+                        <div
+                          key={phase}
+                          className="rounded-lg flex items-center justify-center transition-all"
+                          style={{
+                            height: '40px',
+                            background: count > 0
+                              ? `rgba(${hexToRgb(color)}, ${opacity})`
+                              : 'var(--color-peat-light)',
+                            border: isHovered
+                              ? `2px solid ${color}`
+                              : `2px solid ${count > 0 ? `rgba(${hexToRgb(color)}, ${Math.min(opacity + 0.2, 1)})` : 'var(--color-peat-light)'}`,
+                            cursor: count > 0 ? 'default' : 'default',
+                          }}
+                          onMouseEnter={() => setHovered({ bm, phase })}
+                          onMouseLeave={() => setHovered(null)}
+                        >
+                          <span
+                            className="text-xs font-semibold"
+                            style={{
+                              color: count > 0
+                                ? opacity > 0.55 ? '#fff' : color
+                                : 'var(--color-peat-mid)',
+                              fontSize: '11px',
+                            }}
+                          >
+                            {count > 0 ? count : '–'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Hover tooltip row */}
+            <div className="mt-3 h-6 flex items-center justify-center">
+              {hovered && hoveredCount !== null && hoveredCount > 0 ? (
+                <p className="text-xs" style={{ color: 'var(--color-peat-deep)' }}>
+                  <span className="font-medium">{BM_LABELS[hovered.bm]}</span>
+                  {' logged '}
+                  <span className="font-medium">{hoveredCount}×</span>
+                  {' during '}
+                  <span className="font-medium">{hovered.phase}</span>
+                </p>
+              ) : (
+                <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>Hover a cell to see details</p>
+              )}
+            </div>
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
+}
+
+// Helper: '#A8C5A0' → '168, 197, 160'
+function hexToRgb(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r}, ${g}, ${b}`;
 }
