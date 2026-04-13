@@ -128,6 +128,7 @@ function buildOtherMatrix(
   }
 
   const rows = Object.keys(totals)
+    .filter(sym => BOWEL_PHASES.some(p => (data[sym]?.[p] ?? 0) > 0))
     .sort((a, b) => totals[b] - totals[a])
     .slice(0, 10);
 
