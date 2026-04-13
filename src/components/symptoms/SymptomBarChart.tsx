@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip,
-  ResponsiveContainer, Cell,
+  ResponsiveContainer,
 } from 'recharts';
 import { subDays, toISODate, differenceInDays, parseLocalDate } from '../../lib/dateUtils';
 import type { SymptomLog, Cycle, BowelMovement } from '../../types';
@@ -111,44 +111,48 @@ function buildOtherData(symptoms: SymptomLog[], range: Range): OtherPoint[] {
     .map(([name, count]) => ({ name, count }));
 }
 
-// ── Bowel chart data ──────────────────────────────────────────────────────────
+// ── Bowel heatmap data ────────────────────────────────────────────────────────
 
-function getBowelPhase(logDate: string, cycles: Cycle[], avgLen: number, avgDur: number): BowelPhase | null {
-  const past = cycles.filter(c => c.start_date <= logDate);
-  if (past.length === 0) return null;
-  const latest = [...past].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
-  const day = differenceInDays(parseLocalDate(logDate), parseLocalDate(latest.start_date)) + 1;
-  if (day < 1 || day > avgLen + 7) return null;
-  if (day <= avgDur)       return 'Menstrual';
-  if (day <= avgLen - 16)  return 'Follicular';
-  if (day <= avgLen - 11)  return 'Ovulatory';
-  if (day <= avgLen)       return 'Luteal';
-  return null;
+type HeatMatrix = Record<BowelMovement, Record<BowelPhase, number>>;
+
+function buildBowelMatrix(symptoms: SymptomLog[], cycles: Cycle[], range: Range, avgLen: number, avgDur: number): HeatMatrix {
+  const matrix: HeatMatrix = {
+    normal:      { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 },
+    constipated: { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 },
+    loose:       { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 },
+    diarrhea:    { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 },
+  };
+  const filtered = filterByRange(symptoms, range).filter(s => s.bowel_movement);
+  for (const log of filtered) {
+    const past = cycles.filter(c => c.start_date <= log.log_date);
+    if (!past.length || !log.bowel_movement) continue;
+    const latest = [...past].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
+    const day = differenceInDays(parseLocalDate(log.log_date), parseLocalDate(latest.start_date)) + 1;
+    if (day < 1 || day > avgLen + 7) continue;
+    let phase: BowelPhase | null = null;
+    if (day <= avgDur)      phase = 'Menstrual';
+    else if (day <= avgLen - 16) phase = 'Follicular';
+    else if (day <= avgLen - 11) phase = 'Ovulatory';
+    else if (day <= avgLen)      phase = 'Luteal';
+    if (phase) matrix[log.bowel_movement][phase]++;
+  }
+  return matrix;
 }
 
-type BowelPoint = { phase: BowelPhase } & Record<BowelMovement, number> & { total: number };
+function bmRowMax(matrix: HeatMatrix, bm: BowelMovement): number {
+  return Math.max(...BOWEL_PHASES.map(p => matrix[bm][p]));
+}
 
-function buildBowelData(symptoms: SymptomLog[], cycles: Cycle[], range: Range, avgLen: number, avgDur: number): BowelPoint[] {
-  const filtered = filterByRange(symptoms, range).filter(s => s.bowel_movement);
-  const counts: Record<BowelPhase, Record<BowelMovement, number>> = {
-    Menstrual:  { normal: 0, constipated: 0, loose: 0, diarrhea: 0 },
-    Follicular: { normal: 0, constipated: 0, loose: 0, diarrhea: 0 },
-    Ovulatory:  { normal: 0, constipated: 0, loose: 0, diarrhea: 0 },
-    Luteal:     { normal: 0, constipated: 0, loose: 0, diarrhea: 0 },
-  };
-  for (const log of filtered) {
-    const phase = getBowelPhase(log.log_date, cycles, avgLen, avgDur);
-    if (!phase || !log.bowel_movement) continue;
-    counts[phase][log.bowel_movement]++;
-  }
-  return BOWEL_PHASES.map(phase => ({
-    phase,
-    normal:      counts[phase].normal,
-    constipated: counts[phase].constipated,
-    loose:       counts[phase].loose,
-    diarrhea:    counts[phase].diarrhea,
-    total:       BM_TYPES.reduce((s, t) => s + counts[phase][t], 0),
-  }));
+function cellOpacity(count: number, max: number): number {
+  if (count === 0 || max === 0) return 0;
+  return 0.18 + 0.82 * (count / max);
+}
+
+function hexToRgb(hex: string): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `${r}, ${g}, ${b}`;
 }
 
 // ── Tooltips ──────────────────────────────────────────────────────────────────
@@ -195,52 +199,20 @@ function OtherTooltip({ active, payload, label }: { active?: boolean; payload?: 
   );
 }
 
-function BMTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipItem[]; label?: string }) {
-  if (!active || !payload?.length) return null;
-  const items = payload.filter(p => p.value > 0);
-  if (!items.length) return null;
-  const total = items.reduce((s, p) => s + p.value, 0);
-  return (
-    <div className="rounded-lg px-3 py-2 text-xs shadow-md" style={{ background: '#fff', border: '1px solid var(--color-peat-mid)', minWidth: 140 }}>
-      <p className="font-semibold mb-1.5" style={{ color: 'var(--color-text-primary)' }}>
-        {label} <span style={{ color: 'var(--color-peat-deep)' }}>({total}×)</span>
-      </p>
-      {items.map(p => (
-        <div key={p.dataKey} className="flex items-center gap-2 mb-0.5">
-          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: p.color }} />
-          <span style={{ color: 'var(--color-peat-deep)' }}>{BM_LABELS[p.dataKey as BowelMovement]}</span>
-          <span className="ml-auto font-medium" style={{ color: 'var(--color-text-primary)' }}>{p.value}</span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function BowelPhaseTick({ x, y, payload }: { x?: number; y?: number; payload?: { value: string } }) {
-  const phase = (payload?.value ?? '') as BowelPhase;
-  return (
-    <g transform={`translate(${x ?? 0},${y ?? 0})`}>
-      <rect x={-26} y={4} width={52} height={16} rx={8} fill={PHASE_BG[phase] ?? 'transparent'} />
-      <text x={0} y={16} textAnchor="middle" fontSize={9} fill="var(--color-peat-deep)" fontWeight={500}>
-        {phase}
-      </text>
-    </g>
-  );
-}
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, avgPeriodDuration = 5 }: Props) {
-  const [range, setRange] = useState<Range>('30d');
-  const [view,  setView]  = useState<View>('symptoms');
+  const [range,      setRange]      = useState<Range>('30d');
+  const [view,       setView]       = useState<View>('symptoms');
+  const [hoveredBM,  setHoveredBM]  = useState<{ bm: BowelMovement; phase: BowelPhase } | null>(null);
 
   const allData    = buildData(symptoms, range);
   const data       = allData.filter(d => d.total > 0);
   const otherData  = buildOtherData(symptoms, range);
-  const bowelData  = buildBowelData(symptoms, cycles, range, avgCycleLength, avgPeriodDuration);
+  const bmMatrix   = buildBowelMatrix(symptoms, cycles, range, avgCycleLength, avgPeriodDuration);
   const hasAny     = data.length > 0;
   const hasOther   = otherData.length > 0;
-  const hasBowel   = bowelData.some(d => d.total > 0);
+  const hasBowel   = BM_TYPES.some(bm => BOWEL_PHASES.some(p => bmMatrix[bm][p] > 0));
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-moss-base)' }}>
@@ -339,46 +311,77 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
         </div>
       )}
 
-      {/* Bowel movement chart */}
+      {/* Bowel heatmap */}
       {view === 'bowel' && (
-        <>
-          <div className="px-4 pt-4 pb-2">
-            {!hasBowel ? (
-              <div className="h-36 flex items-center justify-center">
-                <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No bowel movement data logged in this period</p>
+        <div className="px-4 pt-4 pb-4">
+          {!hasBowel ? (
+            <div className="h-36 flex items-center justify-center">
+              <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No bowel movement data logged in this period</p>
+            </div>
+          ) : (
+            <>
+              <p className="text-xs mb-3" style={{ color: 'var(--color-peat-deep)' }}>Darker = more frequent</p>
+              {/* Column headers */}
+              <div className="grid mb-1.5" style={{ gridTemplateColumns: '90px repeat(4, 1fr)', gap: '4px' }}>
+                <div />
+                {BOWEL_PHASES.map(phase => (
+                  <div key={phase} className="text-center py-1 rounded-lg" style={{ background: PHASE_BG[phase], fontSize: '10px', color: 'var(--color-peat-deep)', fontWeight: 500 }}>
+                    {phase}
+                  </div>
+                ))}
               </div>
-            ) : (
-              <ResponsiveContainer width="100%" height={180}>
-                <BarChart data={bowelData} barSize={28} barCategoryGap="30%">
-                  <XAxis
-                    dataKey="phase"
-                    tick={<BowelPhaseTick />}
-                    axisLine={false}
-                    tickLine={false}
-                    height={28}
-                  />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }} axisLine={false} tickLine={false} width={24} />
-                  <Tooltip content={<BMTooltip />} cursor={{ fill: 'var(--color-peat-light)', radius: 4 }} />
-                  {BM_TYPES.map((type, i) => (
-                    <Bar key={type} dataKey={type} stackId="a" fill={BM_COLORS[type]} radius={i === BM_TYPES.length - 1 ? [3, 3, 0, 0] : undefined}>
-                      {bowelData.map(entry => (
-                        <Cell key={entry.phase} fill={BM_COLORS[type]} />
-                      ))}
-                    </Bar>
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
-            )}
-          </div>
-          <div className="px-5 pb-4 flex items-center gap-4 flex-wrap">
-            {BM_TYPES.map(type => (
-              <div key={type} className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: BM_COLORS[type] }} />
-                <span className="text-xs" style={{ color: 'var(--color-peat-deep)' }}>{BM_LABELS[type]}</span>
+              {/* Rows */}
+              <div className="space-y-1">
+                {BM_TYPES.map(bm => {
+                  const max   = bmRowMax(bmMatrix, bm);
+                  const color = BM_COLORS[bm];
+                  return (
+                    <div key={bm} className="grid items-center" style={{ gridTemplateColumns: '90px repeat(4, 1fr)', gap: '4px' }}>
+                      <div className="flex items-center gap-1.5 pr-1">
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
+                        <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)' }}>{BM_LABELS[bm]}</span>
+                      </div>
+                      {BOWEL_PHASES.map(phase => {
+                        const count   = bmMatrix[bm][phase];
+                        const opacity = cellOpacity(count, max);
+                        const isHov   = hoveredBM?.bm === bm && hoveredBM?.phase === phase;
+                        return (
+                          <div
+                            key={phase}
+                            className="rounded-lg flex items-center justify-center transition-all"
+                            style={{
+                              height: '38px',
+                              background: count > 0 ? `rgba(${hexToRgb(color)}, ${opacity})` : 'var(--color-peat-light)',
+                              border: isHov ? `2px solid ${color}` : '2px solid transparent',
+                            }}
+                            onMouseEnter={() => setHoveredBM({ bm, phase })}
+                            onMouseLeave={() => setHoveredBM(null)}
+                          >
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: count > 0 ? (opacity > 0.55 ? '#fff' : color) : 'var(--color-peat-mid)' }}>
+                              {count > 0 ? count : '–'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
               </div>
-            ))}
-          </div>
-        </>
+              {/* Hover label */}
+              <div className="mt-3 h-5 flex items-center justify-center">
+                {hoveredBM && bmMatrix[hoveredBM.bm][hoveredBM.phase] > 0 ? (
+                  <p className="text-xs" style={{ color: 'var(--color-peat-deep)' }}>
+                    <span className="font-medium">{BM_LABELS[hoveredBM.bm]}</span>{' logged '}
+                    <span className="font-medium">{bmMatrix[hoveredBM.bm][hoveredBM.phase]}×</span>{' during '}
+                    <span className="font-medium">{hoveredBM.phase}</span>
+                  </p>
+                ) : (
+                  <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>Hover a cell for details</p>
+                )}
+              </div>
+            </>
+          )}
+        </div>
       )}
     </div>
   );
