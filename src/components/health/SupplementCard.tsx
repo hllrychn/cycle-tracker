@@ -553,41 +553,51 @@ export function SupplementCard({ cycles, prediction }: Props) {
             </div>
           </div>
 
-          {/* Supplement rows */}
-          <div className="divide-y" style={{ borderTop: '1px solid var(--color-peat-light)', borderColor: 'var(--color-peat-light)' }}>
-            {filtered.map((s) => {
+          {/* Supplement table */}
+          <div style={{ borderTop: '1px solid var(--color-peat-light)' }}>
+            {/* Column headers */}
+            <div
+              className="grid px-4 py-2 gap-x-3"
+              style={{ gridTemplateColumns: '1fr 80px 130px 2fr', borderBottom: '1px solid var(--color-peat-light)', background: 'var(--color-peat-light)' }}
+            >
+              {['Supplement', 'Type', 'Dose', 'Why it helps'].map(h => (
+                <p key={h} className="text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--color-peat-deep)' }}>{h}</p>
+              ))}
+            </div>
+
+            {/* Data rows */}
+            {filtered.map((s, i) => {
               const ts = TYPE_STYLE[s.type];
               return (
-                <div key={s.name} className="px-5 py-4 flex items-start gap-4">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"
-                    style={{ background: ts.bg }}
-                  >
-                    {s.emoji}
+                <div
+                  key={s.name}
+                  className="grid px-4 py-3 gap-x-3 items-start"
+                  style={{
+                    gridTemplateColumns: '1fr 80px 130px 2fr',
+                    borderBottom: i < filtered.length - 1 ? '1px solid var(--color-peat-light)' : 'none',
+                  }}
+                >
+                  {/* Col 1 — name + emoji */}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-base shrink-0">{s.emoji}</span>
+                    <span className="text-xs font-semibold leading-tight" style={{ color: 'var(--color-text-primary)' }}>{s.name}</span>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                      <p className="text-sm font-semibold" style={{ color: 'var(--color-text-primary)' }}>{s.name}</p>
-                      <span
-                        className="text-xs px-2 py-0.5 rounded-full font-medium shrink-0"
-                        style={{ background: ts.bg, color: ts.color }}
-                      >
-                        {TYPE_LABELS[s.type]}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>Dose</span>
-                      <span
-                        className="text-xs px-2 py-0.5 rounded-md font-medium"
-                        style={{ background: 'var(--color-peat-light)', color: 'var(--color-text-primary)' }}
-                      >
-                        {s.dose}
-                      </span>
-                    </div>
-                    <p className="text-xs leading-relaxed" style={{ color: 'var(--color-peat-deep)', fontWeight: 300 }}>
-                      {s.reason}
-                    </p>
+
+                  {/* Col 2 — type badge */}
+                  <div>
+                    <span
+                      className="text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap"
+                      style={{ background: ts.bg, color: ts.color }}
+                    >
+                      {TYPE_LABELS[s.type]}
+                    </span>
                   </div>
+
+                  {/* Col 3 — dose */}
+                  <p className="text-xs leading-snug" style={{ color: 'var(--color-text-primary)' }}>{s.dose}</p>
+
+                  {/* Col 4 — reason */}
+                  <p className="text-xs leading-relaxed" style={{ color: 'var(--color-peat-deep)', fontWeight: 300 }}>{s.reason}</p>
                 </div>
               );
             })}
