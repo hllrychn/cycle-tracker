@@ -85,7 +85,6 @@ function filterByRange(symptoms: SymptomLog[], range: Range): SymptomLog[] {
 // ── Symptom chart data ────────────────────────────────────────────────────────
 
 type ChartPoint = { symptom: string; key: SymptomKey; mild: number; moderate: number; severe: number; total: number };
-type OtherPoint = { name: string; count: number };
 
 function buildData(symptoms: SymptomLog[], range: Range): ChartPoint[] {
   const filtered = filterByRange(symptoms, range);
@@ -97,18 +96,46 @@ function buildData(symptoms: SymptomLog[], range: Range): ChartPoint[] {
   });
 }
 
-function buildOtherData(symptoms: SymptomLog[], range: Range): OtherPoint[] {
-  const filtered = filterByRange(symptoms, range);
-  const counts: Record<string, number> = {};
-  for (const log of filtered) {
-    for (const s of log.other_symptoms ?? []) {
-      counts[s] = (counts[s] ?? 0) + 1;
+type OtherHeatMatrix = { rows: string[]; data: Record<string, Record<BowelPhase, number>> };
+
+function buildOtherMatrix(
+  symptoms: SymptomLog[], cycles: Cycle[], range: Range, avgLen: number, avgDur: number,
+): OtherHeatMatrix {
+  const data: Record<string, Record<BowelPhase, number>> = {};
+  const totals: Record<string, number> = {};
+
+  for (const log of filterByRange(symptoms, range)) {
+    if (!log.other_symptoms?.length) continue;
+
+    const past = cycles.filter(c => c.start_date <= log.log_date);
+    let phase: BowelPhase | null = null;
+    if (past.length) {
+      const latest = [...past].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
+      const day = differenceInDays(parseLocalDate(log.log_date), parseLocalDate(latest.start_date)) + 1;
+      if (day >= 1 && day <= avgLen + 7) {
+        if (day <= avgDur)           phase = 'Menstrual';
+        else if (day <= avgLen - 16) phase = 'Follicular';
+        else if (day <= avgLen - 11) phase = 'Ovulatory';
+        else if (day <= avgLen)      phase = 'Luteal';
+      }
+    }
+
+    for (const sym of log.other_symptoms) {
+      if (!data[sym]) data[sym] = { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 };
+      if (phase) data[sym][phase]++;
+      totals[sym] = (totals[sym] ?? 0) + 1;
     }
   }
-  return Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([name, count]) => ({ name, count }));
+
+  const rows = Object.keys(totals)
+    .sort((a, b) => totals[b] - totals[a])
+    .slice(0, 10);
+
+  return { rows, data };
+}
+
+function otherRowMax(data: OtherHeatMatrix['data'], sym: string): number {
+  return Math.max(...BOWEL_PHASES.map(p => data[sym]?.[p] ?? 0));
 }
 
 // ── Bowel heatmap data ────────────────────────────────────────────────────────
@@ -177,42 +204,21 @@ function SeverityTooltip({ active, payload, label }: { active?: boolean; payload
   );
 }
 
-function CustomYTick({ x, y, payload }: { x?: number; y?: number; payload?: { value: string } }) {
-  const label = payload?.value ?? '';
-  const maxChars = 20;
-  const display = label.length > maxChars ? label.slice(0, maxChars - 1) + '…' : label;
-  return (
-    <text x={x} y={y} dy={4} textAnchor="end" fontSize={10} fill="var(--color-peat-deep)">
-      {display}
-    </text>
-  );
-}
-
-function OtherTooltip({ active, payload, label }: { active?: boolean; payload?: TooltipItem[]; label?: string }) {
-  if (!active || !payload?.length) return null;
-  const p = payload[0];
-  return (
-    <div className="rounded-lg px-3 py-2 text-xs shadow-md" style={{ background: '#fff', border: '1px solid var(--color-peat-mid)', maxWidth: 200 }}>
-      <p className="font-medium mb-0.5" style={{ color: 'var(--color-text-primary)' }}>{label}</p>
-      <p style={{ color: 'var(--color-peat-deep)' }}>{p.value}×</p>
-    </div>
-  );
-}
-
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, avgPeriodDuration = 5 }: Props) {
-  const [range,      setRange]      = useState<Range>('30d');
-  const [view,       setView]       = useState<View>('symptoms');
-  const [hoveredBM,  setHoveredBM]  = useState<{ bm: BowelMovement; phase: BowelPhase } | null>(null);
+  const [range,        setRange]        = useState<Range>('30d');
+  const [view,         setView]         = useState<View>('symptoms');
+  const [hoveredBM,    setHoveredBM]    = useState<{ bm: BowelMovement; phase: BowelPhase } | null>(null);
+  const [hoveredOther, setHoveredOther] = useState<{ sym: string; phase: BowelPhase } | null>(null);
 
-  const allData    = buildData(symptoms, range);
-  const data       = allData.filter(d => d.total > 0);
-  const otherData  = buildOtherData(symptoms, range);
-  const bmMatrix   = buildBowelMatrix(symptoms, cycles, range, avgCycleLength, avgPeriodDuration);
-  const hasAny     = data.length > 0;
-  const hasOther   = otherData.length > 0;
-  const hasBowel   = BM_TYPES.some(bm => BOWEL_PHASES.some(p => bmMatrix[bm][p] > 0));
+  const allData     = buildData(symptoms, range);
+  const data        = allData.filter(d => d.total > 0);
+  const otherMatrix = buildOtherMatrix(symptoms, cycles, range, avgCycleLength, avgPeriodDuration);
+  const bmMatrix    = buildBowelMatrix(symptoms, cycles, range, avgCycleLength, avgPeriodDuration);
+  const hasAny      = data.length > 0;
+  const hasOther    = otherMatrix.rows.length > 0;
+  const hasBowel    = BM_TYPES.some(bm => BOWEL_PHASES.some(p => bmMatrix[bm][p] > 0));
 
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-moss-base)' }}>
@@ -291,7 +297,7 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
         </>
       )}
 
-      {/* Additional symptoms chart */}
+      {/* Related symptoms heatmap */}
       {view === 'other' && (
         <div className="px-4 pt-4 pb-4">
           {!hasOther ? (
@@ -299,14 +305,67 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
               <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No related symptoms logged in this period</p>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={Math.max(80, otherData.length * 44)}>
-              <BarChart data={otherData} layout="vertical" barSize={14} barCategoryGap="20%">
-                <XAxis type="number" allowDecimals={false} tick={{ fontSize: 10, fill: 'var(--color-peat-mid)' }} axisLine={false} tickLine={false} />
-                <YAxis type="category" dataKey="name" width={145} tick={<CustomYTick />} axisLine={false} tickLine={false} interval={0} />
-                <Tooltip content={<OtherTooltip />} cursor={{ fill: 'var(--color-peat-light)', radius: 4 }} />
-                <Bar dataKey="count" fill={OTHER_COLOR} radius={[0, 3, 3, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <>
+              <p className="text-xs mb-3" style={{ color: 'var(--color-peat-deep)' }}>Darker = more frequent · top 10 by count</p>
+              {/* Column headers */}
+              <div className="grid mb-1.5" style={{ gridTemplateColumns: '110px repeat(4, 1fr)', gap: '4px' }}>
+                <div />
+                {BOWEL_PHASES.map(phase => (
+                  <div key={phase} className="text-center py-1 rounded-lg" style={{ background: PHASE_BG[phase], fontSize: '10px', color: 'var(--color-peat-deep)', fontWeight: 500 }}>
+                    {phase}
+                  </div>
+                ))}
+              </div>
+              {/* Rows */}
+              <div className="space-y-1">
+                {otherMatrix.rows.map(sym => {
+                  const max = otherRowMax(otherMatrix.data, sym);
+                  const label = sym.length > 16 ? sym.slice(0, 15) + '…' : sym;
+                  return (
+                    <div key={sym} className="grid items-center" style={{ gridTemplateColumns: '110px repeat(4, 1fr)', gap: '4px' }}>
+                      <div className="flex items-center gap-1.5 pr-1">
+                        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: OTHER_COLOR }} />
+                        <span title={sym} style={{ fontSize: '11px', color: 'var(--color-peat-deep)' }}>{label}</span>
+                      </div>
+                      {BOWEL_PHASES.map(phase => {
+                        const count   = otherMatrix.data[sym]?.[phase] ?? 0;
+                        const opacity = cellOpacity(count, max);
+                        const isHov   = hoveredOther?.sym === sym && hoveredOther?.phase === phase;
+                        return (
+                          <div
+                            key={phase}
+                            className="rounded-lg flex items-center justify-center transition-all"
+                            style={{
+                              height: '36px',
+                              background: count > 0 ? `rgba(${hexToRgb(OTHER_COLOR)}, ${opacity})` : 'var(--color-peat-light)',
+                              border: isHov ? `2px solid ${OTHER_COLOR}` : '2px solid transparent',
+                            }}
+                            onMouseEnter={() => setHoveredOther({ sym, phase })}
+                            onMouseLeave={() => setHoveredOther(null)}
+                          >
+                            <span style={{ fontSize: '11px', fontWeight: 600, color: count > 0 ? (opacity > 0.55 ? '#fff' : OTHER_COLOR) : 'var(--color-peat-mid)' }}>
+                              {count > 0 ? count : '–'}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Hover label */}
+              <div className="mt-3 h-5 flex items-center justify-center">
+                {hoveredOther && (otherMatrix.data[hoveredOther.sym]?.[hoveredOther.phase] ?? 0) > 0 ? (
+                  <p className="text-xs" style={{ color: 'var(--color-peat-deep)' }}>
+                    <span className="font-medium">{hoveredOther.sym}</span>{' logged '}
+                    <span className="font-medium">{otherMatrix.data[hoveredOther.sym][hoveredOther.phase]}×</span>{' during '}
+                    <span className="font-medium">{hoveredOther.phase}</span>
+                  </p>
+                ) : (
+                  <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>Hover a cell for details</p>
+                )}
+              </div>
+            </>
           )}
         </div>
       )}
