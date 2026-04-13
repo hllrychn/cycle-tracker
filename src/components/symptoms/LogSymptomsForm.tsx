@@ -312,10 +312,10 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
         </div>
       </div>
 
-      {/* Additional symptoms — grouped pill multi-select */}
+      {/* Related symptoms — grouped pill multi-select */}
       <div>
         <label className="block text-sm font-medium mb-3" style={{ color: 'var(--color-peat-deep)' }}>
-          Additional symptoms
+          Related symptoms
           {otherSymptoms.length > 0 && (
             <span className="ml-2 text-xs font-normal px-2 py-0.5 rounded-full" style={{ background: 'var(--color-accent-light)', color: 'var(--color-accent-dark)' }}>
               {otherSymptoms.length} selected

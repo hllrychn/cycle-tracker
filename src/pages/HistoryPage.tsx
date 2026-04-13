@@ -148,7 +148,7 @@ function SymptomRow({ log, phase }: { log: SymptomLog; phase: Phase | null }) {
             )}
             {otherCount > 0 && (
               <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--color-peat-mid)', color: 'var(--color-peat-dark)' }}>
-                +{otherCount} additional
+                +{otherCount} related
               </span>
             )}
           </div>

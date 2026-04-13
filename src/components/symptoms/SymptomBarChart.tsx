@@ -243,7 +243,7 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
       {/* View toggle */}
       <div className="px-5 pt-3 pb-0">
         <div className="flex rounded-lg p-0.5 w-fit" style={{ background: 'var(--color-peat-light)' }}>
-          {([['symptoms', 'Symptoms'], ['other', 'Additional'], ['bowel', 'Bowel']] as [View, string][]).map(([v, label]) => (
+          {([['symptoms', 'Key Symptoms'], ['other', 'Related'], ['bowel', 'Bowel']] as [View, string][]).map(([v, label]) => (
             <button
               key={v}
               onClick={() => setView(v)}
@@ -296,7 +296,7 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
         <div className="px-4 pt-4 pb-4">
           {!hasOther ? (
             <div className="h-36 flex items-center justify-center">
-              <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No additional symptoms logged in this period</p>
+              <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>No related symptoms logged in this period</p>
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={Math.max(80, otherData.length * 44)}>
