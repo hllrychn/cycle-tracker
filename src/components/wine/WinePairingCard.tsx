@@ -151,10 +151,11 @@ export function WinePairingCard({ cycles, prediction, bare = false }: Props) {
   const { headline, mood, items } = WINES[phase];
 
   const handleShare = async () => {
-    const phaseText = phase !== 'unknown' ? `${style.label} phase · ` : '';
+    const decorative = `ִֶָ𓂃 ࣪˖ ִִֶֶָ🍾་༘࿐`;
+    const phaseLine = phase !== 'unknown' ? `${style.label} phase · ${headline}` : headline;
     const intro = `Hello, I'd like to share some wine pairings with you.`;
     const sections = items.map(({ emoji, name, reason }) => `${emoji} ${name}\n${reason}`);
-    const text = `${intro}\n\n${phaseText}${headline}\n\n${mood}\n\n${sections.join('\n\n')}`;
+    const text = `${intro}\n\n${decorative}\n\nWine pairings\n${phaseLine}\n\n${mood}\n\n${sections.join('\n\n')}`;
 
     if (typeof navigator.share === 'function') {
       try {
