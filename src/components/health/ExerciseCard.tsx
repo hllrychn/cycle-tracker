@@ -239,11 +239,11 @@ export function ExerciseCard({ cycles, prediction }: Props) {
         </div>
       </div>
 
-      {/* Do / Limit columns */}
-      <div className="flex" style={{ borderTop: '1px solid var(--color-peat-light)' }}>
+      {/* Do / Limit — stacked on mobile, side-by-side on sm+ */}
+      <div className="sm:flex" style={{ borderTop: '1px solid var(--color-peat-light)' }}>
 
-        {/* Do column */}
-        <div className="flex-1 min-w-0" style={{ borderRight: '1px solid var(--color-peat-light)' }}>
+        {/* Do section */}
+        <div className="sm:flex-1 sm:min-w-0" style={{ borderRight: 'none' }}>
           <div className="px-4 py-1.5" style={{ borderBottom: '1px solid var(--color-peat-light)', background: 'var(--color-moss-light)' }}>
             <span className="text-xs font-semibold" style={{ color: 'var(--color-moss-dark)' }}>✓ Do</span>
           </div>
@@ -252,9 +252,9 @@ export function ExerciseCard({ cycles, prediction }: Props) {
               <p className="text-xs" style={{ color: 'var(--color-peat-deep)' }}>No {filter} exercises recommended for this phase.</p>
             </div>
           ) : visibleDo.map(({ emoji, name, reason, intensity }, i) => (
-            <div key={name} className="px-4 py-2.5" style={{ background: '#FFFFFF', borderBottom: i < visibleDo.length - 1 ? '1px solid var(--color-peat-light)' : undefined }}>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="text-sm leading-none">{emoji}</span>
+            <div key={name} className="px-4 py-3" style={{ background: '#FFFFFF', borderBottom: i < visibleDo.length - 1 ? '1px solid var(--color-peat-light)' : undefined }}>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-base leading-none">{emoji}</span>
                 <span className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>{name}</span>
                 <span
                   className="ml-auto text-xs px-1.5 py-px rounded-full shrink-0"
@@ -263,24 +263,43 @@ export function ExerciseCard({ cycles, prediction }: Props) {
                   {INTENSITY_STYLE[intensity].label}
                 </span>
               </div>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--color-peat-deep)' }}>{reason}</p>
+              <p className="text-xs leading-relaxed pl-7" style={{ color: 'var(--color-peat-deep)' }}>{reason}</p>
             </div>
           ))}
         </div>
 
-        {/* Limit column */}
-        <div className="flex-1 min-w-0">
-          <div className="px-4 py-1.5" style={{ borderBottom: '1px solid var(--color-peat-light)', background: 'var(--color-accent-light)' }}>
+        {/* Limit section */}
+        <div
+          className="sm:flex-1 sm:min-w-0 sm:border-l"
+          style={{ borderTop: '1px solid var(--color-peat-light)', borderColor: 'var(--color-peat-light)' }}
+        >
+          <div
+            className="sm:hidden px-4 py-1.5"
+            style={{ borderBottom: '1px solid var(--color-peat-light)', background: 'var(--color-accent-light)' }}
+          >
+            <span className="text-xs font-semibold" style={{ color: 'var(--color-accent-dark)' }}>✕ Limit</span>
+          </div>
+          <div
+            className="hidden sm:block px-4 py-1.5"
+            style={{ borderBottom: '1px solid var(--color-peat-light)', borderLeft: '1px solid var(--color-peat-light)', background: 'var(--color-accent-light)' }}
+          >
             <span className="text-xs font-semibold" style={{ color: 'var(--color-accent-dark)' }}>✕ Limit</span>
           </div>
           {visibleLimit.length === 0 ? (
-            <div className="px-4 py-4">
+            <div className="px-4 py-4" style={{ borderLeft: undefined }}>
               <p className="text-xs" style={{ color: 'var(--color-peat-deep)' }}>Nothing specific to limit at this intensity.</p>
             </div>
           ) : visibleLimit.map(({ emoji, name, reason, intensity }, i) => (
-            <div key={name} className="px-4 py-2.5" style={{ background: '#FFFFFF', borderBottom: i < visibleLimit.length - 1 ? '1px solid var(--color-peat-light)' : undefined }}>
-              <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="text-sm leading-none">{emoji}</span>
+            <div
+              key={name}
+              className="px-4 py-3"
+              style={{
+                background: '#FFFFFF',
+                borderBottom: i < visibleLimit.length - 1 ? '1px solid var(--color-peat-light)' : undefined,
+              }}
+            >
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-base leading-none">{emoji}</span>
                 <span className="text-xs font-medium" style={{ color: 'var(--color-text-primary)' }}>{name}</span>
                 <span
                   className="ml-auto text-xs px-1.5 py-px rounded-full shrink-0"
@@ -289,7 +308,7 @@ export function ExerciseCard({ cycles, prediction }: Props) {
                   {INTENSITY_STYLE[intensity].label}
                 </span>
               </div>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--color-peat-deep)' }}>{reason}</p>
+              <p className="text-xs leading-relaxed pl-7" style={{ color: 'var(--color-peat-deep)' }}>{reason}</p>
             </div>
           ))}
         </div>

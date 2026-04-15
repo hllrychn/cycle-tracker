@@ -4,16 +4,17 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { subDays, toISODate, differenceInDays, parseLocalDate } from '../../lib/dateUtils';
-import type { SymptomLog, Cycle, BowelMovement } from '../../types';
+import type { SymptomLog, Cycle, BowelMovement, Prediction } from '../../types';
 
 type Range = '7d' | '30d' | '90d' | '12m' | '1y';
 type View  = 'symptoms' | 'other' | 'bowel';
 
 interface Props {
-  symptoms:          SymptomLog[];
-  cycles?:           Cycle[];
-  avgCycleLength?:   number;
+  symptoms:           SymptomLog[];
+  cycles?:            Cycle[];
+  avgCycleLength?:    number;
   avgPeriodDuration?: number;
+  prediction?:        Prediction | null;
 }
 
 const RANGE_OPTIONS: { value: Range; label: string }[] = [
@@ -82,6 +83,57 @@ function filterByRange(symptoms: SymptomLog[], range: Range): SymptomLog[] {
   return symptoms.filter(s => s.log_date >= yearStart && s.log_date <= todayISO);
 }
 
+// ── Phase resolution ──────────────────────────────────────────────────────────
+
+function toPhase(day: number, avgLen: number, avgDur: number): BowelPhase | null {
+  if (day <= avgDur)           return 'Menstrual';
+  if (day <= avgLen - 16)      return 'Follicular';
+  if (day <= avgLen - 11)      return 'Ovulatory';
+  if (day <= avgLen)           return 'Luteal';
+  return null;
+}
+
+/**
+ * Map a log date to a cycle phase.
+ * - If a recorded cycle covers the date, compute phase from that cycle start.
+ * - Otherwise extrapolate backwards from the earliest known cycle (or from
+ *   prediction.nextPeriodStart) using avgCycleLength so pre-history logs are
+ *   still attributed.
+ */
+function resolvePhase(
+  logDate: string,
+  cycles: Cycle[],
+  avgLen: number,
+  avgDur: number,
+  prediction?: Prediction | null,
+): BowelPhase | null {
+  const past = cycles.filter(c => c.start_date <= logDate);
+
+  if (past.length > 0) {
+    const latest = [...past].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
+    const day = differenceInDays(parseLocalDate(logDate), parseLocalDate(latest.start_date)) + 1;
+    if (day >= 1 && day <= avgLen + 7) return toPhase(day, avgLen, avgDur);
+  }
+
+  // Extrapolate backwards from earliest known anchor
+  const allCycles = [...cycles].sort((a, b) => a.start_date.localeCompare(b.start_date));
+  const anchorStr = allCycles.length > 0
+    ? allCycles[0].start_date
+    : prediction ? toISODate(prediction.nextPeriodStart) : null;
+  if (!anchorStr) return null;
+
+  const anchorDate = parseLocalDate(anchorStr);
+  const logD       = parseLocalDate(logDate);
+  const daysBefore = differenceInDays(anchorDate, logD); // positive when log precedes anchor
+  if (daysBefore <= 0) return null;
+
+  const N        = Math.ceil(daysBefore / avgLen);
+  const hypStart = subDays(anchorDate, N * avgLen);
+  const day      = differenceInDays(logD, hypStart) + 1;
+  if (day >= 1 && day <= avgLen) return toPhase(day, avgLen, avgDur);
+  return null;
+}
+
 // ── Symptom chart data ────────────────────────────────────────────────────────
 
 type ChartPoint = { symptom: string; key: SymptomKey; mild: number; moderate: number; severe: number; total: number };
@@ -100,26 +152,14 @@ type OtherHeatMatrix = { rows: string[]; data: Record<string, Record<BowelPhase,
 
 function buildOtherMatrix(
   symptoms: SymptomLog[], cycles: Cycle[], range: Range, avgLen: number, avgDur: number,
+  prediction?: Prediction | null,
 ): OtherHeatMatrix {
   const data: Record<string, Record<BowelPhase, number>> = {};
   const totals: Record<string, number> = {};
 
   for (const log of filterByRange(symptoms, range)) {
     if (!log.other_symptoms?.length) continue;
-
-    const past = cycles.filter(c => c.start_date <= log.log_date);
-    let phase: BowelPhase | null = null;
-    if (past.length) {
-      const latest = [...past].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
-      const day = differenceInDays(parseLocalDate(log.log_date), parseLocalDate(latest.start_date)) + 1;
-      if (day >= 1 && day <= avgLen + 7) {
-        if (day <= avgDur)           phase = 'Menstrual';
-        else if (day <= avgLen - 16) phase = 'Follicular';
-        else if (day <= avgLen - 11) phase = 'Ovulatory';
-        else if (day <= avgLen)      phase = 'Luteal';
-      }
-    }
-
+    const phase = resolvePhase(log.log_date, cycles, avgLen, avgDur, prediction);
     for (const sym of log.other_symptoms) {
       if (!data[sym]) data[sym] = { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 };
       if (phase) data[sym][phase]++;
@@ -143,25 +183,19 @@ function otherRowMax(data: OtherHeatMatrix['data'], sym: string): number {
 
 type HeatMatrix = Record<BowelMovement, Record<BowelPhase, number>>;
 
-function buildBowelMatrix(symptoms: SymptomLog[], cycles: Cycle[], range: Range, avgLen: number, avgDur: number): HeatMatrix {
+function buildBowelMatrix(
+  symptoms: SymptomLog[], cycles: Cycle[], range: Range, avgLen: number, avgDur: number,
+  prediction?: Prediction | null,
+): HeatMatrix {
   const matrix: HeatMatrix = {
     normal:      { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 },
     constipated: { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 },
     loose:       { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 },
     diarrhea:    { Menstrual: 0, Follicular: 0, Ovulatory: 0, Luteal: 0 },
   };
-  const filtered = filterByRange(symptoms, range).filter(s => s.bowel_movement);
-  for (const log of filtered) {
-    const past = cycles.filter(c => c.start_date <= log.log_date);
-    if (!past.length || !log.bowel_movement) continue;
-    const latest = [...past].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
-    const day = differenceInDays(parseLocalDate(log.log_date), parseLocalDate(latest.start_date)) + 1;
-    if (day < 1 || day > avgLen + 7) continue;
-    let phase: BowelPhase | null = null;
-    if (day <= avgDur)      phase = 'Menstrual';
-    else if (day <= avgLen - 16) phase = 'Follicular';
-    else if (day <= avgLen - 11) phase = 'Ovulatory';
-    else if (day <= avgLen)      phase = 'Luteal';
+  for (const log of filterByRange(symptoms, range)) {
+    if (!log.bowel_movement) continue;
+    const phase = resolvePhase(log.log_date, cycles, avgLen, avgDur, prediction);
     if (phase) matrix[log.bowel_movement][phase]++;
   }
   return matrix;
@@ -207,7 +241,7 @@ function SeverityTooltip({ active, payload, label }: { active?: boolean; payload
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, avgPeriodDuration = 5 }: Props) {
+export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, avgPeriodDuration = 5, prediction }: Props) {
   const [range,        setRange]        = useState<Range>('30d');
   const [view,         setView]         = useState<View>('symptoms');
   const [hoveredBM,    setHoveredBM]    = useState<{ bm: BowelMovement; phase: BowelPhase } | null>(null);
@@ -215,8 +249,8 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
 
   const allData     = buildData(symptoms, range);
   const data        = allData.filter(d => d.total > 0);
-  const otherMatrix = buildOtherMatrix(symptoms, cycles, range, avgCycleLength, avgPeriodDuration);
-  const bmMatrix    = buildBowelMatrix(symptoms, cycles, range, avgCycleLength, avgPeriodDuration);
+  const otherMatrix = buildOtherMatrix(symptoms, cycles, range, avgCycleLength, avgPeriodDuration, prediction);
+  const bmMatrix    = buildBowelMatrix(symptoms, cycles, range, avgCycleLength, avgPeriodDuration, prediction);
   const hasAny      = data.length > 0;
   const hasOther    = otherMatrix.rows.length > 0;
   const hasBowel    = BM_TYPES.some(bm => BOWEL_PHASES.some(p => bmMatrix[bm][p] > 0));

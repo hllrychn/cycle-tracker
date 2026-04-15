@@ -8,6 +8,7 @@ import { HealthContentTabs } from '../components/health/HealthContentTabs';
 import { HormoneChart } from '../components/hormones/HormoneChart';
 import { TodaySymptomsCard } from '../components/symptoms/TodaySymptomsCard';
 import { format, toISODate } from '../lib/dateUtils';
+import { PixelLoader } from '../components/ui/PixelLoader';
 
 export function HealthPage() {
   const { cycles, loading: cyclesLoading } = useCycles();
@@ -17,10 +18,8 @@ export function HealthPage() {
 
   if (cyclesLoading || symptomsLoading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="rounded-2xl h-36 animate-pulse" style={{ background: 'var(--color-peat-mid)' }} />
-        ))}
+      <div className="flex items-center justify-center py-24">
+        <PixelLoader size={56} />
       </div>
     );
   }

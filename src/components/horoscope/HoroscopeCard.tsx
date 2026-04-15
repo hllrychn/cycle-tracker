@@ -4,6 +4,15 @@ import type { Cycle, Prediction } from '../../types';
 import { differenceInDays, format, parseLocalDate, startOfToday } from '../../lib/dateUtils';
 import { HOROSCOPE_DATA } from '../../data/horoscopeData';
 
+function ShareIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+    </svg>
+  );
+}
+
 interface Props {
   cycles: Cycle[];
   prediction: Prediction | null;
@@ -94,6 +103,7 @@ export function HoroscopeCard({ cycles, prediction }: Props) {
   const [slideIndex, setSlideIndex]       = useState(0);
   const [romanceView, setRomanceView]     = useState<'single' | 'relationship'>('single');
   const [romanceDropdownOpen, setRomanceDropdownOpen] = useState(false);
+  const [shareToast, setShareToast]       = useState<'copied' | 'shared' | null>(null);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
   const romanceRef = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -154,33 +164,88 @@ export function HoroscopeCard({ cycles, prediction }: Props) {
 
   const romance = getRomanceTexts();
 
+  const handleShare = async () => {
+    const phaseText = activeDay != null ? `Day ${activeDay} · ${phaseMeta.label} phase` : '';
+    const sections = SLIDES.map(slide => {
+      if (slide.type === 'romance') {
+        const lines = [];
+        if (romance.single)       lines.push(`🌹 Single\n${romance.single}`);
+        if (romance.relationship) lines.push(`💑 Relationship\n${romance.relationship}`);
+        return `${slide.emoji} ${slide.label}\n${lines.join('\n\n')}`;
+      }
+      return `${slide.emoji} ${slide.label}\n${getText(slide.key)}`;
+    });
+    const header = `Hormone Horoscope${phaseText ? ' · ' + phaseText : ''}`;
+    const intro = `Hello! I'd like to share my Hormone Horoscope with you.`;
+    const text = `${intro}\n\n${header}\n\n${sections.join('\n\n. ܁₊ ⊹ . ܁ ⟡ ܁ . ⊹ ₊ ܁.\n\n')}`;
+
+    if (typeof navigator.share === 'function') {
+      try {
+        await navigator.share({ title: 'Hormone Horoscope', text });
+        setShareToast('shared');
+      } catch {
+        return;
+      }
+    } else {
+      await navigator.clipboard.writeText(text);
+      setShareToast('copied');
+    }
+    setTimeout(() => setShareToast(null), 2000);
+  };
+
   return (
     <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-accent)' }}>
 
       {/* Header */}
-      <div className="px-5 pt-5 pb-4 flex items-center gap-2">
-        <p className="text-sm font-semibold shrink-0" style={{ color: labelColor }}>Hormone Horoscope</p>
-        <div className="flex items-center gap-2 flex-1 min-w-0 flex-wrap">
-          {canNavigate && !isToday && (
-            <button
-              onClick={() => setViewDay(null)}
-              className="text-xs px-2 py-0.5 rounded-full transition-colors shrink-0"
-              style={{ color: 'var(--color-blue-base)', border: '1px solid var(--color-blue-mid)' }}
-            >
-              ↩ Today
-            </button>
-          )}
-          {activeDay != null && <span className="text-xs shrink-0" style={{ color: labelColor }}>Day {activeDay}</span>}
-          {activeDay != null && (
-            <span className="text-xs px-2.5 py-0.5 rounded-full shrink-0" style={{ background: phaseMeta.color, color: phaseMeta.text }}>
+      <div className="px-5 pt-5 pb-4">
+        {/* Row 1: title + controls */}
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-sm font-semibold" style={{ color: labelColor }}>Hormone Horoscope</p>
+          <div className="flex items-center gap-1 shrink-0">
+            <div className="relative">
+              <button
+                onClick={handleShare}
+                className="w-6 h-6 flex items-center justify-center rounded-md transition-colors"
+                style={{ color: 'var(--color-peat-deep)' }}
+                onMouseEnter={e => (e.currentTarget.style.color = labelColor)}
+                onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-peat-deep)')}
+                title="Share horoscope"
+              >
+                <ShareIcon />
+              </button>
+              {shareToast && (
+                <div
+                  className="absolute right-0 top-full mt-1.5 whitespace-nowrap rounded-md px-2 py-1 text-xs pointer-events-none"
+                  style={{ background: 'var(--color-peat-dark)', color: 'var(--color-text-light)', zIndex: 50 }}
+                >
+                  {shareToast === 'copied' ? 'Copied!' : 'Shared!'}
+                </div>
+              )}
+            </div>
+            {canNavigate && (
+              <>
+                <button onClick={() => goToDay((activeDay ?? 1) - 1)} className="w-6 h-6 flex items-center justify-center rounded-md text-sm" style={navColor(false)}>‹</button>
+                <button onClick={() => goToDay((activeDay ?? 1) + 1)} className="w-6 h-6 flex items-center justify-center rounded-md text-sm" style={navColor(false)}>›</button>
+              </>
+            )}
+          </div>
+        </div>
+        {/* Row 2: day + phase (only when data is available) */}
+        {activeDay != null && (
+          <div className="flex items-center gap-2 mt-1.5">
+            {canNavigate && !isToday && (
+              <button
+                onClick={() => setViewDay(null)}
+                className="text-xs px-2 py-0.5 rounded-full transition-colors"
+                style={{ color: 'var(--color-blue-base)', border: '1px solid var(--color-blue-mid)' }}
+              >
+                ↩ Today
+              </button>
+            )}
+            <span className="text-xs" style={{ color: labelColor }}>Day {activeDay}</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full" style={{ background: phaseMeta.color, color: phaseMeta.text }}>
               {phaseMeta.label}
             </span>
-          )}
-        </div>
-        {canNavigate && (
-          <div className="flex items-center gap-1 shrink-0">
-            <button onClick={() => goToDay((activeDay ?? 1) - 1)} className="w-6 h-6 flex items-center justify-center rounded-md text-sm" style={navColor(false)}>‹</button>
-            <button onClick={() => goToDay((activeDay ?? 1) + 1)} className="w-6 h-6 flex items-center justify-center rounded-md text-sm" style={navColor(false)}>›</button>
           </div>
         )}
       </div>

@@ -262,7 +262,7 @@ export function AppShell() {
           backgroundColor: '#786B64',
         }}
       >
-        <div className="max-w-5xl mx-auto px-4 pt-4 pb-24 sm:pt-8 sm:pb-8">
+        <div className="max-w-5xl mx-auto px-4 pt-4 pb-32 sm:pt-8 sm:pb-8">
           <Outlet />
         </div>
       </main>

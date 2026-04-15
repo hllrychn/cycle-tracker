@@ -171,10 +171,10 @@ export function WineFoodPairingCard({ cycles, prediction }: Props) {
 
       {/* Scrollable matrix */}
       <div className="overflow-x-auto" onMouseLeave={() => { setHoveredRow(null); setHoveredCol(null); }}>
-        <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 460, tableLayout: 'fixed' }}>
+        <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 500, tableLayout: 'fixed' }}>
           <thead>
             <tr>
-              <th style={{ width: 100, minWidth: 100 }} />
+              <th style={{ width: 136, minWidth: 136 }} />
               {WINES.map((w, wi) => {
                 const isPhaseWine  = phaseW.has(wi);
                 const isHoveredCol = hoveredCol === wi;
@@ -218,9 +218,10 @@ export function WineFoodPairingCard({ cycles, prediction }: Props) {
                   style={{ background: isHoveredRow ? 'var(--color-peat-mid)' : rowBg, transition: 'background 0.1s' }}
                 >
                   <td style={{
-                    padding: '4px 12px 4px 16px', fontSize: 11,
+                    padding: '4px 8px 4px 12px', fontSize: 11,
                     color: hasPhase && !isPhaseFood && hoveredRow === null ? 'var(--color-peat-mid)' : 'var(--color-peat-deep)',
-                    whiteSpace: 'nowrap', borderBottom: '1px solid var(--color-peat-light)',
+                    overflow: 'hidden',
+                    borderBottom: '1px solid var(--color-peat-light)',
                     fontWeight: (isPhaseFood && hasPhase) || isHoveredRow ? 600 : 400,
                     transition: 'color 0.15s',
                   }}>

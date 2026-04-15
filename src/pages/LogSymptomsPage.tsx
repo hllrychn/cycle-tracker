@@ -7,6 +7,19 @@ import { usePredictions } from '../hooks/usePredictions';
 import { useSettings } from '../hooks/useSettings';
 import { toISODate, differenceInDays, addDays, parseISO, startOfToday } from '../lib/dateUtils';
 import type { SymptomLog } from '../types';
+import { PixelLoader } from '../components/ui/PixelLoader';
+
+const END_DISMISS_KEY = 'ct_end_period_dismissed_until';
+function isEndDismissed() {
+  const v = localStorage.getItem(END_DISMISS_KEY);
+  return !!v && Date.now() < parseInt(v, 10);
+}
+function setEndDismissed() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(23, 59, 59, 999);
+  localStorage.setItem(END_DISMISS_KEY, String(d.getTime()));
+}
 
 export function LogSymptomsPage() {
   const { symptoms, loading: symptomsLoading, logSymptoms } = useSymptoms();
@@ -19,7 +32,7 @@ export function LogSymptomsPage() {
   const [dismissed, setDismissed]             = useState(false);
   const [ending, setEnding]                   = useState(false);
   const [endError, setEndError]               = useState<string | null>(null);
-  const [dismissedEnd, setDismissedEnd]       = useState(false);
+  const [dismissedEnd, setDismissedEnd]       = useState(() => isEndDismissed());
   const [delaying, setDelaying]               = useState(false);
   const [delayError, setDelayError]           = useState<string | null>(null);
   const [dismissedDelay, setDismissedDelay]   = useState(false);
@@ -133,9 +146,8 @@ export function LogSymptomsPage() {
 
   if (symptomsLoading) {
     return (
-      <div className="max-w-xl mx-auto space-y-4">
-        <div className="h-8 w-48 rounded-lg animate-pulse" style={{ background: 'var(--color-peat-mid)' }} />
-        <div className="rounded-2xl h-64 animate-pulse" style={{ background: 'var(--color-peat-mid)' }} />
+      <div className="flex items-center justify-center py-24">
+        <PixelLoader size={56} />
       </div>
     );
   }
@@ -179,7 +191,7 @@ export function LogSymptomsPage() {
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium" style={{ color: 'var(--color-peat-deep)' }}>Period in progress</p>
             <button
-              onClick={() => setDismissedEnd(true)}
+              onClick={() => { setEndDismissed(); setDismissedEnd(true); }}
               className="text-xs transition-colors"
               style={{ color: 'var(--color-peat-deep)' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text-primary)')}
@@ -230,7 +242,7 @@ export function LogSymptomsPage() {
         </div>
       )}
 
-      <div className="rounded-2xl p-6" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-moss-mid)' }}>
+      <div className="rounded-2xl p-6 overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-moss-mid)' }}>
         <LogSymptomsForm existing={existing} onSubmit={handleSubmit} isOnPeriod={hasActivePeriod} />
       </div>
     </div>

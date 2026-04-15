@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:ital,wght@0,200;0,300;0,400;1,200;1,300;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:ital,wght@0,200;0,300;0,400;1,200;1,300;1,400&family=Texturina:ital,opsz,wght@0,12..72,100..900;1,12..72,100..900&display=swap');
 @import './tokens.css';
 
 @tailwind base;
@@ -17,13 +17,22 @@
 
 html, body {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-weight: 400;
   background: #786B64;
 }
 
 h1 {
-  font-family: 'IBM Plex Sans', ui-sans-serif, sans-serif;
+  font-family: 'Texturina', ui-serif, serif;
   font-weight: 400;
-  font-size: 30px;
+  font-size: 40px;
+}
+
+@keyframes pixel-spin {
+  to { transform: rotate(360deg); }
+}
+
+.pixel-loader {
+  animation: pixel-spin 1.2s steps(12, end) infinite;
 }
 
 @keyframes sparkle-float {

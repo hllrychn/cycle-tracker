@@ -15,11 +15,24 @@ import { SymptomStreakCard } from '../components/symptoms/SymptomStreakCard';
 import { FunFactPopup } from '../components/facts/FunFactPopup';
 import { NavLink } from 'react-router-dom';
 import { differenceInDays, addDays, toISODate, startOfToday, format, parseLocalDate, todayLocalISO } from '../lib/dateUtils';
+import { PixelLoader } from '../components/ui/PixelLoader';
+
+const END_DISMISS_KEY = 'ct_end_period_dismissed_until';
+function isEndDismissed() {
+  const v = localStorage.getItem(END_DISMISS_KEY);
+  return !!v && Date.now() < parseInt(v, 10);
+}
+function setEndDismissed() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  d.setHours(23, 59, 59, 999);
+  localStorage.setItem(END_DISMISS_KEY, String(d.getTime()));
+}
 
 export function DashboardPage() {
   const [showFunFact, setShowFunFact]         = useState(false);
   const [showPredictions, setShowPredictions] = useState(false);
-  const [dismissedEndBanner, setDismissedEndBanner] = useState(false);
+  const [dismissedEndBanner, setDismissedEndBanner] = useState(() => isEndDismissed());
   const { cycles, loading: cyclesLoading, addOrUpdateCycle, removeCycle } = useCycles();
   const { symptoms, loading: symptomsLoading, logSymptoms } = useSymptoms();
   const {
@@ -98,10 +111,8 @@ export function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="rounded-2xl h-36 animate-pulse" style={{ background: 'var(--color-peat-mid)' }} />
-        ))}
+      <div className="flex items-center justify-center py-24">
+        <PixelLoader size={56} />
       </div>
     );
   }
@@ -164,7 +175,7 @@ export function DashboardPage() {
           <h1 className="text-2xl font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             Dashboard
           </h1>
-          <p className="text-sm mt-0.5" style={{ color: 'var(--color-peat-deep)' }}>
+          <p className="text-sm mt-0.5" style={{ color: '#F0EDE6' }}>
             {format(today, 'EEEE, MMMM d')}
           </p>
         </div>
@@ -236,7 +247,7 @@ export function DashboardPage() {
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-medium" style={{ color: 'var(--color-peat-deep)' }}>Period in progress</p>
             <button
-              onClick={() => setDismissedEndBanner(true)}
+              onClick={() => { setEndDismissed(); setDismissedEndBanner(true); }}
               className="text-xs transition-colors"
               style={{ color: 'var(--color-peat-deep)' }}
               onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text-primary)')}
@@ -249,7 +260,7 @@ export function DashboardPage() {
             onClick={async () => {
               if (!latestPeriod) return;
               await addOrUpdateCycle({ start_date: latestPeriod.start_date, end_date: todayISO, flow: latestPeriod.flow, notes: latestPeriod.notes });
-              setDismissedEndBanner(true);
+              setEndDismissed(); setDismissedEndBanner(true);
             }}
             className="w-full py-2 text-sm rounded-lg transition-colors"
             style={{ background: 'var(--color-peat-dark)', color: 'var(--color-text-light)' }}

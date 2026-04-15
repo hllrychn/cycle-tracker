@@ -96,7 +96,7 @@ function defaultSymptoms(existing?: SymptomLog | null): SymptomsState {
   };
 }
 
-const inputStyle = { border: '1px solid var(--color-peat-mid)', background: 'var(--color-peat-light)', color: 'var(--color-text-primary)' };
+const inputStyle = { border: '1px solid var(--color-peat-mid)', background: 'var(--color-peat-light)', color: 'var(--color-text-primary)', minWidth: 0 };
 
 export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = false }: Props) {
   const [logDate, setLogDate]         = useState(initialDate ?? existing?.log_date ?? toISODate(new Date()));
@@ -146,12 +146,14 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
       {!initialDate && (
         <div>
           <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-peat-deep)' }}>Date *</label>
-          <input
-            type="date" required value={logDate}
-            onChange={e => setLogDate(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-            style={inputStyle}
-          />
+          <div className="overflow-hidden rounded-lg" style={{ border: '1px solid var(--color-peat-mid)', background: 'var(--color-peat-light)' }}>
+            <input
+              type="date" required value={logDate}
+              onChange={e => setLogDate(e.target.value)}
+              className="w-full max-w-full px-3 py-2 text-sm focus:outline-none"
+              style={{ background: 'transparent', color: 'var(--color-text-primary)', minWidth: 0 }}
+            />
+          </div>
         </div>
       )}
 

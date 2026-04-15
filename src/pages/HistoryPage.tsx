@@ -7,7 +7,8 @@ import { useSettings } from '../hooks/useSettings';
 import { PeriodEntry } from '../components/period/PeriodEntry';
 import { SymptomBarChart } from '../components/symptoms/SymptomBarChart';
 import { format, parseISO, differenceInDays, todayLocalISO } from '../lib/dateUtils';
-import type { Cycle, SymptomLog, Severity } from '../types';
+import type { Cycle, SymptomLog, Severity, Prediction } from '../types';
+import { PixelLoader } from '../components/ui/PixelLoader';
 
 type Tab = 'periods' | 'symptoms';
 
@@ -21,16 +22,39 @@ const PHASE_META: Record<Phase, { label: string; bg: string; color: string }> = 
   luteal:     { label: 'Luteal',     bg: 'var(--color-phase-luteal)',     color: 'var(--color-peat-deep)'    },
 };
 
-function getSymptomPhase(logDate: string, cycles: Cycle[], avgLen: number, avgDur: number): Phase | null {
+function toHistoryPhase(day: number, avgLen: number, avgDur: number): Phase | null {
+  if (day <= avgDur)       return 'menstrual';
+  if (day <= avgLen - 16)  return 'follicular';
+  if (day <= avgLen - 11)  return 'ovulatory';
+  if (day <= avgLen)       return 'luteal';
+  return null;
+}
+
+function getSymptomPhase(logDate: string, cycles: Cycle[], avgLen: number, avgDur: number, prediction?: Prediction | null): Phase | null {
   const past = cycles.filter(c => c.start_date <= logDate);
-  if (past.length === 0) return null;
-  const latest = [...past].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
-  const day = differenceInDays(parseISO(logDate), parseISO(latest.start_date)) + 1;
-  if (day < 1 || day > avgLen + 7) return null;
-  if (day <= avgDur)    return 'menstrual';
-  if (day <= avgLen-16) return 'follicular';
-  if (day <= avgLen-11) return 'ovulatory';
-  if (day <= avgLen)    return 'luteal';
+  if (past.length > 0) {
+    const latest = [...past].sort((a, b) => b.start_date.localeCompare(a.start_date))[0];
+    const day = differenceInDays(parseISO(logDate), parseISO(latest.start_date)) + 1;
+    if (day >= 1 && day <= avgLen + 7) return toHistoryPhase(day, avgLen, avgDur);
+  }
+
+  // Extrapolate backwards from earliest known cycle or prediction anchor
+  const allCycles = [...cycles].sort((a, b) => a.start_date.localeCompare(b.start_date));
+  const anchorStr = allCycles.length > 0
+    ? allCycles[0].start_date
+    : prediction ? prediction.nextPeriodStart.toISOString().slice(0, 10) : null;
+  if (!anchorStr) return null;
+
+  const anchorDate = parseISO(anchorStr);
+  const logD       = parseISO(logDate);
+  const daysBefore = differenceInDays(anchorDate, logD);
+  if (daysBefore <= 0) return null;
+
+  const N        = Math.ceil(daysBefore / avgLen);
+  const hypStart = new Date(anchorDate);
+  hypStart.setDate(hypStart.getDate() - N * avgLen);
+  const day = differenceInDays(logD, hypStart) + 1;
+  if (day >= 1 && day <= avgLen) return toHistoryPhase(day, avgLen, avgDur);
   return null;
 }
 
@@ -88,8 +112,8 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub?: s
 // ── Symptom row ───────────────────────────────────────────────────────────────
 function SymptomRow({ log, phase }: { log: SymptomLog; phase: Phase | null }) {
   const severities = SEVERITY_KEYS.filter(k => log[k] !== 'none');
-  const otherCount = log.other_symptoms?.length ?? 0;
-  const hasContent = severities.length > 0 || !!log.flow_intensity || otherCount > 0 || !!log.discharge || !!log.bowel_movement || log.food_craving != null || !!log.notes;
+  const otherSymptoms = log.other_symptoms ?? [];
+  const hasContent = severities.length > 0 || !!log.flow_intensity || otherSymptoms.length > 0 || !!log.discharge || !!log.bowel_movement || log.food_craving != null || !!log.notes;
 
   return (
     <div
@@ -110,6 +134,13 @@ function SymptomRow({ log, phase }: { log: SymptomLog; phase: Phase | null }) {
       <div className="w-7 shrink-0 text-xl leading-none pt-0.5">
         {log.feeling_emoji ?? ''}
       </div>
+
+      {/* Phase badge — between emoji and symptom data */}
+      {phase && (
+        <span className="text-xs px-2 py-0.5 rounded-full shrink-0 self-start mt-0.5" style={{ background: PHASE_META[phase].bg, color: PHASE_META[phase].color }}>
+          {PHASE_META[phase].label}
+        </span>
+      )}
 
       {/* Content */}
       <div className="flex-1 min-w-0">
@@ -146,24 +177,17 @@ function SymptomRow({ log, phase }: { log: SymptomLog; phase: Phase | null }) {
                 Cravings: {log.food_craving ? 'Yes' : 'No'}
               </span>
             )}
-            {otherCount > 0 && (
-              <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--color-peat-mid)', color: 'var(--color-peat-dark)' }}>
-                +{otherCount} related
+            {otherSymptoms.map(sym => (
+              <span key={sym} className="text-xs px-2 py-0.5 rounded-full capitalize" style={{ background: '#EDE9F5', color: '#5C4C88' }}>
+                {sym}
               </span>
-            )}
+            ))}
           </div>
         )}
         {log.notes && (
           <p className="text-xs mt-1 truncate" style={{ color: 'var(--color-peat-deep)' }}>{log.notes}</p>
         )}
       </div>
-
-      {/* Phase badge */}
-      {phase && (
-        <span className="text-xs px-2 py-0.5 rounded-full shrink-0 self-start mt-0.5" style={{ background: PHASE_META[phase].bg, color: PHASE_META[phase].color }}>
-          {PHASE_META[phase].label}
-        </span>
-      )}
     </div>
   );
 }
@@ -191,10 +215,8 @@ export function HistoryPage() {
 
   if (cyclesLoading || symptomsLoading) {
     return (
-      <div className="space-y-3">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="rounded-xl h-16 animate-pulse" style={{ background: 'var(--color-peat-mid)' }} />
-        ))}
+      <div className="flex items-center justify-center py-24">
+        <PixelLoader size={56} />
       </div>
     );
   }
@@ -254,6 +276,7 @@ export function HistoryPage() {
         cycles={cycles}
         avgCycleLength={avgLen}
         avgPeriodDuration={avgDur}
+        prediction={prediction}
       />
 
       {/* Stats strip */}
@@ -394,7 +417,7 @@ export function HistoryPage() {
                       <SymptomRow
                         key={log.id}
                         log={log}
-                        phase={getSymptomPhase(log.log_date, cycles, avgLen, avgDur)}
+                        phase={getSymptomPhase(log.log_date, cycles, avgLen, avgDur, prediction)}
                       />
                     ))}
                   </div>
