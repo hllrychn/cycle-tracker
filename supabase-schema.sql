@@ -35,6 +35,7 @@ create table public.symptoms (
 -- Migrations (run in Supabase SQL Editor if table already exists):
 -- alter table public.symptoms add column if not exists flow_intensity text check (flow_intensity in ('spotting','light','medium','heavy'));
 -- alter table public.symptoms add column if not exists other_symptoms text[];
+-- alter table public.symptoms add column if not exists bbt numeric;
 
 create index idx_cycles_user_start  on public.cycles  (user_id, start_date desc);
 create index idx_symptoms_user_date on public.symptoms (user_id, log_date desc);

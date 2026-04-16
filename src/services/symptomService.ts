@@ -28,6 +28,7 @@ export async function upsertSymptomLog(log: {
   food_craving?:       boolean | null;
   food_craving_notes?: string  | null;
   feeling_emoji?:      string  | null;
+  bbt?:                number  | null;
   notes?:              string  | null;
 }): Promise<SymptomLog> {
   const { data: { user } } = await supabase.auth.getUser();
@@ -40,7 +41,7 @@ export async function upsertSymptomLog(log: {
     spotting,
     sleep_quality, bowel_movement,
     food_craving, food_craving_notes,
-    feeling_emoji,
+    feeling_emoji, bbt,
     ...rest
   } = log;
 
@@ -69,6 +70,7 @@ export async function upsertSymptomLog(log: {
       food_craving:       food_craving       ?? null,
       food_craving_notes: food_craving_notes ?? null,
       feeling_emoji:      feeling_emoji      ?? null,
+      bbt:                bbt                ?? null,
     })
     .eq('id', (data as SymptomLog).id);
 

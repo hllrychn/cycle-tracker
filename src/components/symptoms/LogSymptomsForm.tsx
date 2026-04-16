@@ -108,6 +108,8 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
   const [foodCraving, setFoodCraving]     = useState<boolean | null>(existing?.food_craving ?? null);
   const [foodCravingNotes, setFoodCravingNotes] = useState(existing?.food_craving_notes ?? '');
   const [selectedEmoji, setSelectedEmoji] = useState<string | null>(existing?.feeling_emoji ?? null);
+  const [bbtValue, setBbtValue]       = useState(existing?.bbt != null ? String(existing.bbt) : '');
+  const [bbtUnit, setBbtUnit]         = useState<'F' | 'C'>('F');
   const [notes, setNotes]             = useState(existing?.notes ?? '');
   const [loading, setLoading]         = useState(false);
   const [error, setError]             = useState<string | null>(null);
@@ -132,6 +134,7 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
         food_craving:        foodCraving,
         food_craving_notes:  foodCraving ? (foodCravingNotes.trim() || null) : null,
         feeling_emoji:       selectedEmoji,
+        bbt:                 bbtValue.trim() ? parseFloat(bbtValue) : null,
         notes: notes.trim() || null,
       });
     } catch (err) {
@@ -208,6 +211,43 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
             </div>
           </div>
         )}
+
+        {/* Basal body temperature */}
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">
+          <span className="text-sm sm:w-40 sm:shrink-0" style={{ color: 'var(--color-peat-deep)' }}>Basal body temp.</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center rounded-lg overflow-hidden" style={{ border: '1px solid var(--color-peat-mid)', background: 'var(--color-peat-light)' }}>
+              <input
+                type="number"
+                step="0.1"
+                min={bbtUnit === 'F' ? 96 : 35}
+                max={bbtUnit === 'F' ? 100 : 38}
+                placeholder={bbtUnit === 'F' ? '98.6' : '37.0'}
+                value={bbtValue}
+                onChange={e => setBbtValue(e.target.value)}
+                className="w-20 px-3 py-1 text-sm focus:outline-none bg-transparent"
+                style={{ color: 'var(--color-text-primary)' }}
+              />
+              <span className="pr-2 text-xs" style={{ color: 'var(--color-peat-deep)' }}>°{bbtUnit}</span>
+            </div>
+            <div className="flex rounded-lg overflow-hidden" style={{ border: '1px solid var(--color-peat-mid)' }}>
+              {(['F', 'C'] as const).map(unit => (
+                <button
+                  key={unit}
+                  type="button"
+                  onClick={() => setBbtUnit(unit)}
+                  className="px-2.5 py-1 text-xs font-medium transition-colors"
+                  style={bbtUnit === unit
+                    ? { background: 'var(--color-peat-deep)', color: 'var(--color-text-light)' }
+                    : { background: 'var(--color-peat-light)', color: 'var(--color-peat-deep)' }
+                  }
+                >
+                  °{unit}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
 
         {SYMPTOMS.map(({ key, label }) => (
           <div key={key} className="flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-4">

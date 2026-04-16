@@ -42,7 +42,7 @@ export function HealthPage() {
           <HormoneChart cycles={cycles} prediction={prediction} />
         </div>
         <div className="md:col-span-1">
-          <TodaySymptomsCard symptomLog={todaySymptoms} />
+          <TodaySymptomsCard symptomLog={todaySymptoms} prediction={prediction} />
         </div>
       </div>
 

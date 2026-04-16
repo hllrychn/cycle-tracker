@@ -34,6 +34,7 @@ export interface SymptomLog {
   food_craving:        boolean | null;
   food_craving_notes:  string  | null;
   feeling_emoji:       string  | null;
+  bbt:                 number  | null;
   notes:               string  | null;
   created_at: string;
   updated_at: string;

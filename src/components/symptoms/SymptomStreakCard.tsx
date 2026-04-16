@@ -31,6 +31,7 @@ function buildDefaultLog(date: string): Omit<SymptomLog, 'id' | 'user_id' | 'cre
     food_craving:       null,
     food_craving_notes: null,
     feeling_emoji:      null,
+    bbt:                null,
     notes:              null,
   };
 }
