@@ -24,7 +24,7 @@ export function LogPeriodPage() {
 
   return (
     <div className="max-w-md mx-auto">
-      <h1 className="text-2xl font-semibold mb-6" style={{ color: 'var(--color-text-primary)' }}>
+      <h1 className="font-semibold mb-6" style={{ fontSize: '42px', color: 'var(--color-text-primary)' }}>
         {current ? 'Update current period' : 'Log a period'}
       </h1>
       <div className="rounded-2xl p-6 overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-moss-mid)' }}>
