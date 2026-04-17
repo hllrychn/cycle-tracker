@@ -33,7 +33,7 @@ const NAV_ITEMS = [
 ];
 
 const BOTTOM_TABS = [
-  { to: '/',              label: 'Home',     icon: '🏠',                 end: true  },
+  { to: '/',              label: 'Home',     icon: null as string | null, end: true  },
   { to: '/health',        label: 'Health',   icon: '🌿',                 end: false },
   { to: '/log/symptoms',  label: 'Symptoms', icon: '✏️',                 end: false },
   { to: '/log/period',    label: 'Period',   icon: '🩸',                 end: false },
@@ -288,7 +288,10 @@ export function AppShell() {
               color: isActive ? 'var(--color-moss-base)' : 'var(--color-peat-deep)',
             })}
           >
-            <span className="text-xl leading-none">{icon}</span>
+            {icon
+              ? <span className="text-xl leading-none">{icon}</span>
+              : <img src="/home-icon.svg" alt="Home" style={{ width: '1.25rem', height: '1.25rem', objectFit: 'contain' }} />
+            }
             <span style={{ fontSize: '10px', fontWeight: 500, lineHeight: 1 }}>{label}</span>
           </NavLink>
         ))}
