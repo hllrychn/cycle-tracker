@@ -290,7 +290,7 @@ export function AppShell() {
           >
             {icon
               ? <span className="text-xl leading-none">{icon}</span>
-              : <img src="/home-icon.svg" alt="Home" style={{ width: '1.25rem', height: '1.25rem', objectFit: 'contain' }} />
+              : <img src="/home-icon.png" alt="Home" style={{ width: '1.25rem', height: '1.25rem', objectFit: 'contain' }} />
             }
             <span style={{ fontSize: '10px', fontWeight: 500, lineHeight: 1 }}>{label}</span>
           </NavLink>
