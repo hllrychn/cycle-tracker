@@ -264,7 +264,7 @@ export function HistoryPage() {
     <div className="max-w-2xl mx-auto space-y-5">
       {/* Header */}
       <div>
-        <h1 className="font-semibold" style={{ fontSize: '42px', color: 'var(--color-text-primary)' }}>History</h1>
+        <h1 className="font-semibold text-3xl md:text-[42px]" style={{ color: 'var(--color-text-primary)' }}>History</h1>
         <p className="text-sm mt-0.5" style={{ color: 'var(--color-peat-deep)' }}>
           {format(new Date(), 'EEEE, MMMM d')}
         </p>

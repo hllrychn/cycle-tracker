@@ -12,7 +12,7 @@ const VARIANTS: { size: number; color: string; label: string }[] = [
 export function LoaderPage() {
   return (
     <div className="max-w-lg mx-auto space-y-8">
-      <h1 className="font-semibold" style={{ fontSize: '42px', color: 'var(--color-text-primary)' }}>
+      <h1 className="font-semibold text-3xl md:text-[42px]" style={{ color: 'var(--color-text-primary)' }}>
         Pixel loader
       </h1>
 
