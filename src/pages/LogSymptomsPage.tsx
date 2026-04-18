@@ -154,7 +154,7 @@ export function LogSymptomsPage() {
 
   return (
     <div className="max-w-xl mx-auto space-y-4">
-      <h1 className="font-semibold mb-6 text-3xl md:text-[42px]" style={{ color: 'var(--color-text-primary)' }}>
+      <h1 className="font-semibold mb-6 text-3xl md:text-[38px]" style={{ color: 'var(--color-text-primary)' }}>
         {existing ? "Update today's symptoms" : 'Log symptoms'}
       </h1>
 

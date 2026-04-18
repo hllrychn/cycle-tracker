@@ -27,7 +27,7 @@ export function ContactPage() {
   return (
     <div className="max-w-lg space-y-6">
       <div>
-        <h1 className="font-semibold text-3xl md:text-[42px]" style={{ color: 'var(--color-text-primary)' }}>Contact</h1>
+        <h1 className="font-semibold text-3xl md:text-[38px]" style={{ color: 'var(--color-text-primary)' }}>Contact</h1>
         <p className="text-sm mt-2" style={{ color: '#F0EDE6' }}>Send feedback or get in touch</p>
       </div>
 

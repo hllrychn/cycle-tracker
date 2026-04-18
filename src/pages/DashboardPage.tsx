@@ -172,7 +172,7 @@ export function DashboardPage() {
       {/* Page header */}
       <div className="flex items-end justify-between">
         <div>
-          <h1 className="font-semibold text-3xl md:text-[42px]" style={{ color: 'var(--color-text-primary)' }}>
+          <h1 className="font-semibold text-3xl md:text-[38px]" style={{ color: 'var(--color-text-primary)' }}>
             Dashboard
           </h1>
           <p className="text-sm mt-2" style={{ color: '#F0EDE6' }}>
