@@ -37,20 +37,20 @@ const SYMPTOM_LABELS: Record<SymptomKey, string> = {
   fatigue: 'Fatigue', breast_tenderness: 'Breast', spotting: 'Spotting',
 };
 
-const MILD_COLOR     = '#A8C5A0';
-const MODERATE_COLOR = '#E8B87A';
-const SEVERE_COLOR   = '#C47878';
-const OTHER_COLOR    = '#A088C4';
+const MILD_COLOR     = '#C8DAF5';   // blue-light
+const MODERATE_COLOR = '#C9A0C2';   // accent
+const SEVERE_COLOR   = '#7B5F78';   // accent-dark
+const OTHER_COLOR    = '#9E9A3C';   // moss-base
 
 // ── Bowel tab ─────────────────────────────────────────────────────────────────
 
 const BM_TYPES: BowelMovement[] = ['normal', 'constipated', 'loose', 'diarrhea'];
 
 const BM_COLORS: Record<BowelMovement, string> = {
-  normal:      '#A8C5A0',
-  constipated: '#E8C07A',
-  loose:       '#A088C4',
-  diarrhea:    '#C47878',
+  normal:      '#DCF0B8',   // phase-ovulation (natural green)
+  constipated: '#C9A0C2',   // accent (rose/lavender)
+  loose:       '#C8DAF5',   // blue-light
+  diarrhea:    '#7B5F78',   // accent-dark
 };
 
 const BM_LABELS: Record<BowelMovement, string> = {
@@ -175,8 +175,8 @@ function buildOtherMatrix(
   return { rows, data };
 }
 
-function otherRowMax(data: OtherHeatMatrix['data'], sym: string): number {
-  return Math.max(...BOWEL_PHASES.map(p => data[sym]?.[p] ?? 0));
+function otherGlobalMax(data: OtherHeatMatrix['data'], rows: string[]): number {
+  return Math.max(1, ...rows.flatMap(sym => BOWEL_PHASES.map(p => data[sym]?.[p] ?? 0)));
 }
 
 // ── Bowel heatmap data ────────────────────────────────────────────────────────
@@ -201,8 +201,8 @@ function buildBowelMatrix(
   return matrix;
 }
 
-function bmRowMax(matrix: HeatMatrix, bm: BowelMovement): number {
-  return Math.max(...BOWEL_PHASES.map(p => matrix[bm][p]));
+function bmGlobalMax(matrix: HeatMatrix): number {
+  return Math.max(1, ...BM_TYPES.flatMap(bm => BOWEL_PHASES.map(p => matrix[bm][p])));
 }
 
 function cellOpacity(count: number, max: number): number {
@@ -353,40 +353,42 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
               </div>
               {/* Rows */}
               <div className="space-y-1">
-                {otherMatrix.rows.map(sym => {
-                  const max = otherRowMax(otherMatrix.data, sym);
-                  const label = sym.length > 16 ? sym.slice(0, 15) + '…' : sym;
-                  return (
-                    <div key={sym} className="grid items-center" style={{ gridTemplateColumns: '110px repeat(4, 1fr)', gap: '4px' }}>
-                      <div className="flex items-center gap-1.5 pr-1">
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: OTHER_COLOR }} />
-                        <span title={sym} style={{ fontSize: '11px', color: 'var(--color-peat-deep)' }}>{label}</span>
+                {(() => {
+                  const globalMax = otherGlobalMax(otherMatrix.data, otherMatrix.rows);
+                  return otherMatrix.rows.map(sym => {
+                    const label = sym.length > 16 ? sym.slice(0, 15) + '…' : sym;
+                    return (
+                      <div key={sym} className="grid items-center" style={{ gridTemplateColumns: '110px repeat(4, 1fr)', gap: '4px' }}>
+                        <div className="flex items-center gap-1.5 pr-1">
+                          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: OTHER_COLOR }} />
+                          <span title={sym} style={{ fontSize: '11px', color: 'var(--color-peat-deep)' }}>{label}</span>
+                        </div>
+                        {BOWEL_PHASES.map(phase => {
+                          const count   = otherMatrix.data[sym]?.[phase] ?? 0;
+                          const opacity = cellOpacity(count, globalMax);
+                          const isHov   = hoveredOther?.sym === sym && hoveredOther?.phase === phase;
+                          return (
+                            <div
+                              key={phase}
+                              className="rounded-lg flex items-center justify-center transition-all"
+                              style={{
+                                height: '36px',
+                                background: count > 0 ? `rgba(${hexToRgb(OTHER_COLOR)}, ${opacity})` : 'var(--color-peat-light)',
+                                border: isHov ? `2px solid ${OTHER_COLOR}` : '2px solid transparent',
+                              }}
+                              onMouseEnter={() => setHoveredOther({ sym, phase })}
+                              onMouseLeave={() => setHoveredOther(null)}
+                            >
+                              <span style={{ fontSize: '11px', fontWeight: 600, color: count > 0 ? (opacity > 0.55 ? '#fff' : 'var(--color-text-primary)') : 'var(--color-peat-mid)' }}>
+                                {count > 0 ? count : '–'}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
-                      {BOWEL_PHASES.map(phase => {
-                        const count   = otherMatrix.data[sym]?.[phase] ?? 0;
-                        const opacity = cellOpacity(count, max);
-                        const isHov   = hoveredOther?.sym === sym && hoveredOther?.phase === phase;
-                        return (
-                          <div
-                            key={phase}
-                            className="rounded-lg flex items-center justify-center transition-all"
-                            style={{
-                              height: '36px',
-                              background: count > 0 ? `rgba(${hexToRgb(OTHER_COLOR)}, ${opacity})` : 'var(--color-peat-light)',
-                              border: isHov ? `2px solid ${OTHER_COLOR}` : '2px solid transparent',
-                            }}
-                            onMouseEnter={() => setHoveredOther({ sym, phase })}
-                            onMouseLeave={() => setHoveredOther(null)}
-                          >
-                            <span style={{ fontSize: '11px', fontWeight: 600, color: count > 0 ? (opacity > 0.55 ? '#fff' : OTHER_COLOR) : 'var(--color-peat-mid)' }}>
-                              {count > 0 ? count : '–'}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
               {/* Hover label */}
               <div className="mt-3 h-5 flex items-center justify-center">
@@ -426,40 +428,42 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
               </div>
               {/* Rows */}
               <div className="space-y-1">
-                {BM_TYPES.map(bm => {
-                  const max   = bmRowMax(bmMatrix, bm);
-                  const color = BM_COLORS[bm];
-                  return (
-                    <div key={bm} className="grid items-center" style={{ gridTemplateColumns: '90px repeat(4, 1fr)', gap: '4px' }}>
-                      <div className="flex items-center gap-1.5 pr-1">
-                        <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
-                        <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)' }}>{BM_LABELS[bm]}</span>
+                {(() => {
+                  const globalMax = bmGlobalMax(bmMatrix);
+                  return BM_TYPES.map(bm => {
+                    const color = BM_COLORS[bm];
+                    return (
+                      <div key={bm} className="grid items-center" style={{ gridTemplateColumns: '90px repeat(4, 1fr)', gap: '4px' }}>
+                        <div className="flex items-center gap-1.5 pr-1">
+                          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
+                          <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)' }}>{BM_LABELS[bm]}</span>
+                        </div>
+                        {BOWEL_PHASES.map(phase => {
+                          const count   = bmMatrix[bm][phase];
+                          const opacity = cellOpacity(count, globalMax);
+                          const isHov   = hoveredBM?.bm === bm && hoveredBM?.phase === phase;
+                          return (
+                            <div
+                              key={phase}
+                              className="rounded-lg flex items-center justify-center transition-all"
+                              style={{
+                                height: '38px',
+                                background: count > 0 ? `rgba(${hexToRgb(color)}, ${opacity})` : 'var(--color-peat-light)',
+                                border: isHov ? `2px solid ${color}` : '2px solid transparent',
+                              }}
+                              onMouseEnter={() => setHoveredBM({ bm, phase })}
+                              onMouseLeave={() => setHoveredBM(null)}
+                            >
+                              <span style={{ fontSize: '11px', fontWeight: 600, color: count > 0 ? (opacity > 0.55 ? '#fff' : 'var(--color-text-primary)') : 'var(--color-peat-mid)' }}>
+                                {count > 0 ? count : '–'}
+                              </span>
+                            </div>
+                          );
+                        })}
                       </div>
-                      {BOWEL_PHASES.map(phase => {
-                        const count   = bmMatrix[bm][phase];
-                        const opacity = cellOpacity(count, max);
-                        const isHov   = hoveredBM?.bm === bm && hoveredBM?.phase === phase;
-                        return (
-                          <div
-                            key={phase}
-                            className="rounded-lg flex items-center justify-center transition-all"
-                            style={{
-                              height: '38px',
-                              background: count > 0 ? `rgba(${hexToRgb(color)}, ${opacity})` : 'var(--color-peat-light)',
-                              border: isHov ? `2px solid ${color}` : '2px solid transparent',
-                            }}
-                            onMouseEnter={() => setHoveredBM({ bm, phase })}
-                            onMouseLeave={() => setHoveredBM(null)}
-                          >
-                            <span style={{ fontSize: '11px', fontWeight: 600, color: count > 0 ? (opacity > 0.55 ? '#fff' : color) : 'var(--color-peat-mid)' }}>
-                              {count > 0 ? count : '–'}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
               {/* Hover label */}
               <div className="mt-3 h-5 flex items-center justify-center">
