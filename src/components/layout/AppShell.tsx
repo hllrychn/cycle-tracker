@@ -222,6 +222,16 @@ export function AppShell() {
                 style={{ background: '#fff', boxShadow: '0 4px 16px rgba(46,40,32,0.15)', minWidth: 140, border: '1px solid var(--color-peat-light)' }}
               >
                 <button
+                  onClick={() => { setMenuOpen(false); navigate('/contact'); }}
+                  className="w-full text-left px-4 py-2.5 text-xs transition-colors"
+                  style={{ color: 'var(--color-peat-deep)' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-peat-light)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  Contact
+                </button>
+                <div style={{ height: 1, background: 'var(--color-peat-light)' }} />
+                <button
                   onClick={() => { setMenuOpen(false); setShowClearModal(true); }}
                   className="w-full text-left px-4 py-2.5 text-xs transition-colors"
                   style={{ color: 'var(--color-peat-deep)' }}
@@ -285,7 +295,7 @@ export function AppShell() {
             end={end}
             className="flex-1 flex flex-col items-center justify-center py-2.5 gap-1 transition-colors"
             style={({ isActive }) => ({
-              color: isActive ? 'var(--color-moss-base)' : 'var(--color-peat-deep)',
+              color: isActive ? 'var(--color-moss-base)' : '#F0EDE6',
             })}
           >
             {icon

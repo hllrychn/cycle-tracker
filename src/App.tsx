@@ -11,6 +11,7 @@ import { HealthPage } from './pages/HealthPage';
 import { PalettePage } from './pages/PalettePage';
 import { FontsPage } from './pages/FontsPage';
 import { LoaderPage } from './pages/LoaderPage';
+import { ContactPage } from './pages/ContactPage';
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const auth = useAuthState();
@@ -32,6 +33,7 @@ export default function App() {
             <Route path="/palette" element={<PalettePage />} />
             <Route path="/fonts" element={<FontsPage />} />
             <Route path="/loader" element={<LoaderPage />} />
+            <Route path="/contact" element={<ContactPage />} />
           </Route>
         </Routes>
       </AuthProvider>
