@@ -31,7 +31,7 @@ export function HealthPage() {
     <div className="space-y-6">
       <div>
         <h1 className="font-semibold text-3xl md:text-[42px]" style={{ color: 'var(--color-text-primary)' }}>Health</h1>
-        <p className="text-sm mt-0.5" style={{ color: '#F0EDE6' }}>
+        <p className="text-sm mt-2" style={{ color: '#F0EDE6' }}>
           {format(new Date(), 'EEEE, MMMM d')}
         </p>
       </div>

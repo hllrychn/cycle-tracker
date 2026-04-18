@@ -28,7 +28,7 @@ export function ContactPage() {
     <div className="max-w-lg space-y-6">
       <div>
         <h1 className="font-semibold text-3xl md:text-[42px]" style={{ color: 'var(--color-text-primary)' }}>Contact</h1>
-        <p className="text-sm mt-0.5" style={{ color: '#F0EDE6' }}>Send feedback or get in touch</p>
+        <p className="text-sm mt-2" style={{ color: '#F0EDE6' }}>Send feedback or get in touch</p>
       </div>
 
       <div className="rounded-2xl overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-moss-base)' }}>
