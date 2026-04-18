@@ -33,11 +33,11 @@ const NAV_ITEMS = [
 ];
 
 const BOTTOM_TABS = [
-  { to: '/',              label: 'Home',     icon: null as string | null, end: true  },
-  { to: '/health',        label: 'Health',   icon: null,                 end: false },
-  { to: '/log/symptoms',  label: 'Symptoms', icon: '✏️',                 end: false },
-  { to: '/log/period',    label: 'Period',   icon: '🩸',                 end: false },
-  { to: '/history',       label: 'History',  icon: '📋',                 end: false },
+  { to: '/',              label: 'Home',     icon: null as string | null, activeImg: '/home-icon-active.png',   inactiveImg: '/home-icon-inactive.png',   end: true  },
+  { to: '/health',        label: 'Health',   icon: null,                  activeImg: '/health-icon-active.png', inactiveImg: '/health-icon-inactive.png', end: false },
+  { to: '/log/symptoms',  label: 'Symptoms', icon: '✏️',                  activeImg: null,                      inactiveImg: null,                        end: false },
+  { to: '/log/period',    label: 'Period',   icon: '🩸',                  activeImg: null,                      inactiveImg: null,                        end: false },
+  { to: '/history',       label: 'History',  icon: '📋',                  activeImg: null,                      inactiveImg: null,                        end: false },
 ];
 
 export function AppShell() {
@@ -288,7 +288,7 @@ export function AppShell() {
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        {BOTTOM_TABS.map(({ to, label, icon, end }) => (
+        {BOTTOM_TABS.map(({ to, label, icon, activeImg, inactiveImg, end }) => (
           <NavLink
             key={to}
             to={to}
@@ -298,15 +298,19 @@ export function AppShell() {
               color: isActive ? 'var(--color-moss-base)' : '#F0EDE6',
             })}
           >
-            {icon
-              ? <span className="text-xl leading-none">{icon}</span>
-              : <img
-                  src={to === '/' ? '/home-icon.png' : '/health-icon.png'}
-                  alt={label}
-                  style={{ width: '1.25rem', height: '1.25rem', objectFit: 'contain' }}
-                />
-            }
-            <span style={{ fontSize: '10px', fontWeight: 500, lineHeight: 1 }}>{label}</span>
+            {({ isActive }) => (
+              <>
+                {icon
+                  ? <span className="text-xl leading-none">{icon}</span>
+                  : <img
+                      src={isActive ? activeImg! : inactiveImg!}
+                      alt={label}
+                      style={{ width: '1.25rem', height: '1.25rem', objectFit: 'contain' }}
+                    />
+                }
+                <span style={{ fontSize: '10px', fontWeight: isActive ? 700 : 500, lineHeight: 1 }}>{label}</span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>
