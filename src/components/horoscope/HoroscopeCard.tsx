@@ -104,9 +104,43 @@ export function HoroscopeCard({ cycles, prediction }: Props) {
   const [romanceView, setRomanceView]     = useState<'single' | 'relationship'>('single');
   const [romanceDropdownOpen, setRomanceDropdownOpen] = useState(false);
   const [shareToast, setShareToast]       = useState<'copied' | 'shared' | null>(null);
+  const [dragOffset, setDragOffset]       = useState(0);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
-  const romanceRef = useRef<HTMLDivElement>(null);
+  const romanceRef   = useRef<HTMLDivElement>(null);
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const touchStartX  = useRef<number | null>(null);
+  const touchStartY  = useRef<number | null>(null);
+  const isDragging   = useRef(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    isDragging.current  = false;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (!isDragging.current && Math.abs(dx) < Math.abs(dy)) return; // vertical scroll wins
+    isDragging.current = true;
+    // Clamp at edges with rubber-band resistance
+    const atStart = slideIndex === 0 && dx > 0;
+    const atEnd   = slideIndex === SLIDES.length - 1 && dx < 0;
+    setDragOffset(atStart || atEnd ? dx * 0.25 : dx);
+  };
+
+  const handleTouchEnd = () => {
+    if (isDragging.current) {
+      const THRESHOLD = 50;
+      if (dragOffset < -THRESHOLD && slideIndex < SLIDES.length - 1) setSlideIndex(i => i + 1);
+      else if (dragOffset > THRESHOLD && slideIndex > 0)             setSlideIndex(i => i - 1);
+    }
+    setDragOffset(0);
+    touchStartX.current = null;
+    touchStartY.current = null;
+    isDragging.current  = false;
+  };
 
   const openRomanceDropdown = () => {
     if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
@@ -344,11 +378,19 @@ export function HoroscopeCard({ cycles, prediction }: Props) {
         })}
       </div>
 
-      {/* Content panel — full width, slides via translateX */}
-      <div className="overflow-hidden">
+      {/* Content panel — full width, slides via translateX; swipeable on mobile */}
+      <div
+        className="overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <div
-          className="flex transition-transform duration-300 ease-in-out"
-          style={{ transform: `translateX(-${slideIndex * 100}%)` }}
+          className="flex"
+          style={{
+            transform:  `translateX(calc(-${slideIndex * 100}% + ${dragOffset}px))`,
+            transition: dragOffset !== 0 ? 'none' : 'transform 300ms ease-in-out',
+          }}
         >
           {SLIDES.map((slide, i) => {
             const bg = slide.color;
