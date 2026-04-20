@@ -291,7 +291,7 @@ export function AppShell() {
             end={end}
             className="flex-1 flex flex-col items-center justify-center py-2.5 gap-1 transition-colors"
             style={({ isActive }) => ({
-              color: isActive ? 'var(--color-moss-base)' : '#F0EDE6',
+              color: isActive ? '#E8E6B8' : '#C4C170',
             })}
           >
             {({ isActive }) => (
