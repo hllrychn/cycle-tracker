@@ -22,10 +22,14 @@ export interface AppointmentInput {
 }
 
 export async function upsertAppointment(appt: AppointmentInput): Promise<Appointment> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
   const { data, error } = await supabase
     .from('doctor_appointments')
     .upsert({
       ...(appt.id ? { id: appt.id } : {}),
+      user_id:   user.id,
       date:      appt.date,
       time:      appt.time      ?? null,
       doctor:    appt.doctor    ?? null,
