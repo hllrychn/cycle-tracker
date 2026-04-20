@@ -16,6 +16,8 @@ import { FunFactPopup } from '../components/facts/FunFactPopup';
 import { NavLink } from 'react-router-dom';
 import { differenceInDays, addDays, toISODate, startOfToday, format, parseLocalDate, todayLocalISO } from '../lib/dateUtils';
 import { PixelLoader } from '../components/ui/PixelLoader';
+import { useAppointments } from '../hooks/useAppointments';
+import { AppointmentPopup } from '../components/appointments/AppointmentPopup';
 
 const END_DISMISS_KEY = 'ct_end_period_dismissed_until';
 function isEndDismissed() {
@@ -32,9 +34,11 @@ function setEndDismissed() {
 export function DashboardPage() {
   const [showFunFact, setShowFunFact]         = useState(false);
   const [showPredictions, setShowPredictions] = useState(false);
+  const [showAppointment, setShowAppointment] = useState(false);
   const [dismissedEndBanner, setDismissedEndBanner] = useState(() => isEndDismissed());
   const { cycles, loading: cyclesLoading, addOrUpdateCycle, removeCycle } = useCycles();
   const { symptoms, loading: symptomsLoading, logSymptoms } = useSymptoms();
+  const { appointments, saveAppointment, removeAppointment } = useAppointments();
   const {
     customCycleLength, customPeriodDuration, nextPeriodDelayDays, recurringCyclesCount,
     setCustomCycleLength, setCustomPeriodDuration, addDelayDay, setRecurringCyclesCount, resetDelay,
@@ -213,6 +217,21 @@ export function DashboardPage() {
               Predictions
             </span>
           </div>
+          <div className="relative group/appt">
+            <button
+              onClick={() => setShowAppointment(true)}
+              className="w-8 h-8 flex items-center justify-center rounded-xl transition-colors text-base"
+              style={{ background: 'var(--color-blue-light)', color: 'var(--color-blue-dark)' }}
+            >
+              🩺
+            </button>
+            <span
+              className="pointer-events-none absolute top-full left-1/2 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded-md px-2 py-0.5 text-xs opacity-0 group-hover/appt:opacity-100 transition-opacity"
+              style={{ background: 'var(--color-peat-dark)', color: 'var(--color-text-light)' }}
+            >
+              Log appointment
+            </span>
+          </div>
           <NavLink
             to="/log/symptoms"
             className="text-xs px-4 py-2 rounded-xl transition-colors font-medium"
@@ -239,6 +258,13 @@ export function DashboardPage() {
 
       {showFunFact && (
         <FunFactPopup forceShow onClose={() => setShowFunFact(false)} />
+      )}
+
+      {showAppointment && (
+        <AppointmentPopup
+          onSave={async (data) => { await saveAppointment(data); setShowAppointment(false); }}
+          onClose={() => setShowAppointment(false)}
+        />
       )}
 
       {/* Active period day 2+ — end period banner */}
@@ -306,7 +332,10 @@ export function DashboardPage() {
             symptoms={symptoms}
             prediction={prediction}
             recurringPeriods={recurringPeriods}
+            appointments={appointments}
             onLogSymptoms={async (data) => { await logSymptoms(data); }}
+            onSaveAppointment={saveAppointment}
+            onDeleteAppointment={removeAppointment}
           />
         </div>
         <div className="md:col-span-1 flex flex-col gap-4">

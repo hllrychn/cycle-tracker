@@ -6,15 +6,19 @@ import {
 import { DayCell } from './DayCell';
 import type { CyclePhase } from './DayCell';
 import { DayDetailModal } from './DayDetailModal';
-import type { Cycle, SymptomLog, Prediction } from '../../types';
+import type { Cycle, SymptomLog, Prediction, Appointment } from '../../types';
 import type { RecurringPeriod } from '../../hooks/usePredictions';
+import type { AppointmentInput } from '../../services/appointmentService';
 
 interface Props {
   cycles: Cycle[];
   symptoms: SymptomLog[];
   prediction: Prediction | null;
   recurringPeriods: RecurringPeriod[];
+  appointments: Appointment[];
   onLogSymptoms: (data: Omit<SymptomLog, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  onSaveAppointment: (data: AppointmentInput) => Promise<Appointment>;
+  onDeleteAppointment: (id: string) => Promise<void>;
 }
 
 const DAY_INITIALS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -24,7 +28,7 @@ function inRange(date: Date, start: Date, end: Date): boolean {
   return isWithinInterval(date, { start, end });
 }
 
-export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, onLogSymptoms }: Props) {
+export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, appointments, onLogSymptoms, onSaveAppointment, onDeleteAppointment }: Props) {
   const [viewDate, setViewDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -48,7 +52,8 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
     }
   }
 
-  const symptomEmojiMap = new Map(symptoms.map(s => [s.log_date, s.feeling_emoji ?? null]));
+  const symptomEmojiMap  = new Map(symptoms.map(s => [s.log_date, s.feeling_emoji ?? null]));
+  const appointmentMap   = new Map(appointments.map(a => [a.date, a]));
 
   const prevMonth = () => setViewDate(d => { const m = new Date(d); m.setMonth(m.getMonth() - 1); return m; });
   const nextMonth = () => setViewDate(d => { const m = new Date(d); m.setMonth(m.getMonth() + 1); return m; });
@@ -218,6 +223,7 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
                 isLogged={isLogged}
                 isOvulationDay={isOvulationDay}
                 feelingEmoji={symptomEmojiMap.get(iso) ?? null}
+                hasAppointment={appointmentMap.has(iso)}
                 onClick={() => setSelectedDate(date)}
               />
             </div>
@@ -247,16 +253,20 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
       {selectedDate && (() => {
         const iso = format(selectedDate, 'yyyy-MM-dd');
         const { phase, isLogged, isOvulationDay } = getPhaseInfo(selectedDate, iso);
-        const symptomLog = symptoms.find(s => s.log_date === iso) ?? null;
+        const symptomLog  = symptoms.find(s => s.log_date === iso) ?? null;
+        const appointment = appointmentMap.get(iso) ?? null;
 
         return (
           <DayDetailModal
             date={selectedDate}
             symptomLog={symptomLog}
+            appointment={appointment}
             phase={phase}
             isLogged={isLogged}
             isOvulationDay={isOvulationDay}
             onSave={onLogSymptoms}
+            onSaveAppointment={onSaveAppointment}
+            onDeleteAppointment={() => onDeleteAppointment(appointment!.id)}
             onClose={() => setSelectedDate(null)}
           />
         );

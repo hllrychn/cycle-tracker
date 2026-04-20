@@ -40,6 +40,20 @@ export interface SymptomLog {
   updated_at: string;
 }
 
+export interface Appointment {
+  id: string;
+  user_id: string;
+  date: string;           // YYYY-MM-DD
+  time: string | null;    // HH:MM
+  doctor: string | null;
+  facility: string | null;
+  questions: string[];    // checklist items
+  notes: string | null;
+  tests: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Prediction {
   nextPeriodStart: Date;
   nextPeriodEnd: Date;

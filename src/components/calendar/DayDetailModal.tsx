@@ -1,16 +1,21 @@
 import { useState } from 'react';
 import { format } from '../../lib/dateUtils';
 import { LogSymptomsForm } from '../symptoms/LogSymptomsForm';
-import type { SymptomLog, Severity } from '../../types';
+import { AppointmentPopup } from '../appointments/AppointmentPopup';
+import type { SymptomLog, Severity, Appointment } from '../../types';
+import type { AppointmentInput } from '../../services/appointmentService';
 import type { CyclePhase } from './DayCell';
 
 interface Props {
   date: Date;
   symptomLog: SymptomLog | null;
+  appointment: Appointment | null;
   phase: CyclePhase | null;
   isLogged: boolean;
   isOvulationDay: boolean;
   onSave: (data: Omit<SymptomLog, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  onSaveAppointment: (data: AppointmentInput) => Promise<Appointment>;
+  onDeleteAppointment: () => Promise<void>;
   onClose: () => void;
 }
 
@@ -45,8 +50,9 @@ function phaseLabel(phase: CyclePhase | null, isLogged: boolean, isOvulationDay:
   return null;
 }
 
-export function DayDetailModal({ date, symptomLog, phase, isLogged, isOvulationDay, onSave, onClose }: Props) {
+export function DayDetailModal({ date, symptomLog, appointment, phase, isLogged, isOvulationDay, onSave, onSaveAppointment, onDeleteAppointment, onClose }: Props) {
   const [editing, setEditing] = useState(!symptomLog);
+  const [editingAppt, setEditingAppt] = useState(false);
   const badge = phaseLabel(phase, isLogged, isOvulationDay);
 
   const handleSave = async (data: Omit<SymptomLog, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
@@ -100,6 +106,53 @@ export function DayDetailModal({ date, symptomLog, phase, isLogged, isOvulationD
             ×
           </button>
         </div>
+
+        {/* Appointment section */}
+        {appointment && !editingAppt && (
+          <div className="px-5 py-4" style={{ borderBottom: '1px solid var(--color-peat-light)', background: 'var(--color-blue-light)' }}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🩺</span>
+                <div>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--color-blue-dark)' }}>Doctor's appointment</p>
+                  {appointment.time && <p className="text-xs" style={{ color: 'var(--color-blue-dark)' }}>{appointment.time}</p>}
+                  {appointment.doctor && <p className="text-xs" style={{ color: 'var(--color-blue-dark)' }}>{appointment.doctor}</p>}
+                  {appointment.facility && <p className="text-xs" style={{ color: 'var(--color-blue-dark)' }}>{appointment.facility}</p>}
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingAppt(true)}
+                className="text-xs px-2.5 py-1 rounded-lg shrink-0"
+                style={{ background: 'var(--color-blue-base)', color: '#fff' }}
+              >Edit</button>
+            </div>
+            {appointment.questions.length > 0 && (
+              <div className="mt-3 space-y-1">
+                <p className="text-xs font-medium mb-1" style={{ color: 'var(--color-blue-dark)' }}>Questions</p>
+                {appointment.questions.map((q, i) => (
+                  <div key={i} className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--color-blue-dark)' }}>
+                    <span style={{ opacity: 0.5 }}>{q.startsWith('✓ ') ? '☑' : '☐'}</span>
+                    <span style={{ textDecoration: q.startsWith('✓ ') ? 'line-through' : 'none', opacity: q.startsWith('✓ ') ? 0.5 : 1 }}>
+                      {q.startsWith('✓ ') ? q.slice(2) : q}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {appointment.tests && (
+              <div className="mt-2">
+                <p className="text-xs font-medium" style={{ color: 'var(--color-blue-dark)' }}>Tests</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--color-blue-dark)' }}>{appointment.tests}</p>
+              </div>
+            )}
+            {appointment.notes && (
+              <div className="mt-2">
+                <p className="text-xs font-medium" style={{ color: 'var(--color-blue-dark)' }}>Notes</p>
+                <p className="text-xs mt-0.5" style={{ color: 'var(--color-blue-dark)' }}>{appointment.notes}</p>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="px-5 py-4">
           {editing ? (
@@ -218,6 +271,16 @@ export function DayDetailModal({ date, symptomLog, phase, isLogged, isOvulationD
           )}
         </div>
       </div>
+
+      {editingAppt && (
+        <AppointmentPopup
+          existing={appointment ?? undefined}
+          initialDate={format(date, 'yyyy-MM-dd')}
+          onSave={async (data) => { await onSaveAppointment(data); setEditingAppt(false); }}
+          onDelete={appointment ? async () => { await onDeleteAppointment(); setEditingAppt(false); } : undefined}
+          onClose={() => setEditingAppt(false)}
+        />
+      )}
     </div>
   );
 }

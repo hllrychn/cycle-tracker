@@ -9,6 +9,7 @@ interface Props {
   isLogged: boolean;
   isOvulationDay: boolean;
   feelingEmoji: string | null;
+  hasAppointment?: boolean;
   onClick: () => void;
 }
 
@@ -26,7 +27,7 @@ const PHASE_TEXT: Record<CyclePhase, string> = {
   luteal:     'var(--color-peat-dark)',
 };
 
-export function DayCell({ date, inMonth, phase, isLogged, isOvulationDay, feelingEmoji, onClick }: Props) {
+export function DayCell({ date, inMonth, phase, isLogged, isOvulationDay, feelingEmoji, hasAppointment, onClick }: Props) {
   const today = isToday(date);
   const day = date.getDate();
 
@@ -46,10 +47,11 @@ export function DayCell({ date, inMonth, phase, isLogged, isOvulationDay, feelin
   return (
     <div
       onClick={onClick}
-      className="relative flex flex-col items-center justify-center h-8 w-8 rounded-full text-xs font-normal cursor-pointer select-none transition-opacity"
+      className="relative flex flex-col items-center justify-center h-8 w-8 rounded-full text-xs cursor-pointer select-none transition-opacity"
       style={{
         background: bgColor || 'transparent',
-        color: bgColor ? textColor : 'var(--color-text-light)',
+        color: hasAppointment ? '#4A7FD4' : (bgColor ? textColor : 'var(--color-text-light)'),
+        fontWeight: hasAppointment ? 700 : 400,
         opacity,
         outline: today ? '2px solid var(--color-moss-base)' : undefined,
         outlineOffset: today ? '2px' : undefined,
@@ -58,6 +60,9 @@ export function DayCell({ date, inMonth, phase, isLogged, isOvulationDay, feelin
       onMouseLeave={e => { e.currentTarget.style.opacity = String(opacity); }}
     >
       {day}
+      {hasAppointment && (
+        <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full" style={{ background: '#4A7FD4' }} />
+      )}
       {feelingEmoji && (
         <span className="absolute -bottom-1 -right-1 text-xs leading-none">{feelingEmoji}</span>
       )}

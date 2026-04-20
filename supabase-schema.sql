@@ -69,3 +69,29 @@ create policy "symptoms: owner select" on public.symptoms for select using (auth
 create policy "symptoms: owner insert" on public.symptoms for insert with check (auth.uid() = user_id);
 create policy "symptoms: owner update" on public.symptoms for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "symptoms: owner delete" on public.symptoms for delete using (auth.uid() = user_id);
+
+-- Doctor appointments table
+create table public.doctor_appointments (
+  id         uuid      primary key default gen_random_uuid(),
+  user_id    uuid      not null references auth.users(id) on delete cascade,
+  date       date      not null,
+  time       text,
+  doctor     text,
+  facility   text,
+  questions  text[]    not null default '{}',
+  notes      text,
+  tests      text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create trigger doctor_appointments_set_updated_at
+  before update on public.doctor_appointments
+  for each row execute function public.set_updated_at();
+
+alter table public.doctor_appointments enable row level security;
+
+create policy "appointments: owner select" on public.doctor_appointments for select using (auth.uid() = user_id);
+create policy "appointments: owner insert" on public.doctor_appointments for insert with check (auth.uid() = user_id);
+create policy "appointments: owner update" on public.doctor_appointments for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "appointments: owner delete" on public.doctor_appointments for delete using (auth.uid() = user_id);
