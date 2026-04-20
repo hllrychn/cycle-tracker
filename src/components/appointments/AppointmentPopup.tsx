@@ -101,9 +101,9 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
           <button onClick={onClose} className="text-2xl leading-none p-1" style={{ color: 'var(--color-peat-deep)' }}>×</button>
         </div>
 
-        <div className="px-5 py-5 space-y-4">
+        <div className="px-5 py-5 space-y-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
           {/* Date + Time row */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block mb-1" style={labelStyle}>Date *</label>
               <input type="date" value={date} onChange={e => setDate(e.target.value)} className={inputCls} style={inputStyle} />
@@ -115,7 +115,7 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
           </div>
 
           {/* Doctor + Type row */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block mb-1" style={labelStyle}>Doctor / Provider</label>
               <input
@@ -152,12 +152,12 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
                 <div key={i} className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: 'var(--color-peat-light)' }}>
                   <button
                     onClick={() => toggleQuestion(i)}
-                    className="w-4 h-4 rounded flex items-center justify-center shrink-0 transition-colors"
+                    className="w-5 h-5 rounded flex items-center justify-center shrink-0 transition-colors"
                     style={{
                       border: '1.5px solid var(--color-blue-base)',
                       background: q.startsWith('✓ ') ? 'var(--color-blue-base)' : 'transparent',
                       color: '#fff',
-                      fontSize: '10px',
+                      fontSize: '11px',
                     }}
                   >
                     {q.startsWith('✓ ') ? '✓' : ''}
@@ -165,7 +165,7 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
                   <span className="text-sm flex-1" style={{ color: 'var(--color-text-primary)', textDecoration: q.startsWith('✓ ') ? 'line-through' : 'none', opacity: q.startsWith('✓ ') ? 0.5 : 1 }}>
                     {q.startsWith('✓ ') ? q.slice(2) : q}
                   </span>
-                  <button onClick={() => removeQuestion(i)} className="text-xs shrink-0" style={{ color: 'var(--color-peat-mid)' }}>✕</button>
+                  <button onClick={() => removeQuestion(i)} className="w-7 h-7 flex items-center justify-center rounded-full shrink-0 text-sm" style={{ color: 'var(--color-peat-deep)', background: 'transparent' }}>✕</button>
                 </div>
               ))}
             </div>
