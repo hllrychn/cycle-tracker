@@ -125,7 +125,7 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
               />
             </div>
             <div>
-              <label className="block mb-1" style={labelStyle}>Type / Specialty</label>
+              <label className="block mb-1" style={labelStyle}>Specialty</label>
               <input
                 type="text" value={doctorType} onChange={e => setDoctorType(e.target.value)}
                 placeholder="e.g. OB/GYN, GP…"
