@@ -116,7 +116,11 @@ export function DayDetailModal({ date, symptomLog, appointment, phase, isLogged,
                 <div>
                   <p className="text-xs font-semibold" style={{ color: 'var(--color-blue-dark)' }}>Doctor's appointment</p>
                   {appointment.time && <p className="text-xs" style={{ color: 'var(--color-blue-dark)' }}>{appointment.time}</p>}
-                  {appointment.doctor && <p className="text-xs" style={{ color: 'var(--color-blue-dark)' }}>{appointment.doctor}</p>}
+                  {appointment.doctor && (
+                    <p className="text-xs" style={{ color: 'var(--color-blue-dark)' }}>
+                      {appointment.doctor}{appointment.doctor_type ? ` · ${appointment.doctor_type}` : ''}
+                    </p>
+                  )}
                   {appointment.facility && <p className="text-xs" style={{ color: 'var(--color-blue-dark)' }}>{appointment.facility}</p>}
                 </div>
               </div>

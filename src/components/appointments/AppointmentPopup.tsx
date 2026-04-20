@@ -21,8 +21,9 @@ const labelStyle = { color: 'var(--color-peat-deep)', fontSize: '11px', fontWeig
 export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onClose }: Props) {
   const [date,     setDate]     = useState(existing?.date     ?? initialDate ?? '');
   const [time,     setTime]     = useState(existing?.time     ?? '');
-  const [doctor,   setDoctor]   = useState(existing?.doctor   ?? '');
-  const [facility, setFacility] = useState(existing?.facility ?? '');
+  const [doctor,      setDoctor]      = useState(existing?.doctor      ?? '');
+  const [doctorType,  setDoctorType]  = useState(existing?.doctor_type ?? '');
+  const [facility,    setFacility]    = useState(existing?.facility    ?? '');
   const [notes,    setNotes]    = useState(existing?.notes    ?? '');
   const [tests,    setTests]    = useState(existing?.tests    ?? '');
   const [questions, setQuestions] = useState<string[]>(existing?.questions ?? []);
@@ -59,8 +60,9 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
         id:       existing?.id,
         date,
         time:     time.trim()     || null,
-        doctor:   doctor.trim()   || null,
-        facility: facility.trim() || null,
+        doctor:      doctor.trim()     || null,
+        doctor_type: doctorType.trim() || null,
+        facility:    facility.trim()   || null,
         questions,
         notes:    notes.trim()    || null,
         tests:    tests.trim()    || null,
@@ -112,14 +114,24 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
             </div>
           </div>
 
-          {/* Doctor */}
-          <div>
-            <label className="block mb-1" style={labelStyle}>Doctor / Provider</label>
-            <input
-              type="text" value={doctor} onChange={e => setDoctor(e.target.value)}
-              placeholder="Dr. Name"
-              className={inputCls} style={inputStyle}
-            />
+          {/* Doctor + Type row */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block mb-1" style={labelStyle}>Doctor / Provider</label>
+              <input
+                type="text" value={doctor} onChange={e => setDoctor(e.target.value)}
+                placeholder="Dr. Name"
+                className={inputCls} style={inputStyle}
+              />
+            </div>
+            <div>
+              <label className="block mb-1" style={labelStyle}>Type / Specialty</label>
+              <input
+                type="text" value={doctorType} onChange={e => setDoctorType(e.target.value)}
+                placeholder="e.g. OB/GYN, GP…"
+                className={inputCls} style={inputStyle}
+              />
+            </div>
           </div>
 
           {/* Facility */}

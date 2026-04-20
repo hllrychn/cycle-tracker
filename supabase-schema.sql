@@ -95,3 +95,6 @@ create policy "appointments: owner select" on public.doctor_appointments for sel
 create policy "appointments: owner insert" on public.doctor_appointments for insert with check (auth.uid() = user_id);
 create policy "appointments: owner update" on public.doctor_appointments for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 create policy "appointments: owner delete" on public.doctor_appointments for delete using (auth.uid() = user_id);
+
+-- Add doctor_type column to doctor_appointments
+alter table public.doctor_appointments add column if not exists doctor_type text;
