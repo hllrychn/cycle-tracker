@@ -47,7 +47,9 @@ export interface Appointment {
   time: string | null;    // HH:MM
   doctor: string | null;
   doctor_type: string | null;
+  reason: string | null;
   facility: string | null;
+  address: string | null;
   questions: string[];    // checklist items
   notes: string | null;
   tests: string | null;

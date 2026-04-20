@@ -98,3 +98,7 @@ create policy "appointments: owner delete" on public.doctor_appointments for del
 
 -- Add doctor_type column to doctor_appointments
 alter table public.doctor_appointments add column if not exists doctor_type text;
+
+-- Add reason and address columns to doctor_appointments
+alter table public.doctor_appointments add column if not exists reason text;
+alter table public.doctor_appointments add column if not exists address text;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { Appointment } from '../../types';
 import type { AppointmentInput } from '../../services/appointmentService';
 
@@ -10,28 +10,88 @@ interface Props {
   onClose: () => void;
 }
 
+interface NominatimResult {
+  place_id: number;
+  display_name: string;
+}
+
 const inputCls = 'w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-blue-base)]';
 const inputStyle = {
   border: '1px solid var(--color-peat-mid)',
   background: 'var(--color-peat-light)',
   color: 'var(--color-text-primary)',
 };
-const labelStyle = { color: 'var(--color-peat-deep)', fontSize: '11px', fontWeight: 500, textTransform: 'uppercase' as const, letterSpacing: '0.05em' };
+const labelStyle = {
+  color: 'var(--color-peat-deep)',
+  fontSize: '11px',
+  fontWeight: 500,
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.05em',
+};
 
 export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onClose }: Props) {
-  const [date,     setDate]     = useState(existing?.date     ?? initialDate ?? '');
-  const [time,     setTime]     = useState(existing?.time     ?? '');
-  const [doctor,      setDoctor]      = useState(existing?.doctor      ?? '');
-  const [doctorType,  setDoctorType]  = useState(existing?.doctor_type ?? '');
-  const [facility,    setFacility]    = useState(existing?.facility    ?? '');
-  const [notes,    setNotes]    = useState(existing?.notes    ?? '');
-  const [tests,    setTests]    = useState(existing?.tests    ?? '');
-  const [questions, setQuestions] = useState<string[]>(existing?.questions ?? []);
+  const [date,       setDate]       = useState(existing?.date        ?? initialDate ?? '');
+  const [time,       setTime]       = useState(existing?.time        ?? '');
+  const [reason,     setReason]     = useState(existing?.reason      ?? '');
+  const [doctor,     setDoctor]     = useState(existing?.doctor      ?? '');
+  const [doctorType, setDoctorType] = useState(existing?.doctor_type ?? '');
+  const [facility,   setFacility]   = useState(existing?.facility    ?? '');
+  const [address,    setAddress]    = useState(existing?.address     ?? '');
+  const [notes,      setNotes]      = useState(existing?.notes       ?? '');
+  const [tests,      setTests]      = useState(existing?.tests       ?? '');
+  const [questions,  setQuestions]  = useState<string[]>(existing?.questions ?? []);
   const [newQuestion, setNewQuestion] = useState('');
-  const [saving,   setSaving]   = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [saving,        setSaving]        = useState(false);
+  const [deleting,      setDeleting]      = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [error,    setError]    = useState<string | null>(null);
+  const [error,         setError]         = useState<string | null>(null);
+
+  // Address autocomplete
+  const [addrSuggestions, setAddrSuggestions] = useState<NominatimResult[]>([]);
+  const [addrLoading,     setAddrLoading]     = useState(false);
+  const [addrOpen,        setAddrOpen]        = useState(false);
+  const addrTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const addrRef      = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const q = address.trim();
+    if (q.length < 3) { setAddrSuggestions([]); setAddrOpen(false); return; }
+
+    if (addrTimerRef.current) clearTimeout(addrTimerRef.current);
+    addrTimerRef.current = setTimeout(async () => {
+      setAddrLoading(true);
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=0`,
+          { headers: { 'Accept-Language': 'en' } }
+        );
+        const data: NominatimResult[] = await res.json();
+        setAddrSuggestions(data);
+        setAddrOpen(data.length > 0);
+      } catch {
+        setAddrSuggestions([]);
+      } finally {
+        setAddrLoading(false);
+      }
+    }, 350);
+
+    return () => { if (addrTimerRef.current) clearTimeout(addrTimerRef.current); };
+  }, [address]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (addrRef.current && !addrRef.current.contains(e.target as Node)) setAddrOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const selectAddress = (result: NominatimResult) => {
+    setAddress(result.display_name);
+    setAddrSuggestions([]);
+    setAddrOpen(false);
+  };
 
   const addQuestion = () => {
     const q = newQuestion.trim();
@@ -43,7 +103,6 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
   const removeQuestion = (i: number) => setQuestions(prev => prev.filter((_, idx) => idx !== i));
 
   const toggleQuestion = (i: number) => {
-    // prefix checked items with ✓ for visual state — not persisted differently
     setQuestions(prev => {
       const next = [...prev];
       next[i] = next[i].startsWith('✓ ') ? next[i].slice(2) : '✓ ' + next[i];
@@ -57,15 +116,17 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
     setError(null);
     try {
       await onSave({
-        id:       existing?.id,
+        id:          existing?.id,
         date,
-        time:     time.trim()     || null,
+        time:        time.trim()       || null,
+        reason:      reason.trim()     || null,
         doctor:      doctor.trim()     || null,
         doctor_type: doctorType.trim() || null,
         facility:    facility.trim()   || null,
+        address:     address.trim()    || null,
         questions,
-        notes:    notes.trim()    || null,
-        tests:    tests.trim()    || null,
+        notes:       notes.trim()      || null,
+        tests:       tests.trim()      || null,
       });
       onClose();
     } catch (e) {
@@ -101,8 +162,9 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
           <button onClick={onClose} className="text-2xl leading-none p-1" style={{ color: 'var(--color-peat-deep)' }}>×</button>
         </div>
 
-        <div className="px-5 py-5 space-y-4 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
-          {/* Date + Time row */}
+        <div className="px-5 py-5 space-y-4" style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}>
+
+          {/* Date + Time */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block mb-1" style={labelStyle}>Date *</label>
@@ -114,7 +176,17 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
             </div>
           </div>
 
-          {/* Doctor + Type row */}
+          {/* Reason for visit */}
+          <div>
+            <label className="block mb-1" style={labelStyle}>Reason for visit</label>
+            <input
+              type="text" value={reason} onChange={e => setReason(e.target.value)}
+              placeholder="e.g. annual checkup, follow-up, concerns…"
+              className={inputCls} style={inputStyle}
+            />
+          </div>
+
+          {/* Doctor + Specialty */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block mb-1" style={labelStyle}>Doctor / Provider</label>
@@ -144,6 +216,43 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
             />
           </div>
 
+          {/* Address with autocomplete */}
+          <div ref={addrRef} className="relative">
+            <label className="block mb-1" style={labelStyle}>
+              Address
+              {addrLoading && <span className="ml-2 text-xs font-normal normal-case" style={{ color: 'var(--color-peat-mid)' }}>Searching…</span>}
+            </label>
+            <input
+              type="text"
+              value={address}
+              onChange={e => { setAddress(e.target.value); setAddrOpen(true); }}
+              onFocus={() => { if (addrSuggestions.length > 0) setAddrOpen(true); }}
+              placeholder="Start typing an address…"
+              className={inputCls}
+              style={inputStyle}
+              autoComplete="off"
+            />
+            {addrOpen && addrSuggestions.length > 0 && (
+              <div
+                className="absolute left-0 right-0 top-full mt-1 rounded-xl overflow-hidden z-50"
+                style={{ background: '#fff', border: '1px solid var(--color-peat-mid)', boxShadow: '0 4px 16px rgba(46,40,32,0.14)', maxHeight: '180px', overflowY: 'auto' }}
+              >
+                {addrSuggestions.map(r => (
+                  <button
+                    key={r.place_id}
+                    onMouseDown={e => { e.preventDefault(); selectAddress(r); }}
+                    className="w-full text-left px-3 py-2.5 text-xs transition-colors"
+                    style={{ color: 'var(--color-text-primary)', borderBottom: '1px solid var(--color-peat-light)' }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-peat-light)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  >
+                    {r.display_name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Questions checklist */}
           <div>
             <label className="block mb-1" style={labelStyle}>Questions / Concerns</label>
@@ -165,7 +274,7 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
                   <span className="text-sm flex-1" style={{ color: 'var(--color-text-primary)', textDecoration: q.startsWith('✓ ') ? 'line-through' : 'none', opacity: q.startsWith('✓ ') ? 0.5 : 1 }}>
                     {q.startsWith('✓ ') ? q.slice(2) : q}
                   </span>
-                  <button onClick={() => removeQuestion(i)} className="w-7 h-7 flex items-center justify-center rounded-full shrink-0 text-sm" style={{ color: 'var(--color-peat-deep)', background: 'transparent' }}>✕</button>
+                  <button onClick={() => removeQuestion(i)} className="w-7 h-7 flex items-center justify-center rounded-full shrink-0 text-sm" style={{ color: 'var(--color-peat-deep)' }}>✕</button>
                 </div>
               ))}
             </div>

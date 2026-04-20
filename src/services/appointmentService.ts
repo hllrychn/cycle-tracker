@@ -16,7 +16,9 @@ export interface AppointmentInput {
   time?: string | null;
   doctor?: string | null;
   doctor_type?: string | null;
+  reason?: string | null;
   facility?: string | null;
+  address?: string | null;
   questions?: string[];
   notes?: string | null;
   tests?: string | null;
@@ -35,7 +37,9 @@ export async function upsertAppointment(appt: AppointmentInput): Promise<Appoint
       time:      appt.time      ?? null,
       doctor:      appt.doctor      ?? null,
       doctor_type: appt.doctor_type ?? null,
+      reason:      appt.reason      ?? null,
       facility:    appt.facility    ?? null,
+      address:     appt.address     ?? null,
       questions: appt.questions ?? [],
       notes:     appt.notes     ?? null,
       tests:     appt.tests     ?? null,
