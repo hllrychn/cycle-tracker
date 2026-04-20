@@ -289,9 +289,10 @@ export function AppShell() {
             key={to}
             to={to}
             end={end}
-            className="flex-1 flex flex-col items-center justify-center py-2.5 gap-1 transition-colors"
+            className="flex-1 flex flex-col items-center justify-center py-2.5 gap-1 transition-colors relative"
             style={({ isActive }) => ({
               color: isActive ? '#E8E6B8' : '#C4C170',
+              borderBottom: isActive ? '2px solid #E8E6B8' : '2px solid transparent',
             })}
           >
             {({ isActive }) => (
