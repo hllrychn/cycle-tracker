@@ -80,21 +80,21 @@ export function exportSymptomsToExcel(
       .filter(k => s[k] && s[k] !== 'none')
       .map(k => `${k.replace('_', ' ')} (${s[k]})`);
 
-    const otherParts = s.other_symptoms?.length ? s.other_symptoms : [];
-    const allSymptoms = [...severityParts, ...otherParts].join(', ') || '—';
+    const relatedSymptoms = s.other_symptoms?.length ? s.other_symptoms.join(', ') : '';
 
     return {
-      Date:              s.log_date,
-      Phase:             phase,
-      Mood:              s.feeling_emoji ?? '',
-      'BBT (°F)':        s.bbt ?? '',
-      Symptoms:          allSymptoms,
-      'Flow intensity':  s.flow_intensity ?? '',
-      Discharge:         s.discharge ?? '',
-      'Sleep quality':   s.sleep_quality ?? '',
-      'Bowel movement':  s.bowel_movement ?? '',
-      'Food craving':    s.food_craving ? (s.food_craving_notes || 'Yes') : '',
-      Notes:             s.notes ?? '',
+      Date:                s.log_date,
+      Phase:               phase,
+      Mood:                s.feeling_emoji ?? '',
+      'BBT (°F)':          s.bbt ?? '',
+      Symptoms:            severityParts.join(', ') || '—',
+      'Related symptoms':  relatedSymptoms,
+      'Flow intensity':    s.flow_intensity ?? '',
+      Discharge:           s.discharge ?? '',
+      'Sleep quality':     s.sleep_quality ?? '',
+      'Bowel movement':    s.bowel_movement ?? '',
+      'Food craving':      s.food_craving ? (s.food_craving_notes || 'Yes') : '',
+      Notes:               s.notes ?? '',
     };
   });
 
@@ -106,7 +106,8 @@ export function exportSymptomsToExcel(
     { wch: 12 }, // Phase
     { wch: 6  }, // Mood
     { wch: 10 }, // BBT
-    { wch: 50 }, // Symptoms
+    { wch: 45 }, // Symptoms
+    { wch: 40 }, // Related symptoms
     { wch: 14 }, // Flow intensity
     { wch: 14 }, // Discharge
     { wch: 14 }, // Sleep quality
