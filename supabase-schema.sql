@@ -102,3 +102,28 @@ alter table public.doctor_appointments add column if not exists doctor_type text
 -- Add reason and address columns to doctor_appointments
 alter table public.doctor_appointments add column if not exists reason text;
 alter table public.doctor_appointments add column if not exists address text;
+
+-- Medications & birth control table
+create table if not exists public.medications (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references auth.users(id) on delete cascade,
+  name        text not null,
+  type        text not null default 'medication',
+  dose        text,
+  frequency   text,
+  notes       text,
+  active      boolean not null default true,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create trigger medications_set_updated_at
+  before update on public.medications
+  for each row execute function public.set_updated_at();
+
+alter table public.medications enable row level security;
+
+create policy "medications: owner select" on public.medications for select using (auth.uid() = user_id);
+create policy "medications: owner insert" on public.medications for insert with check (auth.uid() = user_id);
+create policy "medications: owner update" on public.medications for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy "medications: owner delete" on public.medications for delete using (auth.uid() = user_id);
