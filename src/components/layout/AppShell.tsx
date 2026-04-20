@@ -34,9 +34,9 @@ const NAV_ITEMS = [
 const BOTTOM_TABS = [
   { to: '/',              label: 'Home',     icon: null as string | null, activeImg: '/home-icon-active.png',   inactiveImg: '/home-icon-inactive.png',   end: true  },
   { to: '/health',        label: 'Health',   icon: null,                  activeImg: '/health-icon-active.png', inactiveImg: '/health-icon-inactive.png', end: false },
-  { to: '/log/symptoms',  label: 'Symptoms', icon: null,                  activeImg: '/symptoms-icon.png',      inactiveImg: '/symptoms-icon.png',        end: false },
-  { to: '/log/period',    label: 'Period',   icon: null,                  activeImg: '/period-icon.png',        inactiveImg: '/period-icon.png',          end: false },
-  { to: '/history',       label: 'History',  icon: null,                  activeImg: '/history-icon.png',       inactiveImg: '/history-icon.png',         end: false },
+  { to: '/log/symptoms',  label: 'Symptoms', icon: null,                  activeImg: '/symptoms-icon-active.png',  inactiveImg: '/symptoms-icon-inactive.png',  end: false },
+  { to: '/log/period',    label: 'Period',   icon: null,                  activeImg: '/period-icon-active.png',    inactiveImg: '/period-icon-inactive.png',    end: false },
+  { to: '/history',       label: 'History',  icon: null,                  activeImg: '/history-icon-active.png',   inactiveImg: '/history-icon-inactive.png',   end: false },
 ];
 
 export function AppShell() {
