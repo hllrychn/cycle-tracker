@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { SparkleCursor } from '../cursor/SparkleCursor';
-import { ClearHistoryModal } from '../account/ClearHistoryModal';
 import { useAuth } from '../../hooks/useAuth';
 import { useCycles } from '../../hooks/useCycles';
 import { useSymptoms } from '../../hooks/useSymptoms';
@@ -43,8 +42,7 @@ const BOTTOM_TABS = [
 export function AppShell() {
   const { signOut } = useAuth();
   const navigate    = useNavigate();
-  const [showClearModal, setShowClearModal] = useState(false);
-  const [menuOpen, setMenuOpen]             = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const menuTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const openMenu  = () => { if (menuTimeout.current) clearTimeout(menuTimeout.current); setMenuOpen(true); };
@@ -232,13 +230,13 @@ export function AppShell() {
                 </button>
                 <div style={{ height: 1, background: 'var(--color-peat-light)' }} />
                 <button
-                  onClick={() => { setMenuOpen(false); setShowClearModal(true); }}
+                  onClick={() => { setMenuOpen(false); navigate('/settings'); }}
                   className="w-full text-left px-4 py-2.5 text-xs transition-colors"
                   style={{ color: 'var(--color-peat-deep)' }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-peat-light)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
-                  Clear history
+                  Settings
                 </button>
                 <div style={{ height: 1, background: 'var(--color-peat-light)' }} />
                 <button
@@ -255,8 +253,6 @@ export function AppShell() {
           </div>
         </div>
       </header>
-
-      {showClearModal && <ClearHistoryModal onClose={() => setShowClearModal(false)} />}
 
       {/* ── Main content ── */}
       <main

@@ -12,6 +12,7 @@ import { PalettePage } from './pages/PalettePage';
 import { FontsPage } from './pages/FontsPage';
 import { LoaderPage } from './pages/LoaderPage';
 import { ContactPage } from './pages/ContactPage';
+import { SettingsPage } from './pages/SettingsPage';
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const auth = useAuthState();
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/fonts" element={<FontsPage />} />
             <Route path="/loader" element={<LoaderPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
         </Routes>
       </AuthProvider>
