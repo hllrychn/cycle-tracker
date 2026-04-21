@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { Appointment } from '../types';
+import type { Appointment, TestItem } from '../types';
 
 export async function getAppointments(): Promise<Appointment[]> {
   const { data, error } = await supabase
@@ -21,7 +21,7 @@ export interface AppointmentInput {
   address?: string | null;
   questions?: string[];
   notes?: string | null;
-  tests?: string | null;
+  tests?: TestItem[];
 }
 
 export async function upsertAppointment(appt: AppointmentInput): Promise<Appointment> {
@@ -42,7 +42,7 @@ export async function upsertAppointment(appt: AppointmentInput): Promise<Appoint
       address:     appt.address     ?? null,
       questions: appt.questions ?? [],
       notes:     appt.notes     ?? null,
-      tests:     appt.tests     ?? null,
+      tests:     appt.tests     ?? [],
     }, { onConflict: 'id' })
     .select()
     .single();

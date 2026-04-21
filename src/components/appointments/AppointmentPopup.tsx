@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import type { Appointment } from '../../types';
+import type { Appointment, TestItem, TestResult } from '../../types';
 import type { AppointmentInput } from '../../services/appointmentService';
 
 interface Props {
@@ -38,7 +38,8 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
   const [facility,   setFacility]   = useState(existing?.facility    ?? '');
   const [address,    setAddress]    = useState(existing?.address     ?? '');
   const [notes,      setNotes]      = useState(existing?.notes       ?? '');
-  const [tests,      setTests]      = useState(existing?.tests       ?? '');
+  const [tests,      setTests]      = useState<TestItem[]>(existing?.tests ?? []);
+  const [newTest,    setNewTest]    = useState('');
   const [questions,  setQuestions]  = useState<string[]>(existing?.questions ?? []);
   const [newQuestion, setNewQuestion] = useState('');
   const [saving,        setSaving]        = useState(false);
@@ -110,6 +111,31 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
     });
   };
 
+  const addTest = () => {
+    const t = newTest.trim();
+    if (!t) return;
+    setTests(prev => [...prev, { name: t, result: null, result_note: null }]);
+    setNewTest('');
+  };
+
+  const removeTest = (i: number) => setTests(prev => prev.filter((_, idx) => idx !== i));
+
+  const setTestResult = (i: number, result: TestResult) => {
+    setTests(prev => {
+      const next = [...prev];
+      next[i] = { ...next[i], result: next[i].result === result ? null : result };
+      return next;
+    });
+  };
+
+  const setTestResultNote = (i: number, note: string) => {
+    setTests(prev => {
+      const next = [...prev];
+      next[i] = { ...next[i], result_note: note || null };
+      return next;
+    });
+  };
+
   const handleSave = async () => {
     if (!date) { setError('Date is required.'); return; }
     setSaving(true);
@@ -126,7 +152,7 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
         address:     address.trim()    || null,
         questions,
         notes:       notes.trim()      || null,
-        tests:       tests.trim()      || null,
+        tests,
       });
       onClose();
     } catch (e) {
@@ -301,12 +327,58 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
           {/* Tests */}
           <div>
             <label className="block mb-1" style={labelStyle}>Tests / Procedures</label>
-            <textarea
-              value={tests} onChange={e => setTests(e.target.value)}
-              placeholder="e.g. bloodwork, ultrasound, pap smear…"
-              rows={2}
-              className={`${inputCls} resize-none`} style={inputStyle}
-            />
+            <div className="space-y-2 mb-2">
+              {tests.map((test, i) => (
+                <div key={i} className="rounded-lg px-3 py-2.5 space-y-2" style={{ background: 'var(--color-peat-light)', border: '1px solid var(--color-peat-mid)' }}>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm flex-1" style={{ color: 'var(--color-text-primary)' }}>{test.name}</span>
+                    <button onClick={() => removeTest(i)} className="w-7 h-7 flex items-center justify-center rounded-full shrink-0 text-sm" style={{ color: 'var(--color-peat-deep)' }}>✕</button>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {(['negative', 'positive', 'other'] as TestResult[]).map(r => (
+                      <button
+                        key={r}
+                        onClick={() => setTestResult(i, r)}
+                        className="px-2.5 py-0.5 rounded-full text-xs capitalize transition-colors"
+                        style={test.result === r
+                          ? r === 'negative'
+                            ? { background: 'var(--color-moss-base)', color: '#fff' }
+                            : r === 'positive'
+                              ? { background: 'var(--color-accent)', color: '#fff' }
+                              : { background: 'var(--color-blue-base)', color: '#fff' }
+                          : { background: 'transparent', color: 'var(--color-peat-deep)', border: '1px solid var(--color-peat-mid)' }
+                        }
+                      >{r}</button>
+                    ))}
+                  </div>
+                  {test.result === 'other' && (
+                    <input
+                      type="text"
+                      value={test.result_note ?? ''}
+                      onChange={e => setTestResultNote(i, e.target.value)}
+                      placeholder="Describe result…"
+                      className={inputCls} style={inputStyle}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newTest}
+                onChange={e => setNewTest(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTest(); } }}
+                placeholder="Add a test or procedure…"
+                className={`${inputCls} flex-1`}
+                style={inputStyle}
+              />
+              <button
+                onClick={addTest}
+                className="px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+                style={{ background: 'var(--color-blue-light)', color: 'var(--color-blue-dark)' }}
+              >Add</button>
+            </div>
           </div>
 
           {/* Notes */}

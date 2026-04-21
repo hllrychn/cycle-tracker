@@ -40,6 +40,14 @@ export interface SymptomLog {
   updated_at: string;
 }
 
+export type TestResult = 'negative' | 'positive' | 'other' | null;
+
+export interface TestItem {
+  name: string;
+  result: TestResult;
+  result_note: string | null;
+}
+
 export interface Appointment {
   id: string;
   user_id: string;
@@ -52,7 +60,7 @@ export interface Appointment {
   address: string | null;
   questions: string[];    // checklist items
   notes: string | null;
-  tests: string | null;
+  tests: TestItem[];
   created_at: string;
   updated_at: string;
 }

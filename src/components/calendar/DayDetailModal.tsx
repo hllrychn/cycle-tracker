@@ -145,10 +145,30 @@ export function DayDetailModal({ date, symptomLog, appointment, phase, isLogged,
                 ))}
               </div>
             )}
-            {appointment.tests && (
+            {appointment.tests.length > 0 && (
               <div className="mt-2">
-                <p className="text-xs font-medium" style={{ color: 'var(--color-blue-dark)' }}>Tests</p>
-                <p className="text-xs mt-0.5" style={{ color: 'var(--color-blue-dark)' }}>{appointment.tests}</p>
+                <p className="text-xs font-medium mb-1" style={{ color: 'var(--color-blue-dark)' }}>Tests / Procedures</p>
+                <div className="space-y-1">
+                  {appointment.tests.map((t, i) => (
+                    <div key={i} className="flex items-center gap-2 text-xs" style={{ color: 'var(--color-blue-dark)' }}>
+                      <span className="flex-1">{t.name}</span>
+                      {t.result && (
+                        <span
+                          className="px-2 py-0.5 rounded-full capitalize text-xs"
+                          style={
+                            t.result === 'negative'
+                              ? { background: 'var(--color-moss-light)', color: 'var(--color-moss-dark)' }
+                              : t.result === 'positive'
+                                ? { background: 'var(--color-accent-light)', color: 'var(--color-accent-dark)' }
+                                : { background: 'var(--color-blue-light)', color: 'var(--color-blue-dark)' }
+                          }
+                        >
+                          {t.result === 'other' && t.result_note ? t.result_note : t.result}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
             {appointment.notes && (
