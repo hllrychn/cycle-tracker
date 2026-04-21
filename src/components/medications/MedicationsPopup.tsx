@@ -49,6 +49,7 @@ function MedForm({
   const [type,      setType]      = useState<Medication['type']>(existing?.type ?? 'medication');
   const [dose,      setDose]      = useState(existing?.dose      ?? '');
   const [frequency, setFrequency] = useState(existing?.frequency ?? '');
+  const [duration,  setDuration]  = useState(existing?.duration  ?? '');
   const [notes,     setNotes]     = useState(existing?.notes     ?? '');
   const [saving,    setSaving]    = useState(false);
   const [error,     setError]     = useState<string | null>(null);
@@ -64,6 +65,7 @@ function MedForm({
         type,
         dose:      dose.trim()      || null,
         frequency: frequency.trim() || null,
+        duration:  duration.trim()  || null,
         notes:     notes.trim()     || null,
         active:    existing?.active ?? true,
       });
@@ -103,7 +105,7 @@ function MedForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label className="block mb-1" style={labelStyle}>Dose</label>
           <input
@@ -117,6 +119,14 @@ function MedForm({
           <input
             type="text" value={frequency} onChange={e => setFrequency(e.target.value)}
             placeholder="e.g. daily, as needed…"
+            className={inputCls} style={inputStyle}
+          />
+        </div>
+        <div>
+          <label className="block mb-1" style={labelStyle}>Duration</label>
+          <input
+            type="text" value={duration} onChange={e => setDuration(e.target.value)}
+            placeholder="e.g. 3 months, ongoing…"
             className={inputCls} style={inputStyle}
           />
         </div>
@@ -205,9 +215,9 @@ export function MedicationsPopup({ medications, onSave, onDelete, onClose }: Pro
                           {TYPE_LABELS.find(t => t.value === med.type)?.label}
                         </span>
                       </div>
-                      {(med.dose || med.frequency) && (
+                      {(med.dose || med.frequency || med.duration) && (
                         <p className="text-xs mt-0.5" style={{ color: 'var(--color-peat-deep)' }}>
-                          {[med.dose, med.frequency].filter(Boolean).join(' · ')}
+                          {[med.dose, med.frequency, med.duration].filter(Boolean).join(' · ')}
                         </p>
                       )}
                       {med.notes && <p className="text-xs mt-0.5 italic" style={{ color: 'var(--color-peat-deep)' }}>{med.notes}</p>}

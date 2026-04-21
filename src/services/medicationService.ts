@@ -7,6 +7,7 @@ export interface Medication {
   type: 'medication' | 'birth_control' | 'supplement' | 'other';
   dose: string | null;
   frequency: string | null;
+  duration: string | null;
   notes: string | null;
   active: boolean;
   created_at: string;
@@ -19,6 +20,7 @@ export interface MedicationInput {
   type: Medication['type'];
   dose?: string | null;
   frequency?: string | null;
+  duration?: string | null;
   notes?: string | null;
   active?: boolean;
 }
@@ -45,6 +47,7 @@ export async function upsertMedication(med: MedicationInput): Promise<Medication
       type:      med.type,
       dose:      med.dose      ?? null,
       frequency: med.frequency ?? null,
+      duration:  med.duration  ?? null,
       notes:     med.notes     ?? null,
       active:    med.active    ?? true,
     }, { onConflict: 'id' })
