@@ -47,10 +47,11 @@ function MedForm({
 }) {
   const [name,      setName]      = useState(existing?.name      ?? '');
   const [type,      setType]      = useState<Medication['type']>(existing?.type ?? 'medication');
-  const [dose,      setDose]      = useState(existing?.dose      ?? '');
-  const [frequency, setFrequency] = useState(existing?.frequency ?? '');
-  const [duration,  setDuration]  = useState(existing?.duration  ?? '');
-  const [notes,     setNotes]     = useState(existing?.notes     ?? '');
+  const [dose,      setDose]      = useState(existing?.dose       ?? '');
+  const [frequency, setFrequency] = useState(existing?.frequency  ?? '');
+  const [startDate, setStartDate] = useState(existing?.start_date ?? '');
+  const [endDate,   setEndDate]   = useState(existing?.end_date   ?? '');
+  const [notes,     setNotes]     = useState(existing?.notes      ?? '');
   const [saving,    setSaving]    = useState(false);
   const [error,     setError]     = useState<string | null>(null);
 
@@ -63,10 +64,11 @@ function MedForm({
         id:        existing?.id,
         name:      name.trim(),
         type,
-        dose:      dose.trim()      || null,
-        frequency: frequency.trim() || null,
-        duration:  duration.trim()  || null,
-        notes:     notes.trim()     || null,
+        dose:       dose.trim()  || null,
+        frequency:  frequency.trim() || null,
+        start_date: startDate   || null,
+        end_date:   endDate     || null,
+        notes:      notes.trim() || null,
         active:    existing?.active ?? true,
       });
     } catch (e) {
@@ -105,7 +107,7 @@ function MedForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="block mb-1" style={labelStyle}>Dose</label>
           <input
@@ -122,11 +124,20 @@ function MedForm({
             className={inputCls} style={inputStyle}
           />
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="block mb-1" style={labelStyle}>Duration</label>
+          <label className="block mb-1" style={labelStyle}>Start date</label>
           <input
-            type="text" value={duration} onChange={e => setDuration(e.target.value)}
-            placeholder="e.g. 3 months, ongoing…"
+            type="date" value={startDate} onChange={e => setStartDate(e.target.value)}
+            className={inputCls} style={inputStyle}
+          />
+        </div>
+        <div>
+          <label className="block mb-1" style={labelStyle}>End date</label>
+          <input
+            type="date" value={endDate} onChange={e => setEndDate(e.target.value)}
             className={inputCls} style={inputStyle}
           />
         </div>
@@ -215,9 +226,14 @@ export function MedicationsPopup({ medications, onSave, onDelete, onClose }: Pro
                           {TYPE_LABELS.find(t => t.value === med.type)?.label}
                         </span>
                       </div>
-                      {(med.dose || med.frequency || med.duration) && (
+                      {(med.dose || med.frequency) && (
                         <p className="text-xs mt-0.5" style={{ color: 'var(--color-peat-deep)' }}>
-                          {[med.dose, med.frequency, med.duration].filter(Boolean).join(' · ')}
+                          {[med.dose, med.frequency].filter(Boolean).join(' · ')}
+                        </p>
+                      )}
+                      {(med.start_date || med.end_date) && (
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--color-peat-deep)' }}>
+                          {med.start_date ?? '?'}{' – '}{med.end_date ?? 'ongoing'}
                         </p>
                       )}
                       {med.notes && <p className="text-xs mt-0.5 italic" style={{ color: 'var(--color-peat-deep)' }}>{med.notes}</p>}
