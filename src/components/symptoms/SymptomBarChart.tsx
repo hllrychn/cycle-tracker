@@ -60,6 +60,13 @@ const BM_LABELS: Record<BowelMovement, string> = {
 type BowelPhase = 'Menstrual' | 'Follicular' | 'Ovulatory' | 'Luteal';
 const BOWEL_PHASES: BowelPhase[] = ['Menstrual', 'Follicular', 'Ovulatory', 'Luteal'];
 
+const PHASE_SHORT: Record<BowelPhase, string> = {
+  Menstrual:  'Men.',
+  Follicular: 'Foll.',
+  Ovulatory:  'Ovul.',
+  Luteal:     'Lut.',
+};
+
 const PHASE_BG: Record<BowelPhase, string> = {
   Menstrual:  'var(--color-phase-menstrual)',
   Follicular: 'var(--color-phase-follicular)',
@@ -343,11 +350,11 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
             <>
               <p className="text-xs mb-3" style={{ color: 'var(--color-peat-deep)' }}>Darker = more frequent · top 10 by count</p>
               {/* Column headers */}
-              <div className="grid mb-1.5" style={{ gridTemplateColumns: '110px repeat(4, 1fr)', gap: '4px' }}>
+              <div className="grid mb-1.5" style={{ gridTemplateColumns: '80px repeat(4, 1fr)', gap: '4px' }}>
                 <div />
                 {BOWEL_PHASES.map(phase => (
                   <div key={phase} className="text-center py-1 rounded-lg" style={{ background: PHASE_BG[phase], fontSize: '10px', color: 'var(--color-peat-deep)', fontWeight: 500 }}>
-                    {phase}
+                    {PHASE_SHORT[phase]}
                   </div>
                 ))}
               </div>
@@ -356,12 +363,11 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
                 {(() => {
                   const globalMax = otherGlobalMax(otherMatrix.data, otherMatrix.rows);
                   return otherMatrix.rows.map(sym => {
-                    const label = sym.length > 16 ? sym.slice(0, 15) + '…' : sym;
                     return (
-                      <div key={sym} className="grid items-center" style={{ gridTemplateColumns: '110px repeat(4, 1fr)', gap: '4px' }}>
-                        <div className="flex items-center gap-1.5 pr-1">
+                      <div key={sym} className="grid items-center" style={{ gridTemplateColumns: '80px repeat(4, 1fr)', gap: '4px' }}>
+                        <div className="flex items-center gap-1.5 pr-1 min-w-0">
                           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: OTHER_COLOR }} />
-                          <span title={sym} style={{ fontSize: '11px', color: 'var(--color-peat-deep)' }}>{label}</span>
+                          <span title={sym} style={{ fontSize: '11px', color: 'var(--color-peat-deep)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sym}</span>
                         </div>
                         {BOWEL_PHASES.map(phase => {
                           const count   = otherMatrix.data[sym]?.[phase] ?? 0;
@@ -418,11 +424,11 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
             <>
               <p className="text-xs mb-3" style={{ color: 'var(--color-peat-deep)' }}>Darker = more frequent</p>
               {/* Column headers */}
-              <div className="grid mb-1.5" style={{ gridTemplateColumns: '90px repeat(4, 1fr)', gap: '4px' }}>
+              <div className="grid mb-1.5" style={{ gridTemplateColumns: '80px repeat(4, 1fr)', gap: '4px' }}>
                 <div />
                 {BOWEL_PHASES.map(phase => (
                   <div key={phase} className="text-center py-1 rounded-lg" style={{ background: PHASE_BG[phase], fontSize: '10px', color: 'var(--color-peat-deep)', fontWeight: 500 }}>
-                    {phase}
+                    {PHASE_SHORT[phase]}
                   </div>
                 ))}
               </div>
@@ -433,10 +439,10 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
                   return BM_TYPES.map(bm => {
                     const color = BM_COLORS[bm];
                     return (
-                      <div key={bm} className="grid items-center" style={{ gridTemplateColumns: '90px repeat(4, 1fr)', gap: '4px' }}>
-                        <div className="flex items-center gap-1.5 pr-1">
+                      <div key={bm} className="grid items-center" style={{ gridTemplateColumns: '80px repeat(4, 1fr)', gap: '4px' }}>
+                        <div className="flex items-center gap-1.5 pr-1 min-w-0">
                           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
-                          <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)' }}>{BM_LABELS[bm]}</span>
+                          <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{BM_LABELS[bm]}</span>
                         </div>
                         {BOWEL_PHASES.map(phase => {
                           const count   = bmMatrix[bm][phase];
