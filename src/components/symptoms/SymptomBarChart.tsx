@@ -350,54 +350,52 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
             <>
               <p className="text-xs mb-3" style={{ color: 'var(--color-peat-deep)' }}>Darker = more frequent · top 10 by count</p>
               <div className="overflow-x-auto">
-              {/* Column headers */}
-              <div className="grid mb-1.5" style={{ gridTemplateColumns: 'max-content repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
-                <div />
-                {BOWEL_PHASES.map(phase => (
-                  <div key={phase} className="text-center py-1 rounded-lg" style={{ background: PHASE_BG[phase], fontSize: '10px', color: 'var(--color-peat-deep)', fontWeight: 500 }}>
-                    {PHASE_SHORT[phase]}
-                  </div>
-                ))}
-              </div>
-              {/* Rows */}
-              <div className="space-y-1">
                 {(() => {
                   const globalMax = otherGlobalMax(otherMatrix.data, otherMatrix.rows);
-                  return otherMatrix.rows.map(sym => {
-                    return (
-                      <div key={sym} className="grid items-center" style={{ gridTemplateColumns: 'max-content repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
-                        <div className="flex items-center gap-1.5 pr-2">
-                          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: OTHER_COLOR }} />
-                          <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)', whiteSpace: 'nowrap' }}>{sym}</span>
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'max-content repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
+                      {/* Header row */}
+                      <div />
+                      {BOWEL_PHASES.map(phase => (
+                        <div key={phase} className="text-center py-1 rounded-lg" style={{ background: PHASE_BG[phase], fontSize: '10px', color: 'var(--color-peat-deep)', fontWeight: 500 }}>
+                          {PHASE_SHORT[phase]}
                         </div>
-                        {BOWEL_PHASES.map(phase => {
-                          const count   = otherMatrix.data[sym]?.[phase] ?? 0;
-                          const opacity = cellOpacity(count, globalMax);
-                          const isHov   = hoveredOther?.sym === sym && hoveredOther?.phase === phase;
-                          return (
-                            <div
-                              key={phase}
-                              className="rounded-lg flex items-center justify-center transition-all"
-                              style={{
-                                height: '36px',
-                                background: count > 0 ? `rgba(${hexToRgb(OTHER_COLOR)}, ${opacity})` : 'var(--color-peat-light)',
-                                border: isHov ? `2px solid ${OTHER_COLOR}` : '2px solid transparent',
-                              }}
-                              onMouseEnter={() => setHoveredOther({ sym, phase })}
-                              onMouseLeave={() => setHoveredOther(null)}
-                            >
-                              <span style={{ fontSize: '11px', fontWeight: 600, color: count > 0 ? (opacity > 0.55 ? '#fff' : 'var(--color-text-primary)') : 'var(--color-peat-mid)' }}>
-                                {count > 0 ? count : '–'}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  });
+                      ))}
+                      {/* Data rows */}
+                      {otherMatrix.rows.map(sym => (
+                        <>
+                          <div key={`lbl-${sym}`} className="flex items-center gap-1.5 pr-2" style={{ height: '36px' }}>
+                            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: OTHER_COLOR }} />
+                            <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)', whiteSpace: 'nowrap' }}>{sym}</span>
+                          </div>
+                          {BOWEL_PHASES.map(phase => {
+                            const count   = otherMatrix.data[sym]?.[phase] ?? 0;
+                            const opacity = cellOpacity(count, globalMax);
+                            const isHov   = hoveredOther?.sym === sym && hoveredOther?.phase === phase;
+                            return (
+                              <div
+                                key={`${sym}-${phase}`}
+                                className="rounded-lg flex items-center justify-center transition-all"
+                                style={{
+                                  height: '36px',
+                                  background: count > 0 ? `rgba(${hexToRgb(OTHER_COLOR)}, ${opacity})` : 'var(--color-peat-light)',
+                                  border: isHov ? `2px solid ${OTHER_COLOR}` : '2px solid transparent',
+                                }}
+                                onMouseEnter={() => setHoveredOther({ sym, phase })}
+                                onMouseLeave={() => setHoveredOther(null)}
+                              >
+                                <span style={{ fontSize: '11px', fontWeight: 600, color: count > 0 ? (opacity > 0.55 ? '#fff' : 'var(--color-text-primary)') : 'var(--color-peat-mid)' }}>
+                                  {count > 0 ? count : '–'}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </>
+                      ))}
+                    </div>
+                  );
                 })()}
               </div>
-              </div>{/* end overflow-x-auto */}
               {/* Hover label */}
               <div className="mt-3 h-5 flex items-center justify-center">
                 {hoveredOther && (otherMatrix.data[hoveredOther.sym]?.[hoveredOther.phase] ?? 0) > 0 ? (
@@ -426,55 +424,55 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
             <>
               <p className="text-xs mb-3" style={{ color: 'var(--color-peat-deep)' }}>Darker = more frequent</p>
               <div className="overflow-x-auto">
-              {/* Column headers */}
-              <div className="grid mb-1.5" style={{ gridTemplateColumns: 'max-content repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
-                <div />
-                {BOWEL_PHASES.map(phase => (
-                  <div key={phase} className="text-center py-1 rounded-lg" style={{ background: PHASE_BG[phase], fontSize: '10px', color: 'var(--color-peat-deep)', fontWeight: 500 }}>
-                    {PHASE_SHORT[phase]}
-                  </div>
-                ))}
-              </div>
-              {/* Rows */}
-              <div className="space-y-1">
                 {(() => {
                   const globalMax = bmGlobalMax(bmMatrix);
-                  return BM_TYPES.map(bm => {
-                    const color = BM_COLORS[bm];
-                    return (
-                      <div key={bm} className="grid items-center" style={{ gridTemplateColumns: 'max-content repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
-                        <div className="flex items-center gap-1.5 pr-2">
-                          <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
-                          <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)', whiteSpace: 'nowrap' }}>{BM_LABELS[bm]}</span>
+                  return (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'max-content repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
+                      {/* Header row */}
+                      <div />
+                      {BOWEL_PHASES.map(phase => (
+                        <div key={phase} className="text-center py-1 rounded-lg" style={{ background: PHASE_BG[phase], fontSize: '10px', color: 'var(--color-peat-deep)', fontWeight: 500 }}>
+                          {PHASE_SHORT[phase]}
                         </div>
-                        {BOWEL_PHASES.map(phase => {
-                          const count   = bmMatrix[bm][phase];
-                          const opacity = cellOpacity(count, globalMax);
-                          const isHov   = hoveredBM?.bm === bm && hoveredBM?.phase === phase;
-                          return (
-                            <div
-                              key={phase}
-                              className="rounded-lg flex items-center justify-center transition-all"
-                              style={{
-                                height: '38px',
-                                background: count > 0 ? `rgba(${hexToRgb(color)}, ${opacity})` : 'var(--color-peat-light)',
-                                border: isHov ? `2px solid ${color}` : '2px solid transparent',
-                              }}
-                              onMouseEnter={() => setHoveredBM({ bm, phase })}
-                              onMouseLeave={() => setHoveredBM(null)}
-                            >
-                              <span style={{ fontSize: '11px', fontWeight: 600, color: count > 0 ? (opacity > 0.55 ? '#fff' : 'var(--color-text-primary)') : 'var(--color-peat-mid)' }}>
-                                {count > 0 ? count : '–'}
-                              </span>
+                      ))}
+                      {/* Data rows */}
+                      {BM_TYPES.map(bm => {
+                        const color = BM_COLORS[bm];
+                        return (
+                          <>
+                            <div key={`lbl-${bm}`} className="flex items-center gap-1.5 pr-2" style={{ height: '38px' }}>
+                              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
+                              <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)', whiteSpace: 'nowrap' }}>{BM_LABELS[bm]}</span>
                             </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  });
+                            {BOWEL_PHASES.map(phase => {
+                              const count   = bmMatrix[bm][phase];
+                              const opacity = cellOpacity(count, globalMax);
+                              const isHov   = hoveredBM?.bm === bm && hoveredBM?.phase === phase;
+                              return (
+                                <div
+                                  key={`${bm}-${phase}`}
+                                  className="rounded-lg flex items-center justify-center transition-all"
+                                  style={{
+                                    height: '38px',
+                                    background: count > 0 ? `rgba(${hexToRgb(color)}, ${opacity})` : 'var(--color-peat-light)',
+                                    border: isHov ? `2px solid ${color}` : '2px solid transparent',
+                                  }}
+                                  onMouseEnter={() => setHoveredBM({ bm, phase })}
+                                  onMouseLeave={() => setHoveredBM(null)}
+                                >
+                                  <span style={{ fontSize: '11px', fontWeight: 600, color: count > 0 ? (opacity > 0.55 ? '#fff' : 'var(--color-text-primary)') : 'var(--color-peat-mid)' }}>
+                                    {count > 0 ? count : '–'}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </>
+                        );
+                      })}
+                    </div>
+                  );
                 })()}
               </div>
-              </div>{/* end overflow-x-auto */}
               {/* Hover label */}
               <div className="mt-3 h-5 flex items-center justify-center">
                 {hoveredBM && bmMatrix[hoveredBM.bm][hoveredBM.phase] > 0 ? (
