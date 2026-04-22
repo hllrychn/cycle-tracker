@@ -349,8 +349,9 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
           ) : (
             <>
               <p className="text-xs mb-3" style={{ color: 'var(--color-peat-deep)' }}>Darker = more frequent · top 10 by count</p>
+              <div className="overflow-x-auto">
               {/* Column headers */}
-              <div className="grid mb-1.5" style={{ gridTemplateColumns: '80px repeat(4, 1fr)', gap: '4px' }}>
+              <div className="grid mb-1.5" style={{ gridTemplateColumns: 'max-content repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
                 <div />
                 {BOWEL_PHASES.map(phase => (
                   <div key={phase} className="text-center py-1 rounded-lg" style={{ background: PHASE_BG[phase], fontSize: '10px', color: 'var(--color-peat-deep)', fontWeight: 500 }}>
@@ -364,10 +365,10 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
                   const globalMax = otherGlobalMax(otherMatrix.data, otherMatrix.rows);
                   return otherMatrix.rows.map(sym => {
                     return (
-                      <div key={sym} className="grid items-center" style={{ gridTemplateColumns: '80px repeat(4, 1fr)', gap: '4px' }}>
-                        <div className="flex items-center gap-1.5 pr-1 min-w-0">
+                      <div key={sym} className="grid items-center" style={{ gridTemplateColumns: 'max-content repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
+                        <div className="flex items-center gap-1.5 pr-2">
                           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: OTHER_COLOR }} />
-                          <span title={sym} style={{ fontSize: '11px', color: 'var(--color-peat-deep)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sym}</span>
+                          <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)', whiteSpace: 'nowrap' }}>{sym}</span>
                         </div>
                         {BOWEL_PHASES.map(phase => {
                           const count   = otherMatrix.data[sym]?.[phase] ?? 0;
@@ -396,6 +397,7 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
                   });
                 })()}
               </div>
+              </div>{/* end overflow-x-auto */}
               {/* Hover label */}
               <div className="mt-3 h-5 flex items-center justify-center">
                 {hoveredOther && (otherMatrix.data[hoveredOther.sym]?.[hoveredOther.phase] ?? 0) > 0 ? (
@@ -423,8 +425,9 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
           ) : (
             <>
               <p className="text-xs mb-3" style={{ color: 'var(--color-peat-deep)' }}>Darker = more frequent</p>
+              <div className="overflow-x-auto">
               {/* Column headers */}
-              <div className="grid mb-1.5" style={{ gridTemplateColumns: '80px repeat(4, 1fr)', gap: '4px' }}>
+              <div className="grid mb-1.5" style={{ gridTemplateColumns: 'max-content repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
                 <div />
                 {BOWEL_PHASES.map(phase => (
                   <div key={phase} className="text-center py-1 rounded-lg" style={{ background: PHASE_BG[phase], fontSize: '10px', color: 'var(--color-peat-deep)', fontWeight: 500 }}>
@@ -439,10 +442,10 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
                   return BM_TYPES.map(bm => {
                     const color = BM_COLORS[bm];
                     return (
-                      <div key={bm} className="grid items-center" style={{ gridTemplateColumns: '80px repeat(4, 1fr)', gap: '4px' }}>
-                        <div className="flex items-center gap-1.5 pr-1 min-w-0">
+                      <div key={bm} className="grid items-center" style={{ gridTemplateColumns: 'max-content repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
+                        <div className="flex items-center gap-1.5 pr-2">
                           <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
-                          <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{BM_LABELS[bm]}</span>
+                          <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)', whiteSpace: 'nowrap' }}>{BM_LABELS[bm]}</span>
                         </div>
                         {BOWEL_PHASES.map(phase => {
                           const count   = bmMatrix[bm][phase];
@@ -471,6 +474,7 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
                   });
                 })()}
               </div>
+              </div>{/* end overflow-x-auto */}
               {/* Hover label */}
               <div className="mt-3 h-5 flex items-center justify-center">
                 {hoveredBM && bmMatrix[hoveredBM.bm][hoveredBM.phase] > 0 ? (
