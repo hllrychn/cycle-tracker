@@ -53,6 +53,7 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
   }
 
   const symptomEmojiMap  = new Map(symptoms.map(s => [s.log_date, s.feeling_emoji ?? null]));
+  const symptomLogDates  = new Set(symptoms.map(s => s.log_date));
   const appointmentMap   = new Map(appointments.map(a => [a.date, a]));
 
   const prevMonth = () => setViewDate(d => { const m = new Date(d); m.setMonth(m.getMonth() - 1); return m; });
@@ -223,6 +224,7 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
                 isLogged={isLogged}
                 isOvulationDay={isOvulationDay}
                 feelingEmoji={symptomEmojiMap.get(iso) ?? null}
+                hasSymptomLog={symptomLogDates.has(iso)}
                 hasAppointment={appointmentMap.has(iso)}
                 onClick={() => setSelectedDate(date)}
               />
