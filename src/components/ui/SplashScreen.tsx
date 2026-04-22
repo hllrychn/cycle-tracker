@@ -10,9 +10,12 @@ export function SplashScreen({ visible }: Props) {
 
   useEffect(() => {
     if (!visible) {
-      setFading(true);
-      const t = setTimeout(() => setGone(true), 500);
-      return () => clearTimeout(t);
+      const delay = setTimeout(() => {
+        setFading(true);
+        const t = setTimeout(() => setGone(true), 500);
+        return () => clearTimeout(t);
+      }, 3000);
+      return () => clearTimeout(delay);
     }
   }, [visible]);
 
