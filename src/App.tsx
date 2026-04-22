@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthContext, useAuthState } from './hooks/useAuth';
+import { SplashScreen } from './components/ui/SplashScreen';
 import { ProtectedRoute } from './components/layout/ProtectedRoute';
 import { AppShell } from './components/layout/AppShell';
 import { LoginPage } from './pages/LoginPage';
@@ -16,7 +17,12 @@ import { SettingsPage } from './pages/SettingsPage';
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const auth = useAuthState();
-  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={auth}>
+      <SplashScreen visible={auth.loading} />
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export default function App() {
