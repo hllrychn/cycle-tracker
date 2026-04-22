@@ -353,7 +353,7 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
                 {(() => {
                   const globalMax = otherGlobalMax(otherMatrix.data, otherMatrix.rows);
                   return (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'max-content repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '100px repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
                       {/* Header row */}
                       <div />
                       {BOWEL_PHASES.map(phase => (
@@ -364,9 +364,9 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
                       {/* Data rows */}
                       {otherMatrix.rows.map(sym => (
                         <>
-                          <div key={`lbl-${sym}`} className="flex items-center gap-1.5 pr-2" style={{ height: '36px' }}>
-                            <span className="w-2 h-2 rounded-full shrink-0" style={{ background: OTHER_COLOR }} />
-                            <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)', whiteSpace: 'nowrap' }}>{sym}</span>
+                          <div key={`lbl-${sym}`} className="flex items-start gap-1.5 pr-2 py-1">
+                            <span className="w-2 h-2 rounded-full shrink-0 mt-0.5" style={{ background: OTHER_COLOR }} />
+                            <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)', lineHeight: 1.3 }}>{sym}</span>
                           </div>
                           {BOWEL_PHASES.map(phase => {
                             const count   = otherMatrix.data[sym]?.[phase] ?? 0;
@@ -377,7 +377,7 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
                                 key={`${sym}-${phase}`}
                                 className="rounded-lg flex items-center justify-center transition-all"
                                 style={{
-                                  height: '36px',
+                                  minHeight: '36px',
                                   background: count > 0 ? `rgba(${hexToRgb(OTHER_COLOR)}, ${opacity})` : 'var(--color-peat-light)',
                                   border: isHov ? `2px solid ${OTHER_COLOR}` : '2px solid transparent',
                                 }}
@@ -427,7 +427,7 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
                 {(() => {
                   const globalMax = bmGlobalMax(bmMatrix);
                   return (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'max-content repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '100px repeat(4, minmax(44px, 1fr))', gap: '4px' }}>
                       {/* Header row */}
                       <div />
                       {BOWEL_PHASES.map(phase => (
@@ -440,9 +440,9 @@ export function SymptomBarChart({ symptoms, cycles = [], avgCycleLength = 28, av
                         const color = BM_COLORS[bm];
                         return (
                           <>
-                            <div key={`lbl-${bm}`} className="flex items-center gap-1.5 pr-2" style={{ height: '38px' }}>
+                            <div key={`lbl-${bm}`} className="flex items-center gap-1.5 pr-2" style={{ minHeight: '38px' }}>
                               <span className="w-2 h-2 rounded-full shrink-0" style={{ background: color }} />
-                              <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)', whiteSpace: 'nowrap' }}>{BM_LABELS[bm]}</span>
+                              <span style={{ fontSize: '11px', color: 'var(--color-peat-deep)', lineHeight: 1.3 }}>{BM_LABELS[bm]}</span>
                             </div>
                             {BOWEL_PHASES.map(phase => {
                               const count   = bmMatrix[bm][phase];
