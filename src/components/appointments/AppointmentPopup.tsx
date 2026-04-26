@@ -15,7 +15,7 @@ interface NominatimResult {
   display_name: string;
 }
 
-const inputCls = 'w-full px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-blue-base)]';
+const inputCls = 'w-full min-w-0 px-3 py-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-blue-base)]';
 const inputStyle = {
   border: '1px solid var(--color-peat-mid)',
   background: 'var(--color-peat-light)',

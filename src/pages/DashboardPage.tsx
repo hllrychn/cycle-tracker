@@ -183,7 +183,8 @@ export function DashboardPage() {
             {format(today, 'EEEE, MMMM d')}
           </p>
         </div>
-        <div className="relative flex items-center gap-2">
+        {/* Button row — desktop only */}
+        <div className="relative hidden md:flex items-center gap-2">
           <button
             onClick={() => setShowFunFact(true)}
             className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors"
@@ -219,7 +220,6 @@ export function DashboardPage() {
             <span className="text-base leading-none">✏️</span>
             <span style={{ fontSize: '9px', fontWeight: 500, whiteSpace: 'nowrap' }}>Log today</span>
           </NavLink>
-
           {showPredictions && (
             <PredictionsPopup
               prediction={prediction}
@@ -303,6 +303,58 @@ export function DashboardPage() {
         totalCycles={cycles.length}
         symptoms={symptoms}
       />
+
+      {/* Button row — mobile only, below ticker */}
+      <div className="relative flex md:hidden items-center gap-2">
+        <button
+          onClick={() => setShowFunFact(true)}
+          className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors"
+          style={{ background: 'var(--color-accent-light)', color: 'var(--color-accent-dark)' }}
+        >
+          <span className="text-base leading-none">💡</span>
+          <span style={{ fontSize: '9px', fontWeight: 500, whiteSpace: 'nowrap' }}>Did you know?</span>
+        </button>
+        <button
+          onClick={() => setShowPredictions(p => !p)}
+          className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors"
+          style={showPredictions
+            ? { background: 'var(--color-blue-base)', color: '#FFFFFF' }
+            : { background: 'var(--color-blue-light)', color: 'var(--color-blue-dark)' }
+          }
+        >
+          <span className="text-base leading-none">📅</span>
+          <span style={{ fontSize: '9px', fontWeight: 500, whiteSpace: 'nowrap' }}>Predictions</span>
+        </button>
+        <button
+          onClick={() => setShowAppointment(true)}
+          className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors"
+          style={{ background: 'var(--color-blue-light)', color: 'var(--color-blue-dark)' }}
+        >
+          <span className="text-base leading-none">🩺</span>
+          <span style={{ fontSize: '9px', fontWeight: 500, whiteSpace: 'nowrap' }}>Appointment</span>
+        </button>
+        <NavLink
+          to="/log/symptoms"
+          className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors font-medium"
+          style={{ background: 'var(--color-moss-base)', color: 'white' }}
+        >
+          <span className="text-base leading-none">✏️</span>
+          <span style={{ fontSize: '9px', fontWeight: 500, whiteSpace: 'nowrap' }}>Log today</span>
+        </NavLink>
+        {showPredictions && (
+          <PredictionsPopup
+            prediction={prediction}
+            customCycleLength={customCycleLength}
+            customPeriodDuration={customPeriodDuration}
+            delayDays={nextPeriodDelayDays}
+            recurringCyclesCount={recurringCyclesCount}
+            onSetCycleLength={setCustomCycleLength}
+            onSetPeriodDuration={setCustomPeriodDuration}
+            onSetRecurringCyclesCount={setRecurringCyclesCount}
+            onClose={() => setShowPredictions(false)}
+          />
+        )}
+      </div>
 
       {/* Calendar + symptom streak + make today better */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-stretch">
