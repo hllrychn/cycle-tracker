@@ -5,15 +5,14 @@ interface Props {
 }
 
 export function SplashScreen({ visible }: Props) {
-  const [fading, setFading] = useState(false);
-  const [gone,   setGone]   = useState(false);
+  const [lifting, setLifting] = useState(false);
+  const [gone,    setGone]    = useState(false);
 
   useEffect(() => {
     if (!visible) {
       const delay = setTimeout(() => {
-        setFading(true);
-        const t = setTimeout(() => setGone(true), 500);
-        return () => clearTimeout(t);
+        setLifting(true);
+        setTimeout(() => setGone(true), 700);
       }, 3000);
       return () => clearTimeout(delay);
     }
@@ -32,9 +31,9 @@ export function SplashScreen({ visible }: Props) {
         alignItems: 'center',
         justifyContent: 'center',
         background: '#2E2820',
-        transition: 'opacity 500ms ease',
-        opacity: fading ? 0 : 1,
-        pointerEvents: fading ? 'none' : 'auto',
+        transform: lifting ? 'translateY(-100%)' : 'translateY(0)',
+        transition: lifting ? 'transform 700ms cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
+        pointerEvents: lifting ? 'none' : 'auto',
       }}
     >
       <img
@@ -45,9 +44,6 @@ export function SplashScreen({ visible }: Props) {
           height: '80px',
           borderRadius: '20px',
           marginBottom: '20px',
-          opacity: fading ? 0 : 1,
-          transform: fading ? 'scale(0.92)' : 'scale(1)',
-          transition: 'opacity 500ms ease, transform 500ms ease',
         }}
       />
       <p
@@ -57,8 +53,6 @@ export function SplashScreen({ visible }: Props) {
           letterSpacing: '0.18em',
           textTransform: 'uppercase',
           color: '#9E9A3C',
-          opacity: fading ? 0 : 1,
-          transition: 'opacity 400ms ease',
         }}
       >
         cycle tracker
