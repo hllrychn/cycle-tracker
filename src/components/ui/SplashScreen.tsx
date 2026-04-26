@@ -31,8 +31,8 @@ export function SplashScreen({ visible }: Props) {
         alignItems: 'center',
         justifyContent: 'center',
         background: '#2E2820',
-        transform: lifting ? 'translateY(-100%)' : 'translateY(0)',
-        transition: lifting ? 'transform 700ms cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
+        transform: lifting ? 'translateX(105%) skewX(-8deg) rotate(-2deg)' : 'translateX(0) skewX(0) rotate(0)',
+        transition: lifting ? 'transform 650ms cubic-bezier(0.55, 0, 1, 0.45)' : 'none',
         pointerEvents: lifting ? 'none' : 'auto',
       }}
     >
