@@ -24,11 +24,11 @@ export function SplashScreen({ visible }: Props) {
     <>
       <style>{`
         @keyframes curtain-blow {
-          0%   { transform: translate(0, 0)         skewX(0deg)   skewY(0deg)  rotate(0deg);   opacity: 1; }
-          15%  { transform: translate(-8%, -5%)     skewX(4deg)   skewY(2deg)  rotate(-1deg);  opacity: 1; }
-          40%  { transform: translate(-30%, -25%)   skewX(14deg)  skewY(6deg)  rotate(-4deg);  opacity: 1; }
-          70%  { transform: translate(-70%, -65%)   skewX(18deg)  skewY(9deg)  rotate(-6deg);  opacity: 0.6; }
-          100% { transform: translate(-115%, -115%) skewX(20deg)  skewY(10deg) rotate(-8deg);  opacity: 0; }
+          0%   { transform: translateY(0)      skewX(0deg)  skewY(0deg);  opacity: 1; }
+          15%  { transform: translateY(-6%)    skewX(5deg)  skewY(1deg);  opacity: 1; }
+          40%  { transform: translateY(-30%)   skewX(10deg) skewY(2deg);  opacity: 1; }
+          70%  { transform: translateY(-70%)   skewX(6deg)  skewY(1deg);  opacity: 0.7; }
+          100% { transform: translateY(-110%)  skewX(0deg)  skewY(0deg);  opacity: 0; }
         }
         .splash-curtain {
           animation: curtain-blow 900ms cubic-bezier(0.4, 0, 0.8, 0.6) forwards;
@@ -46,7 +46,7 @@ export function SplashScreen({ visible }: Props) {
           justifyContent: 'center',
           background: '#2E2820',
           pointerEvents: lifting ? 'none' : 'auto',
-          transformOrigin: 'bottom right',
+          transformOrigin: 'bottom center',
         }}
       >
         <img
