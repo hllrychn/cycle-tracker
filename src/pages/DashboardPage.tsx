@@ -18,6 +18,7 @@ import { differenceInDays, addDays, toISODate, startOfToday, format, parseLocalD
 import { PixelLoader } from '../components/ui/PixelLoader';
 import { useAppointments } from '../hooks/useAppointments';
 import { AppointmentPopup } from '../components/appointments/AppointmentPopup';
+import { LogTodayPopup } from '../components/symptoms/LogTodayPopup';
 
 const END_DISMISS_KEY = 'ct_end_period_dismissed_until';
 function isEndDismissed() {
@@ -35,6 +36,7 @@ export function DashboardPage() {
   const [showFunFact, setShowFunFact]         = useState(false);
   const [showPredictions, setShowPredictions] = useState(false);
   const [showAppointment, setShowAppointment] = useState(false);
+  const [showLogToday, setShowLogToday]       = useState(false);
   const [dismissedEndBanner, setDismissedEndBanner] = useState(() => isEndDismissed());
   const { cycles, loading: cyclesLoading, addOrUpdateCycle, removeCycle } = useCycles();
   const { symptoms, loading: symptomsLoading, logSymptoms } = useSymptoms();
@@ -212,14 +214,14 @@ export function DashboardPage() {
             <span className="text-base leading-none">🩺</span>
             <span style={{ fontSize: '9px', fontWeight: 500, whiteSpace: 'nowrap' }}>Appointment</span>
           </button>
-          <NavLink
-            to="/log/symptoms"
+          <button
+            onClick={() => setShowLogToday(true)}
             className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors font-medium"
             style={{ background: 'var(--color-moss-base)', color: 'white' }}
           >
             <span className="text-base leading-none">✏️</span>
             <span style={{ fontSize: '9px', fontWeight: 500, whiteSpace: 'nowrap' }}>Log today</span>
-          </NavLink>
+          </button>
           {showPredictions && (
             <PredictionsPopup
               prediction={prediction}
@@ -244,6 +246,19 @@ export function DashboardPage() {
         <AppointmentPopup
           onSave={async (data) => { await saveAppointment(data); setShowAppointment(false); }}
           onClose={() => setShowAppointment(false)}
+        />
+      )}
+
+      {showLogToday && (
+        <LogTodayPopup
+          symptoms={symptoms}
+          cycles={cycles}
+          prediction={prediction}
+          onLogSymptoms={async (data) => { await logSymptoms(data); }}
+          onAddOrUpdateCycle={addOrUpdateCycle}
+          onRemoveCycle={removeCycle}
+          onResetDelay={resetDelay}
+          onClose={() => setShowLogToday(false)}
         />
       )}
 
