@@ -183,61 +183,41 @@ export function DashboardPage() {
             {format(today, 'EEEE, MMMM d')}
           </p>
         </div>
-        <div className="relative flex items-center gap-3">
-          <div className="relative group/funfact">
-            <button
-              onClick={() => setShowFunFact(true)}
-              className="w-8 h-8 flex items-center justify-center rounded-xl transition-colors text-base"
-              style={{ background: 'var(--color-accent-light)', color: 'var(--color-accent-dark)' }}
-            >
-              💡
-            </button>
-            <span
-              className="pointer-events-none absolute top-full left-1/2 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded-md px-2 py-0.5 text-xs opacity-0 group-hover/funfact:opacity-100 transition-opacity"
-              style={{ background: 'var(--color-peat-dark)', color: 'var(--color-text-light)' }}
-            >
-              Did you know?
-            </span>
-          </div>
-          <div className="relative group/predictions">
-            <button
-              onClick={() => setShowPredictions(p => !p)}
-              className="w-8 h-8 flex items-center justify-center rounded-xl transition-colors text-base"
-              style={showPredictions
-                ? { background: 'var(--color-blue-base)', color: '#FFFFFF' }
-                : { background: 'var(--color-blue-light)', color: 'var(--color-blue-dark)' }
-              }
-            >
-              📅
-            </button>
-            <span
-              className="pointer-events-none absolute top-full left-1/2 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded-md px-2 py-0.5 text-xs opacity-0 group-hover/predictions:opacity-100 transition-opacity"
-              style={{ background: 'var(--color-peat-dark)', color: 'var(--color-text-light)' }}
-            >
-              Predictions
-            </span>
-          </div>
-          <div className="relative group/appt">
-            <button
-              onClick={() => setShowAppointment(true)}
-              className="w-8 h-8 flex items-center justify-center rounded-xl transition-colors text-base"
-              style={{ background: 'var(--color-blue-light)', color: 'var(--color-blue-dark)' }}
-            >
-              🩺
-            </button>
-            <span
-              className="pointer-events-none absolute top-full left-1/2 mt-1.5 -translate-x-1/2 whitespace-nowrap rounded-md px-2 py-0.5 text-xs opacity-0 group-hover/appt:opacity-100 transition-opacity"
-              style={{ background: 'var(--color-peat-dark)', color: 'var(--color-text-light)' }}
-            >
-              Log appointment
-            </span>
-          </div>
+        <div className="relative flex items-center gap-2">
+          <button
+            onClick={() => setShowFunFact(true)}
+            className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors"
+            style={{ background: 'var(--color-accent-light)', color: 'var(--color-accent-dark)' }}
+          >
+            <span className="text-base leading-none">💡</span>
+            <span style={{ fontSize: '9px', fontWeight: 500, whiteSpace: 'nowrap' }}>Did you know?</span>
+          </button>
+          <button
+            onClick={() => setShowPredictions(p => !p)}
+            className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors"
+            style={showPredictions
+              ? { background: 'var(--color-blue-base)', color: '#FFFFFF' }
+              : { background: 'var(--color-blue-light)', color: 'var(--color-blue-dark)' }
+            }
+          >
+            <span className="text-base leading-none">📅</span>
+            <span style={{ fontSize: '9px', fontWeight: 500, whiteSpace: 'nowrap' }}>Predictions</span>
+          </button>
+          <button
+            onClick={() => setShowAppointment(true)}
+            className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors"
+            style={{ background: 'var(--color-blue-light)', color: 'var(--color-blue-dark)' }}
+          >
+            <span className="text-base leading-none">🩺</span>
+            <span style={{ fontSize: '9px', fontWeight: 500, whiteSpace: 'nowrap' }}>Appointment</span>
+          </button>
           <NavLink
             to="/log/symptoms"
-            className="text-xs px-4 py-2 rounded-xl transition-colors font-medium"
+            className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors font-medium"
             style={{ background: 'var(--color-moss-base)', color: 'white' }}
           >
-            Log today
+            <span className="text-base leading-none">✏️</span>
+            <span style={{ fontSize: '9px', fontWeight: 500, whiteSpace: 'nowrap' }}>Log today</span>
           </NavLink>
 
           {showPredictions && (
