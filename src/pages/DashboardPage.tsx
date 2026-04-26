@@ -183,7 +183,7 @@ export function DashboardPage() {
             {format(today, 'EEEE, MMMM d')}
           </p>
         </div>
-        <div className="relative flex items-center gap-2">
+        <div className="relative flex items-center gap-3">
           <div className="relative group/funfact">
             <button
               onClick={() => setShowFunFact(true)}
