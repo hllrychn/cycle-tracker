@@ -340,14 +340,6 @@ export function DashboardPage() {
           <span className="text-base leading-none">📅</span>
           <span style={{ fontSize: '9px', fontWeight: 500, whiteSpace: 'nowrap' }}>Predictions</span>
         </button>
-        <button
-          onClick={() => setShowAppointment(true)}
-          className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors"
-          style={{ background: 'var(--color-blue-light)', color: 'var(--color-blue-dark)' }}
-        >
-          <span className="text-base leading-none">🩺</span>
-          <span style={{ fontSize: '9px', fontWeight: 500, whiteSpace: 'nowrap' }}>Appointment</span>
-        </button>
         <NavLink
           to="/log/symptoms"
           className="flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-colors font-medium"

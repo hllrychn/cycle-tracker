@@ -6,6 +6,8 @@ import { useCycles } from '../../hooks/useCycles';
 import { useSymptoms } from '../../hooks/useSymptoms';
 import { usePredictions } from '../../hooks/usePredictions';
 import { useSettings } from '../../hooks/useSettings';
+import { useAppointments } from '../../hooks/useAppointments';
+import { AppointmentPopup } from '../appointments/AppointmentPopup';
 import { differenceInDays, parseISO, format, toISODate, startOfToday } from '../../lib/dateUtils';
 
 function getPhase(cycleDay: number, avgCycleLength: number, avgPeriodDuration: number) {
@@ -43,10 +45,13 @@ export function AppShell() {
   const { signOut } = useAuth();
   const navigate    = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showAppointment, setShowAppointment] = useState(false);
   const menuTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { saveAppointment } = useAppointments();
 
-  const openMenu  = () => { if (menuTimeout.current) clearTimeout(menuTimeout.current); setMenuOpen(true); };
-  const closeMenu = () => { menuTimeout.current = setTimeout(() => setMenuOpen(false), 120); };
+  const openMenu   = () => { if (menuTimeout.current) clearTimeout(menuTimeout.current); setMenuOpen(true); };
+  const closeMenu  = () => { menuTimeout.current = setTimeout(() => setMenuOpen(false), 120); };
+  const toggleMenu = () => setMenuOpen(prev => !prev);
   const { cycles }  = useCycles();
   const { symptoms } = useSymptoms();
   const { customCycleLength, customPeriodDuration, nextPeriodDelayDays } = useSettings();
@@ -211,14 +216,25 @@ export function AppShell() {
             <button
               className="text-xs transition-colors"
               style={{ color: 'var(--color-peat-deep)' }}
+              onClick={toggleMenu}
             >
               Account
             </button>
             {menuOpen && (
               <div
                 className="absolute right-0 top-full mt-1 rounded-xl overflow-hidden z-50"
-                style={{ background: '#fff', boxShadow: '0 4px 16px rgba(46,40,32,0.15)', minWidth: 140, border: '1px solid var(--color-peat-light)' }}
+                style={{ background: '#fff', boxShadow: '0 4px 16px rgba(46,40,32,0.15)', minWidth: 160, border: '1px solid var(--color-peat-light)' }}
               >
+                <button
+                  onClick={() => { setMenuOpen(false); setShowAppointment(true); }}
+                  className="w-full text-left px-4 py-2.5 text-xs transition-colors"
+                  style={{ color: 'var(--color-peat-deep)' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-peat-light)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  🩺 Log appointment
+                </button>
+                <div style={{ height: 1, background: 'var(--color-peat-light)' }} />
                 <button
                   onClick={() => { setMenuOpen(false); navigate('/contact'); }}
                   className="w-full text-left px-4 py-2.5 text-xs transition-colors"
@@ -272,6 +288,13 @@ export function AppShell() {
           <Outlet />
         </div>
       </main>
+
+      {showAppointment && (
+        <AppointmentPopup
+          onSave={async (data) => { await saveAppointment(data); setShowAppointment(false); }}
+          onClose={() => setShowAppointment(false)}
+        />
+      )}
 
       {/* ── Mobile bottom tab bar ── */}
       <nav
