@@ -23,15 +23,12 @@ export function SplashScreen({ visible }: Props) {
   return (
     <>
       <style>{`
-        @keyframes curtain-blow {
-          0%   { transform: translateY(0)      skewX(0deg)  skewY(0deg);  opacity: 1; }
-          15%  { transform: translateY(-6%)    skewX(5deg)  skewY(1deg);  opacity: 1; }
-          40%  { transform: translateY(-30%)   skewX(10deg) skewY(2deg);  opacity: 1; }
-          70%  { transform: translateY(-70%)   skewX(6deg)  skewY(1deg);  opacity: 0.7; }
-          100% { transform: translateY(-110%)  skewX(0deg)  skewY(0deg);  opacity: 0; }
+        @keyframes depop-snap {
+          0%   { transform: translateY(0);      }
+          100% { transform: translateY(-100%);  }
         }
         .splash-curtain {
-          animation: curtain-blow 900ms cubic-bezier(0.4, 0, 0.8, 0.6) forwards;
+          animation: depop-snap 380ms cubic-bezier(0.4, 0, 1, 1) forwards;
         }
       `}</style>
       <div
