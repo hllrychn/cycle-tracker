@@ -68,6 +68,7 @@ export function LogTodayPopup({ symptoms, cycles, prediction, onLogSymptoms, onA
   const [delaying,      setDelaying]      = useState(false);
   const [delayError,    setDelayError]    = useState<string | null>(null);
   const [dismissedDelay, setDismissedDelay] = useState(false);
+  const [saving,        setSaving]        = useState(false);
 
   const handleEndPeriod = async () => {
     if (!latestPeriod) return;
@@ -113,19 +114,29 @@ export function LogTodayPopup({ symptoms, cycles, prediction, onLogSymptoms, onA
   };
 
   const handleSubmit = async (data: Omit<SymptomLog, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    await onLogSymptoms(data);
-    onClose();
+    setSaving(true);
+    try {
+      await onLogSymptoms(data);
+      onClose();
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <div
-        className="relative rounded-t-2xl sm:rounded-2xl w-full sm:max-w-xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto"
-        style={{ background: '#FFFFFF', boxShadow: '0 8px 40px rgba(46,40,32,0.18)', borderLeft: '4px solid var(--color-moss-mid)' }}
+        className="relative rounded-t-2xl sm:rounded-2xl w-full sm:max-w-xl flex flex-col"
+        style={{
+          background: '#FFFFFF',
+          boxShadow: '0 8px 40px rgba(46,40,32,0.18)',
+          borderLeft: '4px solid var(--color-moss-mid)',
+          maxHeight: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 64px)',
+        }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4" style={{ borderBottom: '1px solid var(--color-peat-light)' }}>
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 shrink-0" style={{ borderBottom: '1px solid var(--color-peat-light)' }}>
           <div>
             <h2 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
               {existing ? "Update today's log" : 'Log today'}
@@ -135,7 +146,8 @@ export function LogTodayPopup({ symptoms, cycles, prediction, onLogSymptoms, onA
           <button onClick={onClose} className="text-2xl leading-none p-1" style={{ color: 'var(--color-peat-deep)' }}>×</button>
         </div>
 
-        <div className="px-5 py-4 space-y-3" style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}>
+        {/* Scrollable content */}
+        <div className="px-5 py-4 space-y-3 overflow-y-auto flex-1">
           {/* Period banners */}
           {isDay1OfPeriod && !dismissedDelay && (
             <div className="rounded-2xl p-4" style={{ background: 'var(--color-phase-menstrual)', borderLeft: '4px solid var(--color-peat-deep)' }}>
@@ -176,8 +188,27 @@ export function LogTodayPopup({ symptoms, cycles, prediction, onLogSymptoms, onA
             </div>
           )}
 
-          {/* Symptoms form */}
-          <LogSymptomsForm existing={existing} onSubmit={handleSubmit} isOnPeriod={hasActivePeriod} />
+          {/* Symptoms form (submit button hidden — handled by sticky footer) */}
+          <LogSymptomsForm
+            existing={existing}
+            onSubmit={handleSubmit}
+            isOnPeriod={hasActivePeriod}
+            formId="log-today-form"
+            hideSubmit
+          />
+        </div>
+
+        {/* Sticky footer */}
+        <div className="shrink-0 px-5 py-4" style={{ borderTop: '1px solid var(--color-peat-light)', paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
+          <button
+            type="submit"
+            form="log-today-form"
+            disabled={saving}
+            className="w-full py-2 text-white font-medium rounded-lg text-sm transition-colors disabled:opacity-60"
+            style={{ background: 'var(--color-moss-base)' }}
+          >
+            {saving ? 'Saving…' : existing ? 'Update symptoms' : 'Save symptoms'}
+          </button>
         </div>
       </div>
     </div>

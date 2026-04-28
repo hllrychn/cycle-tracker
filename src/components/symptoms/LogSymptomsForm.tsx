@@ -7,6 +7,8 @@ interface Props {
   onSubmit: (data: Omit<SymptomLog, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<void>;
   initialDate?: string;
   isOnPeriod?: boolean;
+  formId?: string;
+  hideSubmit?: boolean;
 }
 
 const FLOW_OPTIONS: { value: FlowIntensity; label: string }[] = [
@@ -98,7 +100,7 @@ function defaultSymptoms(existing?: SymptomLog | null): SymptomsState {
 
 const inputStyle = { border: '1px solid var(--color-peat-mid)', background: 'var(--color-peat-light)', color: 'var(--color-text-primary)', minWidth: 0 };
 
-export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = false }: Props) {
+export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = false, formId, hideSubmit }: Props) {
   const [logDate, setLogDate]         = useState(initialDate ?? existing?.log_date ?? toISODate(new Date()));
   const [values, setValues]           = useState<SymptomsState>(defaultSymptoms(existing));
   const [flowIntensity, setFlowIntensity] = useState<FlowIntensity | null>(existing?.flow_intensity ?? null);
@@ -145,7 +147,7 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form id={formId} onSubmit={handleSubmit} className="space-y-5">
       {!initialDate && (
         <div>
           <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-peat-deep)' }}>Date *</label>
@@ -419,16 +421,18 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
 
       {error && <p className="text-sm" style={{ color: 'var(--color-accent-dark)' }}>{error}</p>}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full py-2 text-white font-medium rounded-lg text-sm transition-colors disabled:opacity-60"
-        style={{ background: 'var(--color-moss-base)' }}
-        onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-moss-dark)')}
-        onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-moss-base)')}
-      >
-        {loading ? 'Saving…' : 'Save symptoms'}
-      </button>
+      {!hideSubmit && (
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full py-2 text-white font-medium rounded-lg text-sm transition-colors disabled:opacity-60"
+          style={{ background: 'var(--color-moss-base)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-moss-dark)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'var(--color-moss-base)')}
+        >
+          {loading ? 'Saving…' : 'Save symptoms'}
+        </button>
+      )}
     </form>
   );
 }
