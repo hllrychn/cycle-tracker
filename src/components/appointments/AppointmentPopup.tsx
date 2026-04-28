@@ -171,14 +171,19 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 64px)' }}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" onClick={onClose} />
       <div
-        className="relative rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg max-h-[85vh] sm:max-h-[90vh] overflow-y-auto"
-        style={{ background: '#FFFFFF', boxShadow: '0 8px 40px rgba(46,40,32,0.18)', borderLeft: '4px solid var(--color-blue-base)' }}
+        className="relative rounded-t-2xl sm:rounded-2xl w-full sm:max-w-lg flex flex-col"
+        style={{
+          background: '#FFFFFF',
+          boxShadow: '0 8px 40px rgba(46,40,32,0.18)',
+          borderLeft: '4px solid var(--color-blue-base)',
+          maxHeight: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 64px)',
+        }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4" style={{ borderBottom: '1px solid var(--color-peat-light)' }}>
+        <div className="flex items-center justify-between px-5 pt-5 pb-4 shrink-0" style={{ borderBottom: '1px solid var(--color-peat-light)' }}>
           <div>
             <h2 className="text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
               {existing ? 'Edit appointment' : 'Log appointment'}
@@ -188,7 +193,7 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
           <button onClick={onClose} className="text-2xl leading-none p-1" style={{ color: 'var(--color-peat-deep)' }}>×</button>
         </div>
 
-        <div className="px-5 py-5 space-y-4" style={{ paddingBottom: 'calc(1.25rem + env(safe-area-inset-bottom))' }}>
+        <div className="px-5 py-5 space-y-4 overflow-y-auto flex-1">
 
           {/* Date + Time */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -392,10 +397,12 @@ export function AppointmentPopup({ existing, initialDate, onSave, onDelete, onCl
             />
           </div>
 
-          {error && <p className="text-xs" style={{ color: 'var(--color-accent-dark)' }}>{error}</p>}
+        </div>
 
-          {/* Actions */}
-          <div className="flex gap-3 pt-1">
+        {/* Sticky footer — always visible */}
+        <div className="shrink-0 px-5 py-4" style={{ borderTop: '1px solid var(--color-peat-light)', paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}>
+          {error && <p className="text-xs mb-3" style={{ color: 'var(--color-accent-dark)' }}>{error}</p>}
+          <div className="flex gap-3">
             {existing && onDelete && (
               confirmDelete ? (
                 <div className="flex gap-2 flex-1">
