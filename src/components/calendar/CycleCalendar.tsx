@@ -56,8 +56,10 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
   const symptomLogDates  = new Set(symptoms.map(s => s.log_date));
   const appointmentMap   = new Map(appointments.map(a => [a.date, a]));
 
-  const prevMonth = () => setViewDate(d => { const m = new Date(d); m.setMonth(m.getMonth() - 1); return m; });
-  const nextMonth = () => setViewDate(d => { const m = new Date(d); m.setMonth(m.getMonth() + 1); return m; });
+  const prevMonth  = () => setViewDate(d => { const m = new Date(d); m.setMonth(m.getMonth() - 1); return m; });
+  const nextMonth  = () => setViewDate(d => { const m = new Date(d); m.setMonth(m.getMonth() + 1); return m; });
+  const goToToday  = () => setViewDate(new Date());
+  const isThisMonth = isSameMonth(viewDate, new Date());
 
   const lastCycle = cycles.length > 0 ? cycles[0] : null;
 
@@ -155,7 +157,16 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
               </p>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
+            {!isThisMonth && (
+              <button
+                onClick={goToToday}
+                className="px-2.5 py-1 rounded-lg text-xs font-medium transition-colors"
+                style={{ background: 'var(--color-accent-light)', color: 'var(--color-accent-dark)' }}
+              >
+                Today
+              </button>
+            )}
             <button
               onClick={prevMonth}
               className="w-8 h-8 flex items-center justify-center rounded-full transition-colors"
