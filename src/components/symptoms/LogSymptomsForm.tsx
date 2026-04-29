@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { SymptomLog, Severity, DischargeType, BowelMovement, FlowIntensity } from '../../types';
+import type { Medication } from '../../services/medicationService';
 import { toISODate } from '../../lib/dateUtils';
 
 interface Props {
@@ -9,6 +10,9 @@ interface Props {
   isOnPeriod?: boolean;
   formId?: string;
   hideSubmit?: boolean;
+  medications?: Medication[];
+  medicationTakenIds?: Set<string>;
+  onToggleMedication?: (id: string) => void;
 }
 
 const FLOW_OPTIONS: { value: FlowIntensity; label: string }[] = [
@@ -100,7 +104,7 @@ function defaultSymptoms(existing?: SymptomLog | null): SymptomsState {
 
 const inputStyle = { border: '1px solid var(--color-peat-mid)', background: 'var(--color-peat-light)', color: 'var(--color-text-primary)', minWidth: 0 };
 
-export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = false, formId, hideSubmit }: Props) {
+export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = false, formId, hideSubmit, medications, medicationTakenIds, onToggleMedication }: Props) {
   const [logDate, setLogDate]         = useState(initialDate ?? existing?.log_date ?? toISODate(new Date()));
   const [values, setValues]           = useState<SymptomsState>(defaultSymptoms(existing));
   const [flowIntensity, setFlowIntensity] = useState<FlowIntensity | null>(existing?.flow_intensity ?? null);
@@ -407,6 +411,52 @@ export function LogSymptomsForm({ existing, onSubmit, initialDate, isOnPeriod = 
           ))}
         </div>
       </div>
+
+      {/* Medications */}
+      {medications && medications.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium mb-2" style={{ color: 'var(--color-peat-deep)' }}>
+            💊 Medications
+          </label>
+          <div className="space-y-2">
+            {medications.map(med => {
+              const taken = medicationTakenIds?.has(med.id) ?? false;
+              return (
+                <button
+                  key={med.id}
+                  type="button"
+                  onClick={() => onToggleMedication?.(med.id)}
+                  className="w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors text-left"
+                  style={taken
+                    ? { background: 'var(--color-moss-light)', border: '1px solid var(--color-moss-base)' }
+                    : { background: 'var(--color-peat-light)', border: '1px solid var(--color-peat-mid)' }
+                  }
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className="w-5 h-5 rounded flex items-center justify-center shrink-0 text-xs"
+                      style={{
+                        border: `1.5px solid ${taken ? 'var(--color-moss-base)' : 'var(--color-peat-mid)'}`,
+                        background: taken ? 'var(--color-moss-base)' : 'transparent',
+                        color: '#fff',
+                      }}
+                    >
+                      {taken ? '✓' : ''}
+                    </span>
+                    <span className="font-medium truncate" style={{ color: 'var(--color-text-primary)' }}>{med.name}</span>
+                    {med.dose && (
+                      <span className="text-xs shrink-0" style={{ color: 'var(--color-peat-deep)' }}>{med.dose}</span>
+                    )}
+                  </div>
+                  <span className="text-xs shrink-0" style={{ color: taken ? 'var(--color-moss-dark)' : 'var(--color-peat-deep)' }}>
+                    {taken ? 'Taken' : 'Mark taken'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div>
         <label className="block text-sm font-medium mb-1" style={{ color: 'var(--color-peat-deep)' }}>Notes (optional)</label>

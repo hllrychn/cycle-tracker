@@ -3,6 +3,8 @@ import { LogSymptomsForm } from './LogSymptomsForm';
 import { toISODate, differenceInDays, addDays, parseISO, startOfToday } from '../../lib/dateUtils';
 import type { SymptomLog, Cycle, FlowIntensity } from '../../types';
 import type { Prediction } from '../../types';
+import type { Medication } from '../../services/medicationService';
+import { useMedicationLogs } from '../../hooks/useMedicationLogs';
 
 const END_DISMISS_KEY = 'ct_end_period_dismissed_until';
 function isEndDismissed() {
@@ -20,6 +22,7 @@ interface Props {
   symptoms: SymptomLog[];
   cycles: Cycle[];
   prediction: Prediction | null;
+  medications: Medication[];
   onLogSymptoms: (data: Omit<SymptomLog, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<void>;
   onAddOrUpdateCycle: (data: { start_date: string; end_date?: string | null; flow: FlowIntensity; notes?: string | null }, opts?: { excludeId?: string }) => Promise<unknown>;
   onRemoveCycle: (id: string) => Promise<void>;
@@ -27,9 +30,16 @@ interface Props {
   onClose: () => void;
 }
 
-export function LogTodayPopup({ symptoms, cycles, prediction, onLogSymptoms, onAddOrUpdateCycle, onRemoveCycle, onResetDelay, onClose }: Props) {
+export function LogTodayPopup({ symptoms, cycles, prediction, medications, onLogSymptoms, onAddOrUpdateCycle, onRemoveCycle, onResetDelay, onClose }: Props) {
   const today = toISODate(new Date());
   const existing = symptoms.find(s => s.log_date === today) ?? null;
+
+  const activeMedications = medications.filter(m =>
+    m.active &&
+    (m.start_date == null || m.start_date <= today) &&
+    (m.end_date == null || m.end_date >= today)
+  );
+  const { takenIds, toggle: toggleMedication } = useMedicationLogs(today);
 
   const avgDuration = prediction?.avgPeriodDuration ?? 7;
   const latestPeriod = [...cycles]
@@ -195,6 +205,9 @@ export function LogTodayPopup({ symptoms, cycles, prediction, onLogSymptoms, onA
             isOnPeriod={hasActivePeriod}
             formId="log-today-form"
             hideSubmit
+            medications={activeMedications}
+            medicationTakenIds={takenIds}
+            onToggleMedication={toggleMedication}
           />
         </div>
 

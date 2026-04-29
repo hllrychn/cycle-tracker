@@ -5,6 +5,8 @@ import { useSymptoms } from '../hooks/useSymptoms';
 import { useCycles } from '../hooks/useCycles';
 import { usePredictions } from '../hooks/usePredictions';
 import { useSettings } from '../hooks/useSettings';
+import { useMedications } from '../hooks/useMedications';
+import { useMedicationLogs } from '../hooks/useMedicationLogs';
 import { toISODate, differenceInDays, addDays, parseISO, startOfToday } from '../lib/dateUtils';
 import type { SymptomLog } from '../types';
 import { PixelLoader } from '../components/ui/PixelLoader';
@@ -27,6 +29,14 @@ export function LogSymptomsPage() {
   const { resetDelay } = useSettings();
   const prediction = usePredictions(cycles, {});
   const navigate = useNavigate();
+  const today = toISODate(new Date());
+  const { medications } = useMedications();
+  const activeMedications = medications.filter(m =>
+    m.active &&
+    (m.start_date == null || m.start_date <= today) &&
+    (m.end_date == null || m.end_date >= today)
+  );
+  const { takenIds, toggle: toggleMedication } = useMedicationLogs(today);
   const [starting, setStarting]               = useState(false);
   const [startError, setStartError]           = useState<string | null>(null);
   const [dismissed, setDismissed]             = useState(false);
@@ -37,7 +47,6 @@ export function LogSymptomsPage() {
   const [delayError, setDelayError]           = useState<string | null>(null);
   const [dismissedDelay, setDismissedDelay]   = useState(false);
 
-  const today = toISODate(new Date());
   const existing = symptoms.find(s => s.log_date === today) ?? null;
 
   const avgDuration = prediction?.avgPeriodDuration ?? 7;
@@ -243,7 +252,14 @@ export function LogSymptomsPage() {
       )}
 
       <div className="rounded-2xl p-6 overflow-hidden" style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-moss-mid)' }}>
-        <LogSymptomsForm existing={existing} onSubmit={handleSubmit} isOnPeriod={hasActivePeriod} />
+        <LogSymptomsForm
+          existing={existing}
+          onSubmit={handleSubmit}
+          isOnPeriod={hasActivePeriod}
+          medications={activeMedications}
+          medicationTakenIds={takenIds}
+          onToggleMedication={toggleMedication}
+        />
       </div>
     </div>
   );

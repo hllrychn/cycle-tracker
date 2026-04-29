@@ -17,6 +17,7 @@ import { NavLink } from 'react-router-dom';
 import { differenceInDays, addDays, toISODate, startOfToday, format, parseLocalDate, todayLocalISO } from '../lib/dateUtils';
 import { PixelLoader } from '../components/ui/PixelLoader';
 import { useAppointments } from '../hooks/useAppointments';
+import { useMedications } from '../hooks/useMedications';
 import { AppointmentPopup } from '../components/appointments/AppointmentPopup';
 import { LogTodayPopup } from '../components/symptoms/LogTodayPopup';
 
@@ -41,6 +42,7 @@ export function DashboardPage() {
   const { cycles, loading: cyclesLoading, addOrUpdateCycle, removeCycle } = useCycles();
   const { symptoms, loading: symptomsLoading, logSymptoms } = useSymptoms();
   const { appointments, saveAppointment, removeAppointment } = useAppointments();
+  const { medications } = useMedications();
   const {
     customCycleLength, customPeriodDuration, nextPeriodDelayDays, recurringCyclesCount,
     setCustomCycleLength, setCustomPeriodDuration, addDelayDay, setRecurringCyclesCount, resetDelay,
@@ -255,6 +257,7 @@ export function DashboardPage() {
           symptoms={symptoms}
           cycles={cycles}
           prediction={prediction}
+          medications={medications}
           onLogSymptoms={async (data) => { await logSymptoms(data); }}
           onAddOrUpdateCycle={addOrUpdateCycle}
           onRemoveCycle={removeCycle}
