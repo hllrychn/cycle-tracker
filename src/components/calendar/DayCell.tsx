@@ -8,7 +8,6 @@ interface Props {
   date: Date;
   inMonth: boolean;
   phase: CyclePhase | null;
-  isLogged: boolean;
   isOvulationDay: boolean;
   feelingEmoji: string | null;
   hasSymptomLog?: boolean;
@@ -32,7 +31,7 @@ const PHASE_TEXT: Record<CyclePhase, string> = {
   luteal:     'var(--color-peat-dark)',
 };
 
-export function DayCell({ date, inMonth, phase, isLogged, isOvulationDay, feelingEmoji, hasSymptomLog, hasAppointment, moonEmoji, dayType, onClick }: Props) {
+export function DayCell({ date, inMonth, phase, isOvulationDay, feelingEmoji, hasSymptomLog, hasAppointment, moonEmoji, dayType, onClick }: Props) {
   const today = isToday(date);
   const day = date.getDate();
 
@@ -46,7 +45,6 @@ export function DayCell({ date, inMonth, phase, isLogged, isOvulationDay, feelin
   } else if (phase) {
     bgColor = PHASE_BG[phase];
     textColor = PHASE_TEXT[phase];
-    if (!isLogged) opacity = inMonth ? 0.5 : 0.15;
   }
 
   return (

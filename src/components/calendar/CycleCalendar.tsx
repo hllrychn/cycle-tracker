@@ -230,7 +230,7 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
           if (!date) return <div key={`pad-${i}`} />;
           const iso = format(date, 'yyyy-MM-dd');
           const inMonth = isSameMonth(date, viewDate);
-          const { phase, isLogged, isOvulationDay } = getPhaseInfo(date, iso);
+          const { phase, isOvulationDay } = getPhaseInfo(date, iso);
 
           const lunar = (showMoonPhase || showBiodynamic) ? getLunarDay(date) : null;
 
@@ -240,7 +240,6 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
                 date={date}
                 inMonth={inMonth}
                 phase={phase}
-                isLogged={isLogged}
                 isOvulationDay={isOvulationDay}
                 feelingEmoji={symptomEmojiMap.get(iso) ?? null}
                 hasSymptomLog={symptomLogDates.has(iso)}
@@ -272,7 +271,6 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
               <span className="text-xs" style={{ color: '#F0EDE6' }}>{label}</span>
             </span>
           ))}
-          <span className="text-xs" style={{ color: 'var(--color-peat-dark)' }}>Lighter = predicted</span>
         </div>
         {/* Biodynamic toggles */}
         <div className="flex items-center gap-2 flex-wrap">
