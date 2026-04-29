@@ -4,6 +4,7 @@ import { toISODate, differenceInDays, addDays, parseISO, startOfToday } from '..
 import type { SymptomLog, Cycle, FlowIntensity } from '../../types';
 import type { Prediction } from '../../types';
 import type { Medication } from '../../services/medicationService';
+import { isMedicationDueOnDate } from '../../services/medicationService';
 import { useMedicationLogs } from '../../hooks/useMedicationLogs';
 
 const END_DISMISS_KEY = 'ct_end_period_dismissed_until';
@@ -37,7 +38,8 @@ export function LogTodayPopup({ symptoms, cycles, prediction, medications, onLog
   const activeMedications = medications.filter(m =>
     m.active &&
     (m.start_date == null || m.start_date <= today) &&
-    (m.end_date == null || m.end_date >= today)
+    (m.end_date == null || m.end_date >= today) &&
+    isMedicationDueOnDate(m.frequency, m.start_date, today)
   );
   const { takenIds, toggle: toggleMedication } = useMedicationLogs(today);
 

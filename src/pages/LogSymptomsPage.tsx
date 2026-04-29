@@ -7,6 +7,7 @@ import { usePredictions } from '../hooks/usePredictions';
 import { useSettings } from '../hooks/useSettings';
 import { useMedications } from '../hooks/useMedications';
 import { useMedicationLogs } from '../hooks/useMedicationLogs';
+import { isMedicationDueOnDate } from '../services/medicationService';
 import { toISODate, differenceInDays, addDays, parseISO, startOfToday } from '../lib/dateUtils';
 import type { SymptomLog } from '../types';
 import { PixelLoader } from '../components/ui/PixelLoader';
@@ -34,7 +35,8 @@ export function LogSymptomsPage() {
   const activeMedications = medications.filter(m =>
     m.active &&
     (m.start_date == null || m.start_date <= today) &&
-    (m.end_date == null || m.end_date >= today)
+    (m.end_date == null || m.end_date >= today) &&
+    isMedicationDueOnDate(m.frequency, m.start_date, today)
   );
   const { takenIds, toggle: toggleMedication } = useMedicationLogs(today);
   const [starting, setStarting]               = useState(false);

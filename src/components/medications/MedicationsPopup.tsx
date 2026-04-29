@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import type { Medication, MedicationInput } from '../../services/medicationService';
+import type { Medication, MedicationInput, MedicationFrequency } from '../../services/medicationService';
+import { FREQUENCY_LABELS, FREQUENCY_GROUPS } from '../../services/medicationService';
 
 interface Props {
   medications: Medication[];
@@ -48,7 +49,7 @@ function MedForm({
   const [name,      setName]      = useState(existing?.name      ?? '');
   const [type,      setType]      = useState<Medication['type']>(existing?.type ?? 'medication');
   const [dose,      setDose]      = useState(existing?.dose       ?? '');
-  const [frequency, setFrequency] = useState(existing?.frequency  ?? '');
+  const [frequency, setFrequency] = useState<MedicationFrequency | null>(existing?.frequency ?? null);
   const [startDate, setStartDate] = useState(existing?.start_date ?? '');
   const [endDate,   setEndDate]   = useState(existing?.end_date   ?? '');
   const [notes,     setNotes]     = useState(existing?.notes      ?? '');
@@ -65,7 +66,7 @@ function MedForm({
         name:      name.trim(),
         type,
         dose:       dose.trim()  || null,
-        frequency:  frequency.trim() || null,
+        frequency:  frequency || null,
         start_date: startDate   || null,
         end_date:   endDate     || null,
         notes:      notes.trim() || null,
@@ -107,22 +108,39 @@ function MedForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div>
-          <label className="block mb-1" style={labelStyle}>Dose</label>
-          <input
-            type="text" value={dose} onChange={e => setDose(e.target.value)}
-            placeholder="e.g. 200mg, 1 pill…"
-            className={inputCls} style={inputStyle}
-          />
-        </div>
-        <div>
-          <label className="block mb-1" style={labelStyle}>Frequency</label>
-          <input
-            type="text" value={frequency} onChange={e => setFrequency(e.target.value)}
-            placeholder="e.g. daily, as needed…"
-            className={inputCls} style={inputStyle}
-          />
+      <div>
+        <label className="block mb-1" style={labelStyle}>Dose</label>
+        <input
+          type="text" value={dose} onChange={e => setDose(e.target.value)}
+          placeholder="e.g. 200mg, 1 pill…"
+          className={inputCls} style={inputStyle}
+        />
+      </div>
+
+      <div>
+        <label className="block mb-2" style={labelStyle}>Frequency</label>
+        <div className="space-y-2">
+          {FREQUENCY_GROUPS.map(group => (
+            <div key={group.label}>
+              <p className="text-xs mb-1.5" style={{ color: 'var(--color-peat-deep)', opacity: 0.6 }}>{group.label}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {group.values.map(val => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setFrequency(prev => prev === val ? null : val)}
+                    className="px-3 py-1 rounded-full text-xs transition-colors"
+                    style={frequency === val
+                      ? { background: 'var(--color-blue-base)', color: '#fff' }
+                      : { background: 'var(--color-peat-light)', color: 'var(--color-peat-deep)', border: '1px solid var(--color-peat-mid)' }
+                    }
+                  >
+                    {FREQUENCY_LABELS[val]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
