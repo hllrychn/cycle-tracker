@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   startOfMonth, endOfMonth, eachDayOfInterval, getDay,
-  isSameMonth, isSameDay, format, isWithinInterval, addDays, differenceInDays, startOfToday, parseISO, parseLocalDate,
+  isSameMonth, isSameDay, format, isWithinInterval, addDays, subDays, differenceInDays, startOfToday, parseISO, parseLocalDate,
 } from '../../lib/dateUtils';
 import { DayCell } from './DayCell';
 import type { CyclePhase } from './DayCell';
@@ -79,16 +79,21 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
         ? parseISO(lastCycle.end_date)
         : addDays(parseISO(lastCycle.start_date), prediction.avgPeriodDuration - 1);
 
-      if (isSameDay(date, prediction.ovulationDay)) {
+      // Always use current cycle's ovulation (nextPeriodStart - 14), never the advanced one
+      const currentOvulation = subDays(prediction.nextPeriodStart, 14);
+      const currentFertileStart = subDays(currentOvulation, 5);
+      const currentFertileEnd = addDays(currentOvulation, 1);
+
+      if (isSameDay(date, currentOvulation)) {
         return { phase: 'ovulatory', isLogged: false, isOvulationDay: true };
       }
-      if (inRange(date, prediction.fertileWindowStart, prediction.fertileWindowEnd)) {
+      if (inRange(date, currentFertileStart, currentFertileEnd)) {
         return { phase: 'ovulatory', isLogged: false, isOvulationDay: false };
       }
-      if (inRange(date, addDays(prediction.fertileWindowEnd, 1), addDays(prediction.nextPeriodStart, -1))) {
+      if (inRange(date, addDays(currentFertileEnd, 1), addDays(prediction.nextPeriodStart, -1))) {
         return { phase: 'luteal', isLogged: false, isOvulationDay: false };
       }
-      if (inRange(date, addDays(lastEnd, 1), addDays(prediction.fertileWindowStart, -1))) {
+      if (inRange(date, addDays(lastEnd, 1), addDays(currentFertileStart, -1))) {
         return { phase: 'follicular', isLogged: false, isOvulationDay: false };
       }
     }
