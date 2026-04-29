@@ -1,6 +1,6 @@
 import { isToday } from '../../lib/dateUtils';
 import type { BiodynamicDayType } from '../../lib/lunarUtils';
-import { DAY_TYPE_COLOR } from '../../lib/lunarUtils';
+import { DAY_TYPE_EMOJI } from '../../lib/lunarUtils';
 
 export type CyclePhase = 'menstrual' | 'follicular' | 'ovulatory' | 'luteal';
 
@@ -64,12 +64,11 @@ export function DayCell({ date, inMonth, phase, isLogged, isOvulationDay, feelin
       onMouseEnter={e => { e.currentTarget.style.opacity = String(Math.min(1, opacity + 0.2)); }}
       onMouseLeave={e => { e.currentTarget.style.opacity = String(opacity); }}
     >
-      {/* Day type dot — top-left */}
+      {/* Biodynamic day type emoji — top-left (diagonal from feeling emoji) */}
       {dayType && (
-        <span
-          className="absolute rounded-full"
-          style={{ width: 4, height: 4, top: 2, left: 2, background: DAY_TYPE_COLOR[dayType], opacity: inMonth ? 0.85 : 0.3 }}
-        />
+        <span className="absolute -top-1 -left-1 text-xs leading-none" style={{ opacity: inMonth ? 0.9 : 0.3 }}>
+          {DAY_TYPE_EMOJI[dayType]}
+        </span>
       )}
       {/* Moon phase emoji — centered, large, transparent so date shows through */}
       {moonEmoji && (

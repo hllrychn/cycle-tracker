@@ -9,7 +9,7 @@ import { DayDetailModal } from './DayDetailModal';
 import type { Cycle, SymptomLog, Prediction, Appointment } from '../../types';
 import type { RecurringPeriod } from '../../hooks/usePredictions';
 import type { AppointmentInput } from '../../services/appointmentService';
-import { getLunarDay, DAY_TYPE_COLOR, DAY_TYPE_EMOJI } from '../../lib/lunarUtils';
+import { getLunarDay, DAY_TYPE_EMOJI } from '../../lib/lunarUtils';
 import type { BiodynamicDayType } from '../../lib/lunarUtils';
 
 interface Props {
@@ -300,8 +300,8 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
             <div className="flex gap-2 flex-wrap">
               {(['Root', 'Flower', 'Fruit', 'Leaf'] as BiodynamicDayType[]).map(type => (
                 <span key={type} className="flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full inline-block flex-shrink-0" style={{ background: DAY_TYPE_COLOR[type] }} />
-                  <span className="text-xs" style={{ color: '#F0EDE6', opacity: 0.7 }}>{DAY_TYPE_EMOJI[type]} {type}</span>
+                  <span className="text-xs leading-none">{DAY_TYPE_EMOJI[type]}</span>
+                  <span className="text-xs" style={{ color: '#F0EDE6', opacity: 0.7 }}>{type}</span>
                 </span>
               ))}
             </div>
