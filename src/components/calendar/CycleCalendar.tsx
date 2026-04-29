@@ -9,6 +9,8 @@ import { DayDetailModal } from './DayDetailModal';
 import type { Cycle, SymptomLog, Prediction, Appointment } from '../../types';
 import type { RecurringPeriod } from '../../hooks/usePredictions';
 import type { AppointmentInput } from '../../services/appointmentService';
+import { getLunarDay, DAY_TYPE_COLOR, DAY_TYPE_EMOJI } from '../../lib/lunarUtils';
+import type { BiodynamicDayType } from '../../lib/lunarUtils';
 
 interface Props {
   cycles: Cycle[];
@@ -226,6 +228,8 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
           const inMonth = isSameMonth(date, viewDate);
           const { phase, isLogged, isOvulationDay } = getPhaseInfo(date, iso);
 
+          const lunar = getLunarDay(date);
+
           return (
             <div key={iso} className="flex items-center justify-center">
               <DayCell
@@ -237,6 +241,8 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
                 feelingEmoji={symptomEmojiMap.get(iso) ?? null}
                 hasSymptomLog={symptomLogDates.has(iso)}
                 hasAppointment={appointmentMap.has(iso)}
+                moonEmoji={lunar.phaseEmoji}
+                dayType={lunar.dayType}
                 onClick={() => setSelectedDate(date)}
               />
             </div>
@@ -246,21 +252,34 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
 
       {/* Legend */}
       <div
-        className="mt-auto flex gap-3 flex-wrap px-4 py-3"
+        className="mt-auto px-4 py-3 space-y-2"
         style={{ borderTop: '1px solid var(--color-peat-dark)' }}
       >
-        {[
-          { label: 'Period', color: '#c89fc1' },
-          { label: 'Follicular', color: 'var(--color-phase-follicular)' },
-          { label: 'Ovulation', color: 'var(--color-moss-base)' },
-          { label: 'Luteal', color: 'var(--color-phase-luteal)' },
-        ].map(({ label, color }) => (
-          <span key={label} className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full inline-block flex-shrink-0" style={{ background: color }} />
-            <span className="text-xs" style={{ color: '#F0EDE6' }}>{label}</span>
-          </span>
-        ))}
-        <span className="text-xs" style={{ color: 'var(--color-peat-dark)' }}>Lighter = predicted</span>
+        {/* Cycle phases */}
+        <div className="flex gap-3 flex-wrap">
+          {[
+            { label: 'Period',     color: '#c89fc1' },
+            { label: 'Follicular', color: 'var(--color-phase-follicular)' },
+            { label: 'Ovulation',  color: 'var(--color-moss-base)' },
+            { label: 'Luteal',     color: 'var(--color-phase-luteal)' },
+          ].map(({ label, color }) => (
+            <span key={label} className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full inline-block flex-shrink-0" style={{ background: color }} />
+              <span className="text-xs" style={{ color: '#F0EDE6' }}>{label}</span>
+            </span>
+          ))}
+          <span className="text-xs" style={{ color: 'var(--color-peat-dark)' }}>Lighter = predicted</span>
+        </div>
+        {/* Biodynamic day types */}
+        <div className="flex gap-3 flex-wrap">
+          {(['Root', 'Flower', 'Fruit', 'Leaf'] as BiodynamicDayType[]).map(type => (
+            <span key={type} className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full inline-block flex-shrink-0" style={{ background: DAY_TYPE_COLOR[type] }} />
+              <span className="text-xs" style={{ color: '#F0EDE6' }}>{DAY_TYPE_EMOJI[type]} {type}</span>
+            </span>
+          ))}
+          <span className="text-xs" style={{ color: 'var(--color-peat-dark)' }}>Biodynamic</span>
+        </div>
       </div>
 
       {selectedDate && (() => {

@@ -5,6 +5,7 @@ import { AppointmentPopup } from '../appointments/AppointmentPopup';
 import type { SymptomLog, Severity, Appointment } from '../../types';
 import type { AppointmentInput } from '../../services/appointmentService';
 import type { CyclePhase } from './DayCell';
+import { getLunarDay, DAY_TYPE_COLOR } from '../../lib/lunarUtils';
 
 interface Props {
   date: Date;
@@ -53,7 +54,8 @@ function phaseLabel(phase: CyclePhase | null, isLogged: boolean, isOvulationDay:
 export function DayDetailModal({ date, symptomLog, appointment, phase, isLogged, isOvulationDay, onSave, onSaveAppointment, onDeleteAppointment, onClose }: Props) {
   const [editing, setEditing] = useState(!symptomLog);
   const [editingAppt, setEditingAppt] = useState(false);
-  const badge = phaseLabel(phase, isLogged, isOvulationDay);
+  const badge  = phaseLabel(phase, isLogged, isOvulationDay);
+  const lunar  = getLunarDay(date);
 
   const handleSave = async (data: Omit<SymptomLog, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     await onSave(data);
@@ -87,14 +89,30 @@ export function DayDetailModal({ date, symptomLog, appointment, phase, isLogged,
             <h2 className="text-base font-normal" style={{ color: 'var(--color-text-primary)' }}>
               {format(date, 'EEEE, MMMM d')}
             </h2>
-            {badge && (
+            <div className="flex flex-wrap items-center gap-1.5 mt-1">
+              {badge && (
+                <span
+                  className="inline-block text-xs font-normal px-2 py-0.5 rounded-full"
+                  style={{ background: badge.fill, color: badge.color }}
+                >
+                  {badge.text}
+                </span>
+              )}
+              {/* Moon phase */}
               <span
-                className="inline-block mt-1 text-xs font-normal px-2 py-0.5 rounded-full"
-                style={{ background: badge.fill, color: badge.color }}
+                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full"
+                style={{ background: 'var(--color-peat-light)', color: 'var(--color-peat-deep)' }}
               >
-                {badge.text}
+                {lunar.phaseEmoji} {lunar.phaseName}
               </span>
-            )}
+              {/* Biodynamic day type */}
+              <span
+                className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium"
+                style={{ background: DAY_TYPE_COLOR[lunar.dayType] + '33', color: DAY_TYPE_COLOR[lunar.dayType], border: `1px solid ${DAY_TYPE_COLOR[lunar.dayType]}66` }}
+              >
+                {lunar.dayTypeEmoji} {lunar.dayType} day · {lunar.zodiacSign}
+              </span>
+            </div>
           </div>
           <button
             onClick={onClose}

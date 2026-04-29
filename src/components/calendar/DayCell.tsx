@@ -1,4 +1,6 @@
 import { isToday } from '../../lib/dateUtils';
+import type { BiodynamicDayType } from '../../lib/lunarUtils';
+import { DAY_TYPE_COLOR } from '../../lib/lunarUtils';
 
 export type CyclePhase = 'menstrual' | 'follicular' | 'ovulatory' | 'luteal';
 
@@ -11,6 +13,8 @@ interface Props {
   feelingEmoji: string | null;
   hasSymptomLog?: boolean;
   hasAppointment?: boolean;
+  moonEmoji?: string;
+  dayType?: BiodynamicDayType;
   onClick: () => void;
 }
 
@@ -28,7 +32,7 @@ const PHASE_TEXT: Record<CyclePhase, string> = {
   luteal:     'var(--color-peat-dark)',
 };
 
-export function DayCell({ date, inMonth, phase, isLogged, isOvulationDay, feelingEmoji, hasSymptomLog, hasAppointment, onClick }: Props) {
+export function DayCell({ date, inMonth, phase, isLogged, isOvulationDay, feelingEmoji, hasSymptomLog, hasAppointment, moonEmoji, dayType, onClick }: Props) {
   const today = isToday(date);
   const day = date.getDate();
 
@@ -60,8 +64,24 @@ export function DayCell({ date, inMonth, phase, isLogged, isOvulationDay, feelin
       onMouseEnter={e => { e.currentTarget.style.opacity = String(Math.min(1, opacity + 0.2)); }}
       onMouseLeave={e => { e.currentTarget.style.opacity = String(opacity); }}
     >
+      {/* Day type dot — top-left */}
+      {dayType && (
+        <span
+          className="absolute rounded-full"
+          style={{ width: 4, height: 4, top: 2, left: 2, background: DAY_TYPE_COLOR[dayType], opacity: inMonth ? 0.85 : 0.3 }}
+        />
+      )}
+      {/* Moon phase emoji — top-right */}
+      {moonEmoji && (
+        <span
+          className="absolute leading-none select-none"
+          style={{ fontSize: 7, top: 1, right: 1, opacity: inMonth ? 0.75 : 0.25 }}
+        >
+          {moonEmoji}
+        </span>
+      )}
       {day}
-      {/* Indicator dots — symptom log (left) and appointment (right) */}
+      {/* Indicator dots — symptom log and appointment */}
       {(hasSymptomLog || hasAppointment) && (
         <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
           {hasSymptomLog && !feelingEmoji && (
