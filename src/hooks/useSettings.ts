@@ -8,6 +8,8 @@ interface Settings {
   nextPeriodDelayDays: number;
   recurringCyclesCount: number;
   ageGroup: AgeGroup;
+  showMoonPhase: boolean;
+  showBiodynamic: boolean;
 }
 
 const STORAGE_KEY = 'cycleTrackerSettings';
@@ -18,6 +20,8 @@ const DEFAULTS: Settings = {
   nextPeriodDelayDays: 0,
   recurringCyclesCount: 3,
   ageGroup: 'adult',
+  showMoonPhase: true,
+  showBiodynamic: true,
 };
 
 function load(): Settings {
@@ -44,16 +48,20 @@ export function useSettings() {
   }, []);
 
   return {
-    customCycleLength:      settings.customCycleLength,
-    customPeriodDuration:   settings.customPeriodDuration,
-    nextPeriodDelayDays:    settings.nextPeriodDelayDays,
-    recurringCyclesCount:   settings.recurringCyclesCount,
-    ageGroup:               settings.ageGroup,
-    setCustomCycleLength:   (length: number | null) => update({ customCycleLength: length }),
-    setCustomPeriodDuration:(duration: number | null) => update({ customPeriodDuration: duration }),
-    addDelayDay:            () => update({ nextPeriodDelayDays: settings.nextPeriodDelayDays + 1 }),
-    resetDelay:             () => update({ nextPeriodDelayDays: 0 }),
-    setRecurringCyclesCount:(n: number) => update({ recurringCyclesCount: n }),
-    setAgeGroup:            (g: AgeGroup) => update({ ageGroup: g }),
+    customCycleLength:       settings.customCycleLength,
+    customPeriodDuration:    settings.customPeriodDuration,
+    nextPeriodDelayDays:     settings.nextPeriodDelayDays,
+    recurringCyclesCount:    settings.recurringCyclesCount,
+    ageGroup:                settings.ageGroup,
+    showMoonPhase:           settings.showMoonPhase,
+    showBiodynamic:          settings.showBiodynamic,
+    setCustomCycleLength:    (length: number | null) => update({ customCycleLength: length }),
+    setCustomPeriodDuration: (duration: number | null) => update({ customPeriodDuration: duration }),
+    addDelayDay:             () => update({ nextPeriodDelayDays: settings.nextPeriodDelayDays + 1 }),
+    resetDelay:              () => update({ nextPeriodDelayDays: 0 }),
+    setRecurringCyclesCount: (n: number) => update({ recurringCyclesCount: n }),
+    setAgeGroup:             (g: AgeGroup) => update({ ageGroup: g }),
+    setShowMoonPhase:        (v: boolean) => update({ showMoonPhase: v }),
+    setShowBiodynamic:       (v: boolean) => update({ showBiodynamic: v }),
   };
 }

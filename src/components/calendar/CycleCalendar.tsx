@@ -18,6 +18,10 @@ interface Props {
   prediction: Prediction | null;
   recurringPeriods: RecurringPeriod[];
   appointments: Appointment[];
+  showMoonPhase: boolean;
+  showBiodynamic: boolean;
+  onShowMoonPhaseChange: (v: boolean) => void;
+  onShowBiodynamicChange: (v: boolean) => void;
   onLogSymptoms: (data: Omit<SymptomLog, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<void>;
   onSaveAppointment: (data: AppointmentInput) => Promise<Appointment>;
   onDeleteAppointment: (id: string) => Promise<void>;
@@ -30,7 +34,7 @@ function inRange(date: Date, start: Date, end: Date): boolean {
   return isWithinInterval(date, { start, end });
 }
 
-export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, appointments, onLogSymptoms, onSaveAppointment, onDeleteAppointment }: Props) {
+export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, appointments, showMoonPhase, showBiodynamic, onShowMoonPhaseChange, onShowBiodynamicChange, onLogSymptoms, onSaveAppointment, onDeleteAppointment }: Props) {
   const [viewDate, setViewDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -228,7 +232,7 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
           const inMonth = isSameMonth(date, viewDate);
           const { phase, isLogged, isOvulationDay } = getPhaseInfo(date, iso);
 
-          const lunar = getLunarDay(date);
+          const lunar = (showMoonPhase || showBiodynamic) ? getLunarDay(date) : null;
 
           return (
             <div key={iso} className="flex items-center justify-center">
@@ -241,8 +245,8 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
                 feelingEmoji={symptomEmojiMap.get(iso) ?? null}
                 hasSymptomLog={symptomLogDates.has(iso)}
                 hasAppointment={appointmentMap.has(iso)}
-                moonEmoji={lunar.phaseEmoji}
-                dayType={lunar.dayType}
+                moonEmoji={showMoonPhase && lunar ? lunar.phaseEmoji : undefined}
+                dayType={showBiodynamic && lunar ? lunar.dayType : undefined}
                 onClick={() => setSelectedDate(date)}
               />
             </div>
@@ -270,15 +274,38 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
           ))}
           <span className="text-xs" style={{ color: 'var(--color-peat-dark)' }}>Lighter = predicted</span>
         </div>
-        {/* Biodynamic day types */}
-        <div className="flex gap-3 flex-wrap">
-          {(['Root', 'Flower', 'Fruit', 'Leaf'] as BiodynamicDayType[]).map(type => (
-            <span key={type} className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full inline-block flex-shrink-0" style={{ background: DAY_TYPE_COLOR[type] }} />
-              <span className="text-xs" style={{ color: '#F0EDE6' }}>{DAY_TYPE_EMOJI[type]} {type}</span>
-            </span>
-          ))}
-          <span className="text-xs" style={{ color: 'var(--color-peat-dark)' }}>Biodynamic</span>
+        {/* Biodynamic toggles */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => onShowMoonPhaseChange(!showMoonPhase)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
+            style={showMoonPhase
+              ? { background: 'rgba(255,255,255,0.15)', color: '#F0EDE6', border: '1px solid rgba(255,255,255,0.25)' }
+              : { background: 'transparent', color: 'var(--color-peat-dark)', border: '1px solid rgba(255,255,255,0.08)' }
+            }
+          >
+            🌕 Moon phases
+          </button>
+          <button
+            onClick={() => onShowBiodynamicChange(!showBiodynamic)}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-colors"
+            style={showBiodynamic
+              ? { background: 'rgba(255,255,255,0.15)', color: '#F0EDE6', border: '1px solid rgba(255,255,255,0.25)' }
+              : { background: 'transparent', color: 'var(--color-peat-dark)', border: '1px solid rgba(255,255,255,0.08)' }
+            }
+          >
+            🌱 Biodynamic
+          </button>
+          {showBiodynamic && (
+            <div className="flex gap-2 flex-wrap">
+              {(['Root', 'Flower', 'Fruit', 'Leaf'] as BiodynamicDayType[]).map(type => (
+                <span key={type} className="flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full inline-block flex-shrink-0" style={{ background: DAY_TYPE_COLOR[type] }} />
+                  <span className="text-xs" style={{ color: '#F0EDE6', opacity: 0.7 }}>{DAY_TYPE_EMOJI[type]} {type}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

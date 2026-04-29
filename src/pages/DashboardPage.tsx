@@ -44,6 +44,7 @@ export function DashboardPage() {
   const {
     customCycleLength, customPeriodDuration, nextPeriodDelayDays, recurringCyclesCount,
     setCustomCycleLength, setCustomPeriodDuration, addDelayDay, setRecurringCyclesCount, resetDelay,
+    showMoonPhase, showBiodynamic, setShowMoonPhase, setShowBiodynamic,
   } = useSettings();
 
   const handleStartToday = async () => {
@@ -372,6 +373,10 @@ export function DashboardPage() {
             prediction={prediction}
             recurringPeriods={recurringPeriods}
             appointments={appointments}
+            showMoonPhase={showMoonPhase}
+            showBiodynamic={showBiodynamic}
+            onShowMoonPhaseChange={setShowMoonPhase}
+            onShowBiodynamicChange={setShowBiodynamic}
             onLogSymptoms={async (data) => { await logSymptoms(data); }}
             onSaveAppointment={saveAppointment}
             onDeleteAppointment={removeAppointment}
