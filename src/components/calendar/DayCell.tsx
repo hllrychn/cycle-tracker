@@ -47,58 +47,70 @@ export function DayCell({ date, inMonth, phase, isOvulationDay, feelingEmoji, ha
     textColor = PHASE_TEXT[phase];
   }
 
+  const hasEmojiRow = !!(feelingEmoji || dayType);
+
   return (
     <div
       onClick={onClick}
-      className="relative flex flex-col items-center justify-center h-8 w-8 rounded-full text-xs cursor-pointer select-none transition-opacity"
-      style={{
-        background: bgColor || 'transparent',
-        color: hasAppointment ? '#4A7FD4' : (bgColor ? textColor : 'var(--color-text-light)'),
-        fontWeight: hasAppointment ? 700 : 400,
-        opacity,
-        outline: today ? '2px solid var(--color-moss-base)' : undefined,
-        outlineOffset: today ? '2px' : undefined,
-      }}
+      className="flex flex-col items-center cursor-pointer select-none transition-opacity"
+      style={{ opacity }}
       onMouseEnter={e => { e.currentTarget.style.opacity = String(Math.min(1, opacity + 0.2)); }}
       onMouseLeave={e => { e.currentTarget.style.opacity = String(opacity); }}
     >
-      {/* Biodynamic day type emoji — top-left (diagonal from feeling emoji) */}
-      {dayType && (
-        <span className="absolute -top-1 -left-1 text-xs leading-none" style={{ opacity: inMonth ? 0.9 : 0.3 }}>
-          {DAY_TYPE_EMOJI[dayType]}
-        </span>
-      )}
-      {/* Moon phase emoji — centered, large, transparent so date shows through */}
-      {moonEmoji && (
-        <span
-          className="absolute leading-none select-none pointer-events-none"
-          style={{
-            fontSize: 28,
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            opacity: inMonth ? 0.28 : 0.1,
-            zIndex: 0,
-          }}
-        >
-          {moonEmoji}
-        </span>
-      )}
-      <span className="relative" style={{ zIndex: 1 }}>{day}</span>
-      {/* Indicator dots — symptom log and appointment */}
-      {(hasSymptomLog || hasAppointment) && (
-        <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
-          {hasSymptomLog && !feelingEmoji && (
-            <span className="w-1 h-1 rounded-full" style={{ background: 'var(--color-accent)' }} />
-          )}
-          {hasAppointment && (
-            <span className="w-1 h-1 rounded-full" style={{ background: '#4A7FD4' }} />
-          )}
-        </span>
-      )}
-      {feelingEmoji && (
-        <span className="absolute -bottom-1 -right-1 text-xs leading-none">{feelingEmoji}</span>
-      )}
+      {/* Day circle */}
+      <div
+        className="relative flex items-center justify-center h-8 w-8 rounded-full text-xs"
+        style={{
+          background: bgColor || 'transparent',
+          color: hasAppointment ? '#4A7FD4' : (bgColor ? textColor : 'var(--color-text-light)'),
+          fontWeight: hasAppointment ? 700 : 400,
+          outline: today ? '2px solid var(--color-moss-base)' : undefined,
+          outlineOffset: today ? '2px' : undefined,
+        }}
+      >
+        {/* Moon phase emoji — centered, large, transparent so date shows through */}
+        {moonEmoji && (
+          <span
+            className="absolute leading-none select-none pointer-events-none"
+            style={{
+              fontSize: 28,
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              opacity: inMonth ? 0.28 : 0.1,
+              zIndex: 0,
+            }}
+          >
+            {moonEmoji}
+          </span>
+        )}
+        <span className="relative" style={{ zIndex: 1 }}>{day}</span>
+        {/* Indicator dots — symptom log and appointment */}
+        {(hasSymptomLog || hasAppointment) && (
+          <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
+            {hasSymptomLog && !feelingEmoji && (
+              <span className="w-1 h-1 rounded-full" style={{ background: 'var(--color-accent)' }} />
+            )}
+            {hasAppointment && (
+              <span className="w-1 h-1 rounded-full" style={{ background: '#4A7FD4' }} />
+            )}
+          </span>
+        )}
+      </div>
+
+      {/* Horizontal emoji row below circle */}
+      <div className="flex items-center justify-center gap-0.5 h-3.5">
+        {hasEmojiRow && (
+          <>
+            {feelingEmoji && (
+              <span className="leading-none" style={{ fontSize: 10, opacity: inMonth ? 1 : 0.3 }}>{feelingEmoji}</span>
+            )}
+            {dayType && (
+              <span className="leading-none" style={{ fontSize: 10, opacity: inMonth ? 0.85 : 0.3 }}>{DAY_TYPE_EMOJI[dayType]}</span>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
