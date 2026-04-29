@@ -71,16 +71,23 @@ export function DayCell({ date, inMonth, phase, isLogged, isOvulationDay, feelin
           style={{ width: 4, height: 4, top: 2, left: 2, background: DAY_TYPE_COLOR[dayType], opacity: inMonth ? 0.85 : 0.3 }}
         />
       )}
-      {/* Moon phase emoji — top-right */}
+      {/* Moon phase emoji — centered, large, transparent so date shows through */}
       {moonEmoji && (
         <span
-          className="absolute leading-none select-none"
-          style={{ fontSize: 7, top: 1, right: 1, opacity: inMonth ? 0.75 : 0.25 }}
+          className="absolute leading-none select-none pointer-events-none"
+          style={{
+            fontSize: 28,
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            opacity: inMonth ? 0.28 : 0.1,
+            zIndex: 0,
+          }}
         >
           {moonEmoji}
         </span>
       )}
-      {day}
+      <span className="relative" style={{ zIndex: 1 }}>{day}</span>
       {/* Indicator dots — symptom log and appointment */}
       {(hasSymptomLog || hasAppointment) && (
         <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
