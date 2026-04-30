@@ -37,7 +37,7 @@ const NAV_ITEMS = [
 const BOTTOM_TABS = [
   { to: '/',              label: 'Home',      icon: null as string | null, activeImg: '/home-icon-active.png',    inactiveImg: '/home-icon-inactive.png',    end: true  },
   { to: '/health',        label: 'Health',    icon: null,                  activeImg: '/health-icon-active.png',  inactiveImg: '/health-icon-inactive.png',  end: false },
-  { to: '/lifestyle',     label: 'Lifestyle', icon: '🌿' as string | null, activeImg: null,                       inactiveImg: null,                         end: false },
+  { to: '/lifestyle',     label: 'Lifestyle', icon: null,                  activeImg: '/lifestyle-icon-active.png',   inactiveImg: '/lifestyle-icon-inactive.png', end: false },
   { to: '/log/symptoms',  label: 'Symptoms',  icon: null,                  activeImg: '/symptoms-icon-active.png', inactiveImg: '/symptoms-icon-inactive.png', end: false },
   { to: '/history',       label: 'History',   icon: null,                  activeImg: '/history-icon-active.png',  inactiveImg: '/history-icon-inactive.png',  end: false },
 ];
