@@ -4,14 +4,16 @@ import { usePredictions } from '../hooks/usePredictions';
 import { useSettings } from '../hooks/useSettings';
 import { WinePairingCard } from '../components/wine/WinePairingCard';
 import { WineFoodPairingCard } from '../components/wine/WineFoodPairingCard';
+import { FloralCard } from '../components/floral/FloralCard';
 import { format } from '../lib/dateUtils';
 import { PixelLoader } from '../components/ui/PixelLoader';
 
-type Tab = 'phase' | 'food';
+type Tab = 'phase' | 'food' | 'floral';
 
 const TABS: { key: Tab; label: string }[] = [
-  { key: 'phase', label: 'Wine pairings' },
-  { key: 'food',  label: 'Food & wine' },
+  { key: 'phase',  label: 'Wine pairings'     },
+  { key: 'food',   label: 'Food & wine'       },
+  { key: 'floral', label: 'Floral arrangements' },
 ];
 
 export function LifestylePage() {
@@ -61,8 +63,9 @@ export function LifestylePage() {
         </div>
 
         <div>
-          {tab === 'phase' && <WinePairingCard      bare cycles={cycles} prediction={prediction} />}
-          {tab === 'food'  && <WineFoodPairingCard       cycles={cycles} prediction={prediction} />}
+          {tab === 'phase'  && <WinePairingCard  bare cycles={cycles} prediction={prediction} />}
+          {tab === 'food'   && <WineFoodPairingCard    cycles={cycles} prediction={prediction} />}
+          {tab === 'floral' && <FloralCard        bare cycles={cycles} prediction={prediction} />}
         </div>
       </div>
     </div>
