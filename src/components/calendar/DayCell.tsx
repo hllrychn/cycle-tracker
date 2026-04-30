@@ -51,12 +51,12 @@ export function DayCell({ date, inMonth, phase, isOvulationDay, feelingEmoji, ha
     <div
       onClick={onClick}
       className="flex items-center cursor-pointer select-none transition-opacity"
-      style={{ opacity, gap: 2 }}
+      style={{ opacity }}
       onMouseEnter={e => { e.currentTarget.style.opacity = String(Math.min(1, opacity + 0.2)); }}
       onMouseLeave={e => { e.currentTarget.style.opacity = String(opacity); }}
     >
-      {/* Biodynamic emoji — left of circle */}
-      <span className="leading-none w-3 text-center" style={{ fontSize: 10, opacity: dayType ? (inMonth ? 0.85 : 0.3) : 0 }}>
+      {/* Biodynamic emoji — left of circle, overlaps edge */}
+      <span className="leading-none w-3 text-center" style={{ fontSize: 10, opacity: dayType ? (inMonth ? 0.85 : 0.3) : 0, marginRight: -5, zIndex: 2, position: 'relative' }}>
         {dayType ? DAY_TYPE_EMOJI[dayType] : ''}
       </span>
 
@@ -101,8 +101,8 @@ export function DayCell({ date, inMonth, phase, isOvulationDay, feelingEmoji, ha
         )}
       </div>
 
-      {/* Feeling emoji — right of circle */}
-      <span className="leading-none w-3 text-center" style={{ fontSize: 10, opacity: feelingEmoji ? (inMonth ? 1 : 0.3) : 0 }}>
+      {/* Feeling emoji — right of circle, overlaps edge */}
+      <span className="leading-none w-3 text-center" style={{ fontSize: 10, opacity: feelingEmoji ? (inMonth ? 1 : 0.3) : 0, marginLeft: -5, zIndex: 2, position: 'relative' }}>
         {feelingEmoji ?? ''}
       </span>
     </div>
