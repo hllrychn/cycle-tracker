@@ -56,7 +56,7 @@ export function DayCell({ date, inMonth, phase, isOvulationDay, feelingEmoji, ha
       onMouseLeave={e => { e.currentTarget.style.opacity = String(opacity); }}
     >
       {/* Biodynamic emoji — left of circle, overlaps edge */}
-      <span className="leading-none w-3 text-center" style={{ fontSize: 10, opacity: dayType ? (inMonth ? 0.85 : 0.3) : 0, marginRight: -5, zIndex: 2, position: 'relative' }}>
+      <span className="leading-none w-3 text-center" style={{ fontSize: 13, opacity: dayType ? (inMonth ? 0.85 : 0.3) : 0, marginRight: -5, zIndex: 2, position: 'relative' }}>
         {dayType ? DAY_TYPE_EMOJI[dayType] : ''}
       </span>
 
@@ -102,7 +102,7 @@ export function DayCell({ date, inMonth, phase, isOvulationDay, feelingEmoji, ha
       </div>
 
       {/* Feeling emoji — right of circle, overlaps edge */}
-      <span className="leading-none w-3 text-center" style={{ fontSize: 10, opacity: feelingEmoji ? (inMonth ? 1 : 0.3) : 0, marginLeft: -5, zIndex: 2, position: 'relative' }}>
+      <span className="leading-none w-3 text-center" style={{ fontSize: 13, opacity: feelingEmoji ? (inMonth ? 1 : 0.3) : 0, marginLeft: -5, zIndex: 2, position: 'relative' }}>
         {feelingEmoji ?? ''}
       </span>
     </div>
