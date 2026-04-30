@@ -9,6 +9,7 @@ import { LogPeriodPage } from './pages/LogPeriodPage';
 import { LogSymptomsPage } from './pages/LogSymptomsPage';
 import { HistoryPage } from './pages/HistoryPage';
 import { HealthPage } from './pages/HealthPage';
+import { LifestylePage } from './pages/LifestylePage';
 import { PalettePage } from './pages/PalettePage';
 import { FontsPage } from './pages/FontsPage';
 import { LoaderPage } from './pages/LoaderPage';
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="/log/symptoms" element={<LogSymptomsPage />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/health" element={<HealthPage />} />
+            <Route path="/lifestyle" element={<LifestylePage />} />
             <Route path="/palette" element={<PalettePage />} />
             <Route path="/fonts" element={<FontsPage />} />
             <Route path="/loader" element={<LoaderPage />} />
