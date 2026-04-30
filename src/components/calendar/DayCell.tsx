@@ -47,19 +47,22 @@ export function DayCell({ date, inMonth, phase, isOvulationDay, feelingEmoji, ha
     textColor = PHASE_TEXT[phase];
   }
 
-  const hasEmojiRow = !!(feelingEmoji || dayType);
-
   return (
     <div
       onClick={onClick}
-      className="flex flex-col items-center cursor-pointer select-none transition-opacity"
-      style={{ opacity }}
+      className="flex items-center cursor-pointer select-none transition-opacity"
+      style={{ opacity, gap: 2 }}
       onMouseEnter={e => { e.currentTarget.style.opacity = String(Math.min(1, opacity + 0.2)); }}
       onMouseLeave={e => { e.currentTarget.style.opacity = String(opacity); }}
     >
+      {/* Biodynamic emoji — left of circle */}
+      <span className="leading-none w-3 text-center" style={{ fontSize: 10, opacity: dayType ? (inMonth ? 0.85 : 0.3) : 0 }}>
+        {dayType ? DAY_TYPE_EMOJI[dayType] : ''}
+      </span>
+
       {/* Day circle */}
       <div
-        className="relative flex items-center justify-center h-8 w-8 rounded-full text-xs"
+        className="relative flex items-center justify-center h-8 w-8 rounded-full text-xs flex-shrink-0"
         style={{
           background: bgColor || 'transparent',
           color: hasAppointment ? '#4A7FD4' : (bgColor ? textColor : 'var(--color-text-light)'),
@@ -98,19 +101,10 @@ export function DayCell({ date, inMonth, phase, isOvulationDay, feelingEmoji, ha
         )}
       </div>
 
-      {/* Horizontal emoji row below circle */}
-      <div className="flex items-center justify-center gap-0.5 h-3.5">
-        {hasEmojiRow && (
-          <>
-            {feelingEmoji && (
-              <span className="leading-none" style={{ fontSize: 10, opacity: inMonth ? 1 : 0.3 }}>{feelingEmoji}</span>
-            )}
-            {dayType && (
-              <span className="leading-none" style={{ fontSize: 10, opacity: inMonth ? 0.85 : 0.3 }}>{DAY_TYPE_EMOJI[dayType]}</span>
-            )}
-          </>
-        )}
-      </div>
+      {/* Feeling emoji — right of circle */}
+      <span className="leading-none w-3 text-center" style={{ fontSize: 10, opacity: feelingEmoji ? (inMonth ? 1 : 0.3) : 0 }}>
+        {feelingEmoji ?? ''}
+      </span>
     </div>
   );
 }
