@@ -15,10 +15,13 @@ type Filter  = 'all' | 'seasonal' | 'bouquet' | 'potted' | 'dried';
 interface FloralItem {
   emoji: string;
   name: string;
+  latin: string;
   reason: string;
   type: 'bouquet' | 'potted' | 'dried';
   /** Empty array = year-round */
   seasons: Season[];
+  /** Hex or CSS var for the frame accent */
+  frameColor: string;
 }
 
 // ── Season helpers ────────────────────────────────────────────────────────────
@@ -31,7 +34,7 @@ const SEASON_LABEL: Record<Season, string> = {
 };
 
 function getCurrentSeason(): Season {
-  const m = new Date().getMonth() + 1; // 1–12
+  const m = new Date().getMonth() + 1;
   if (m >= 3 && m <= 5)  return 'spring';
   if (m >= 6 && m <= 8)  return 'summer';
   if (m >= 9 && m <= 11) return 'autumn';
@@ -73,56 +76,76 @@ const ALL_FLORALS: Record<Phase, { headline: string; items: FloralItem[] }> = {
   menstrual: {
     headline: 'Comfort & warmth',
     items: [
-      { emoji: '🌹', name: 'Deep red roses',        type: 'bouquet', seasons: [],                        reason: 'Velvety petals and a rich scent anchor you during low-energy days — choose garden roses for maximum fragrance' },
-      { emoji: '🌸', name: 'Burgundy peonies',      type: 'bouquet', seasons: ['spring', 'summer'],      reason: 'Lush, heavy blooms mirror the fullness of the body this phase; buy them in bud and they\'ll open slowly over the week' },
-      { emoji: '💜', name: 'Dark dahlias',          type: 'bouquet', seasons: ['summer', 'autumn'],      reason: 'Introspective and dramatic — café au lait and blackberry varieties suit the inward pull of menstruation' },
-      { emoji: '🪻', name: 'Dried lavender bundle', type: 'dried',   seasons: [],                        reason: 'Calming scent eases cramps and tension; tie a few stems together and place near your bed or bath' },
-      { emoji: '🍃', name: 'Eucalyptus wreath',     type: 'dried',   seasons: [],                        reason: 'Anti-inflammatory aroma supports the body; hang in a steamy bathroom to release the oils' },
-      { emoji: '🌿', name: 'Potted fern',           type: 'potted',  seasons: [],                        reason: 'Deeply forgiving and low-maintenance — thrives on humidity and indirect light even when you can\'t tend to it' },
+      { emoji: '🌹', name: 'Deep red roses',        latin: 'Rosa × hybrida',          type: 'bouquet', seasons: [],                   frameColor: '#9B2335', reason: 'Velvety petals and rich scent anchor you during low-energy days — choose garden roses over florist stems for maximum fragrance' },
+      { emoji: '🌸', name: 'Burgundy peonies',      latin: 'Paeonia lactiflora',       type: 'bouquet', seasons: ['spring','summer'],   frameColor: '#7B2D5E', reason: 'Lush, heavy blooms mirror the fullness of the body this phase; buy in bud and they\'ll open slowly across the week' },
+      { emoji: '💜', name: 'Dark dahlias',          latin: 'Dahlia × hybrida',         type: 'bouquet', seasons: ['summer','autumn'],   frameColor: '#4A235A', reason: 'Café au lait and blackberry varieties are introspective and dramatic — perfectly suited to the inward pull of menstruation' },
+      { emoji: '🌺', name: 'Burgundy snapdragons',  latin: 'Antirrhinum majus',        type: 'bouquet', seasons: ['spring','summer'],   frameColor: '#7D1C3A', reason: 'Tall spikes of deep velvet blooms add architectural drama; snap off spent flowers to encourage new buds' },
+      { emoji: '🌑', name: 'Amaranth',              latin: 'Amaranthus cruentus',      type: 'bouquet', seasons: ['summer','autumn'],   frameColor: '#6D1E3D', reason: 'Cascading wine-dark plumes evoke the deep richness of this phase; dried, they last indefinitely above a mantle' },
+      { emoji: '🌿', name: 'Potted fern',           latin: 'Nephrolepis exaltata',     type: 'potted',  seasons: [],                   frameColor: '#2D6A4F', reason: 'Deeply forgiving and low-maintenance — thrives on humidity and indirect light even when you can\'t tend to it' },
+      { emoji: '🌳', name: 'Potted peace lily',     latin: 'Spathiphyllum wallisii',   type: 'potted',  seasons: [],                   frameColor: '#1B4332', reason: 'Droops visibly when thirsty, perks back up after watering — a quiet mirror of the body\'s own signals this week' },
+      { emoji: '🪻', name: 'Dried lavender bundle', latin: 'Lavandula angustifolia',   type: 'dried',   seasons: [],                   frameColor: '#6B4E9B', reason: 'Calming scent eases cramps and tension; tie several stems with twine and place near your pillow or bath' },
+      { emoji: '🍃', name: 'Eucalyptus wreath',     latin: 'Eucalyptus cinerea',       type: 'dried',   seasons: [],                   frameColor: '#4A7C59', reason: 'Anti-inflammatory aroma supports the body; hang in a steamy bathroom to release the eucalyptol oils' },
+      { emoji: '🍂', name: 'Dried poppy pods',      latin: 'Papaver somniferum',       type: 'dried',   seasons: ['autumn','winter'],   frameColor: '#8B5A2B', reason: 'Sculptural seed heads in silvery grey make moody, long-lasting arrangements — pair with dark cotton stems' },
     ],
   },
   follicular: {
     headline: 'Fresh & curious',
     items: [
-      { emoji: '🌸', name: 'Cherry blossom',        type: 'bouquet', seasons: ['spring'],                reason: 'Fleeting and luminous — perfectly matched to follicular\'s sense of possibility; add pussy willow for structure' },
-      { emoji: '💐', name: 'White ranunculus',       type: 'bouquet', seasons: ['winter', 'spring'],      reason: 'Layered petals unfurling like new ideas; one of the most architecturally satisfying blooms, long-lasting in a vase' },
-      { emoji: '🌼', name: 'Yellow mimosa',          type: 'bouquet', seasons: ['winter', 'spring'],      reason: 'Feathery pom-poms radiate the cheerfulness of rising oestrogen; dry them upside-down and they\'ll keep for months' },
-      { emoji: '🌱', name: 'Forced hyacinth bulb',  type: 'potted',  seasons: ['winter', 'spring'],      reason: 'Start one at the beginning of this phase and watch it bloom alongside you — the scent fills an entire room' },
-      { emoji: '🪴', name: 'Trailing pothos',        type: 'potted',  seasons: [],                        reason: 'Grows visibly between waterings; place on a shelf and watch new leaves unfurl with your energy' },
-      { emoji: '🌾', name: 'Dried pampas grass',    type: 'dried',   seasons: [],                        reason: 'Airy plumes bring lightness and movement — a single stem in a tall vase needs nothing else' },
+      { emoji: '🌸', name: 'Cherry blossom',        latin: 'Prunus serrulata',         type: 'bouquet', seasons: ['spring'],            frameColor: '#F4A7B9', reason: 'Fleeting and luminous — perfectly matched to follicular\'s sense of possibility; add pussy willow for structure and texture' },
+      { emoji: '💐', name: 'White ranunculus',       latin: 'Ranunculus asiaticus',     type: 'bouquet', seasons: ['winter','spring'],   frameColor: '#B5C8D8', reason: 'Layered petals unfurling like new ideas; one of the most architecturally satisfying blooms, remarkably long-lasting in a vase' },
+      { emoji: '🌼', name: 'Yellow mimosa',          latin: 'Acacia dealbata',          type: 'bouquet', seasons: ['winter','spring'],   frameColor: '#D4A017', reason: 'Feathery pom-poms radiate the cheerfulness of rising oestrogen; dry them upside-down and they\'ll keep for months' },
+      { emoji: '🌷', name: 'Sweet peas',             latin: 'Lathyrus odoratus',        type: 'bouquet', seasons: ['spring'],            frameColor: '#D8A0C0', reason: 'Ruffled, intensely fragrant blooms in pastel clusters — one of the most optimistic flowers of the floral calendar' },
+      { emoji: '🌼', name: 'Narcissus',              latin: 'Narcissus poeticus',       type: 'bouquet', seasons: ['spring'],            frameColor: '#E8D44D', reason: 'White petals with a tiny orange-red corona; one of the purest scents in nature and a classic sign of new beginnings' },
+      { emoji: '🌱', name: 'Forced hyacinth bulb',  latin: 'Hyacinthus orientalis',    type: 'potted',  seasons: ['winter','spring'],   frameColor: '#6A5ACD', reason: 'Start one at the beginning of this phase and watch it bloom alongside you — the heady scent fills an entire room' },
+      { emoji: '🪴', name: 'Trailing pothos',        latin: 'Epipremnum aureum',        type: 'potted',  seasons: [],                   frameColor: '#3A7D44', reason: 'Grows visibly between waterings; place on a high shelf and watch new leaves unfurl with your growing energy' },
+      { emoji: '🌿', name: 'Monstera cutting',       latin: 'Monstera deliciosa',       type: 'potted',  seasons: [],                   frameColor: '#2D6A4F', reason: 'A single leaf in a bud vase makes a statement; propagating a cutting this phase mirrors the energy of new growth' },
+      { emoji: '🌾', name: 'Dried pampas grass',    latin: 'Cortaderia selloana',      type: 'dried',   seasons: [],                   frameColor: '#C8A882', reason: 'Airy, feathered plumes bring lightness and movement — a single stem in a tall terracotta vase needs nothing else' },
+      { emoji: '🌿', name: 'Dried bunny tail grass', latin: 'Lagurus ovatus',           type: 'dried',   seasons: [],                   frameColor: '#D4C5A9', reason: 'Soft, rounded seed heads are impossibly tactile; cluster several stems in a short vase for a textural cloud' },
     ],
   },
   ovulatory: {
     headline: 'Bold & radiant',
     items: [
-      { emoji: '🌻', name: 'Sunflowers',            type: 'bouquet', seasons: ['summer', 'autumn'],      reason: 'Face-forward and unapologetically bold; mix with lime-green chrysanthemums for a more editorial arrangement' },
-      { emoji: '🌺', name: 'Full-bloom peonies',    type: 'bouquet', seasons: ['spring', 'summer'],      reason: 'Full, generous, intensely fragrant at the height of their bloom — the quintessential ovulatory flower' },
-      { emoji: '🌷', name: 'Parrot tulips',         type: 'bouquet', seasons: ['spring'],                reason: 'Flame-edged and electric; let them flop open in a wide-mouthed vase for dramatic effect' },
-      { emoji: '🌸', name: 'Protea',                type: 'bouquet', seasons: [],                        reason: 'Architectural and striking, imported year-round; makes a statement that lasts two weeks in water' },
-      { emoji: '🌺', name: 'Bird of paradise',      type: 'potted',  seasons: [],                        reason: 'Tropical and theatrical — a natural centrepiece that suits the social, expressive energy of ovulatory' },
-      { emoji: '🍊', name: 'Dried citrus garland',  type: 'dried',   seasons: ['winter', 'spring'],      reason: 'Sliced oranges or lemons dried and threaded together bring a bright, zesty accent that echoes ovulatory clarity' },
+      { emoji: '🌻', name: 'Sunflowers',            latin: 'Helianthus annuus',        type: 'bouquet', seasons: ['summer','autumn'],   frameColor: '#E8A020', reason: 'Face-forward and unapologetically bold; mix with lime-green chrysanthemums for a more editorial arrangement' },
+      { emoji: '🌺', name: 'Garden peonies',        latin: 'Paeonia suffruticosa',     type: 'bouquet', seasons: ['spring','summer'],   frameColor: '#E8607A', reason: 'Full, generous, and intensely fragrant at the height of their bloom — the quintessential ovulatory flower' },
+      { emoji: '🌷', name: 'Parrot tulips',         latin: 'Tulipa × gesneriana',      type: 'bouquet', seasons: ['spring'],            frameColor: '#C0392B', reason: 'Flame-edged petals in electric orange and red; let them flop open in a wide-mouthed vase for dramatic effect' },
+      { emoji: '🌹', name: 'Full-bloom garden rose', latin: 'Rosa × damascena',        type: 'bouquet', seasons: ['summer'],            frameColor: '#C0392B', reason: 'Intensely fragrant at peak bloom — David Austin and heirloom varieties carry the richest scent and most complex petal form' },
+      { emoji: '🌸', name: 'Lisianthus',            latin: 'Eustoma grandiflorum',     type: 'bouquet', seasons: ['summer'],            frameColor: '#9B59B6', reason: 'Often mistaken for roses or peonies — ruffly, long-lasting blooms in deep purple or white that make any arrangement feel luxurious' },
+      { emoji: '🌸', name: 'Protea',                latin: 'Protea cynaroides',        type: 'bouquet', seasons: [],                   frameColor: '#E05C5C', reason: 'Architectural and striking, imported year-round from South Africa; makes a bold statement and lasts two weeks in water' },
+      { emoji: '🌺', name: 'Bird of paradise',      latin: 'Strelitzia reginae',       type: 'potted',  seasons: [],                   frameColor: '#E67E22', reason: 'Tropical and theatrical — a natural centrepiece that suits the social, expressive energy of ovulatory' },
+      { emoji: '🌿', name: 'Potted jasmine',        latin: 'Jasminum polyanthum',      type: 'potted',  seasons: ['spring','summer'],   frameColor: '#A8D8A8', reason: 'Intoxicating night-blooming scent peaks when your pheromones and social magnetism are at their highest' },
+      { emoji: '🍊', name: 'Dried citrus garland',  latin: 'Citrus sinensis',          type: 'dried',   seasons: ['winter','spring'],   frameColor: '#E67E22', reason: 'Sliced oranges or lemons dried and threaded together bring a bright, zesty accent that echoes ovulatory clarity' },
+      { emoji: '🌾', name: 'Dried wildflower mix',  latin: 'Mixed species',            type: 'dried',   seasons: [],                   frameColor: '#C8A882', reason: 'A gathered bunch of dried grasses, statice and strawflowers captures the wild abundance of peak fertility' },
     ],
   },
   luteal: {
     headline: 'Soft & grounding',
     items: [
-      { emoji: '🪻', name: 'Lavender bundle',       type: 'bouquet', seasons: ['summer'],                reason: 'Shown to reduce cortisol; hang upside-down to dry and the calming effect extends for weeks after the petals fade' },
-      { emoji: '🌸', name: 'Blush cosmos',          type: 'bouquet', seasons: ['summer', 'autumn'],      reason: 'Delicate and unpretentious — soft enough for a quieter phase; they move beautifully in a breeze from a window' },
-      { emoji: '🌼', name: 'Chamomile stems',       type: 'bouquet', seasons: ['spring', 'summer'],      reason: 'Small daisy-like blooms with a honey-apple scent; dry the stems and add to your tea ritual for a double benefit' },
-      { emoji: '🟡', name: 'Warm marigolds',        type: 'bouquet', seasons: ['summer', 'autumn'],      reason: 'Earthy and grounding; traditionally anti-inflammatory, they also repel indoor pests' },
-      { emoji: '🌿', name: 'Potted rosemary',       type: 'potted',  seasons: [],                        reason: 'Herbaceous aroma lifts brain fog; place on a sunny windowsill and snip sprigs into a bath or diffuser' },
-      { emoji: '🍂', name: 'Dried rose hips',       type: 'dried',   seasons: ['autumn', 'winter'],      reason: 'Rich terracotta tones and gnarled texture ground the mood; arrange in a low bowl with dried seed pods' },
+      { emoji: '🪻', name: 'Lavender bundle',       latin: 'Lavandula angustifolia',   type: 'bouquet', seasons: ['summer'],            frameColor: '#7B68EE', reason: 'Shown to reduce cortisol; hang upside-down to dry and the calming effect extends for weeks after the fresh petals fade' },
+      { emoji: '🌸', name: 'Blush cosmos',          latin: 'Cosmos bipinnatus',        type: 'bouquet', seasons: ['summer','autumn'],   frameColor: '#F4A7B9', reason: 'Delicate and unpretentious — soft enough for a quieter phase; they move beautifully in a breeze from an open window' },
+      { emoji: '🌼', name: 'Chamomile stems',       latin: 'Matricaria chamomilla',    type: 'bouquet', seasons: ['spring','summer'],   frameColor: '#D4A017', reason: 'Small daisy-like blooms with a honey-apple scent; dry the stems and add to your tea ritual for a double benefit' },
+      { emoji: '🌼', name: 'Warm marigolds',        latin: 'Tagetes erecta',           type: 'bouquet', seasons: ['summer','autumn'],   frameColor: '#E67E22', reason: 'Earthy and grounding; traditionally used for anti-inflammatory properties, they also deter indoor insects naturally' },
+      { emoji: '🌸', name: 'Dusty miller',          latin: 'Senecio cineraria',        type: 'bouquet', seasons: ['spring','summer'],   frameColor: '#A8B8C8', reason: 'Soft silver-grey foliage acts as a natural calmer in any arrangement — beautiful filler that doesn\'t compete for attention' },
+      { emoji: '🌸', name: 'Chrysanthemums',        latin: 'Chrysanthemum × morifolium', type: 'bouquet', seasons: ['autumn','winter'], frameColor: '#C8783A', reason: 'Button and spider varieties in warm terracotta and blush are deeply comforting — remarkably long-lasting cut flowers' },
+      { emoji: '🌿', name: 'Potted rosemary',       latin: 'Rosmarinus officinalis',   type: 'potted',  seasons: [],                   frameColor: '#4A7C59', reason: 'Herbaceous aroma lifts brain fog; snip sprigs into a bath, diffuser or simmer pot for a grounding ritual' },
+      { emoji: '🌿', name: 'Potted lavender plant', latin: 'Lavandula stoechas',       type: 'potted',  seasons: ['spring','summer'],   frameColor: '#9B7EC8', reason: 'More powerful than cut stems — a living plant on a sunny windowsill steadily releases calming compounds into the room' },
+      { emoji: '🍂', name: 'Dried rose hips',       latin: 'Rosa canina',              type: 'dried',   seasons: ['autumn','winter'],   frameColor: '#A0522D', reason: 'Rich terracotta tones and gnarled texture ground the mood; arrange in a low bowl with dried seed pods and pampas' },
+      { emoji: '🌾', name: 'Dried cotton stems',    latin: 'Gossypium hirsutum',       type: 'dried',   seasons: [],                   frameColor: '#D4C5A9', reason: 'Soft white bolls on woody stems bring a gentle, tactile comfort; pair with warm marigold tones for a seasonal tableau' },
     ],
   },
   unknown: {
     headline: 'Flowers for every week',
     items: [
-      { emoji: '🌹', name: 'Roses',                 type: 'bouquet', seasons: [],                        reason: 'A classic that holds meaning in every season — choose garden roses for fragrance and longevity' },
-      { emoji: '🌸', name: 'Peonies',               type: 'bouquet', seasons: ['spring', 'summer'],      reason: 'Full-bodied and fragrant; a mood-lifter at any point in the cycle' },
-      { emoji: '🌻', name: 'Sunflowers',            type: 'bouquet', seasons: ['summer', 'autumn'],      reason: 'Cheerful and long-lasting — easy brightness without upkeep' },
-      { emoji: '🪻', name: 'Lavender',              type: 'dried',   seasons: [],                        reason: 'Calming scent and beautiful fresh or dried; works in every phase as a bedside arrangement' },
-      { emoji: '🌿', name: 'Eucalyptus',            type: 'dried',   seasons: [],                        reason: 'Adds texture and a clean, restorative aroma to any arrangement; lasts weeks without water' },
-      { emoji: '🪴', name: 'Pothos',                type: 'potted',  seasons: [],                        reason: 'Nearly indestructible — thrives in low light and irregular watering, growing with you week to week' },
+      { emoji: '🌹', name: 'Roses',                 latin: 'Rosa × hybrida',           type: 'bouquet', seasons: [],                   frameColor: '#C0392B', reason: 'A classic that holds meaning in every season — choose garden roses for fragrance and longevity over florist stems' },
+      { emoji: '🌸', name: 'Peonies',               latin: 'Paeonia lactiflora',       type: 'bouquet', seasons: ['spring','summer'],   frameColor: '#E8607A', reason: 'Full-bodied and fragrant; one of the most universally beloved flowers across all four phases' },
+      { emoji: '🌻', name: 'Sunflowers',            latin: 'Helianthus annuus',        type: 'bouquet', seasons: ['summer','autumn'],   frameColor: '#E8A020', reason: 'Cheerful and long-lasting — easy brightness without maintenance or upkeep' },
+      { emoji: '🌷', name: 'Tulips',                latin: 'Tulipa gesneriana',        type: 'bouquet', seasons: ['spring'],            frameColor: '#E05C5C', reason: 'Fresh and affordable; bring seasonal energy and structural elegance to any week of the month' },
+      { emoji: '🌹', name: 'Carnations',            latin: 'Dianthus caryophyllus',    type: 'bouquet', seasons: [],                   frameColor: '#D88080', reason: 'Underrated and long-lasting — spicy-sweet scent and ruffled blooms work in every arrangement style' },
+      { emoji: '🪻', name: 'Lavender',              type: 'dried',   latin: 'Lavandula angustifolia',   seasons: [],                   frameColor: '#7B68EE', reason: 'Calming scent works fresh or dried; ties beautifully as a bunch and doubles as a sleep sachet beside the bed' },
+      { emoji: '🌿', name: 'Eucalyptus',            latin: 'Eucalyptus cinerea',       type: 'dried',   seasons: [],                   frameColor: '#4A7C59', reason: 'Adds texture and a clean, restorative aroma to any arrangement; lasts weeks without water' },
+      { emoji: '🌾', name: 'Dried grasses',         latin: 'Mixed Poaceae',            type: 'dried',   seasons: [],                   frameColor: '#C8A882', reason: 'Oat grass, wheat and barley stems lend an earthy, organic quality — inexpensive and endlessly versatile' },
+      { emoji: '🪴', name: 'Pothos',                latin: 'Epipremnum aureum',        type: 'potted',  seasons: [],                   frameColor: '#3A7D44', reason: 'Nearly indestructible — thrives in low light and irregular watering, growing steadily alongside you' },
+      { emoji: '🌿', name: 'Peace lily',            latin: 'Spathiphyllum wallisii',   type: 'potted',  seasons: [],                   frameColor: '#1B4332', reason: 'One of the best air-purifying houseplants; elegant white spathes bloom periodically without much care' },
     ],
   },
 };
@@ -148,6 +171,57 @@ const TYPE_COLOR: Record<'bouquet' | 'potted' | 'dried', { bg: string; border: s
 const FILTER_LABELS: Record<Filter, string> = {
   all: 'All', seasonal: 'In season', bouquet: 'Bouquet', potted: 'Potted', dried: 'Dried',
 };
+
+// ── Flower frame ──────────────────────────────────────────────────────────────
+
+function FlowerFrame({ item }: { item: FloralItem }) {
+  return (
+    <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+      {/* Outer mat / mount */}
+      <div style={{
+        width: 96, height: 96,
+        borderRadius: 12,
+        padding: 5,
+        background: '#F8F5F0',
+        boxShadow: `0 2px 12px ${item.frameColor}44, 0 0 0 1px ${item.frameColor}33`,
+      }}>
+        {/* Inner frame */}
+        <div style={{
+          width: '100%', height: '100%',
+          borderRadius: 8,
+          background: `linear-gradient(135deg, ${item.frameColor}22 0%, ${item.frameColor}08 100%)`,
+          border: `1.5px solid ${item.frameColor}55`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 46,
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* Corner dots — botanical print motif */}
+          {[['2px','2px'],['auto','2px'],['2px','auto'],['auto','auto']].map(([t,l], i) => (
+            <span key={i} style={{
+              position: 'absolute',
+              top: t === 'auto' ? undefined : t,
+              bottom: t === 'auto' ? '2px' : undefined,
+              left: l === 'auto' ? undefined : l,
+              right: l === 'auto' ? '2px' : undefined,
+              width: 4, height: 4, borderRadius: '50%',
+              background: item.frameColor, opacity: 0.3,
+            }} />
+          ))}
+          {item.emoji}
+        </div>
+      </div>
+      {/* Caption strip */}
+      <p style={{
+        fontSize: 9, fontStyle: 'italic', textAlign: 'center',
+        color: item.frameColor, opacity: 0.8,
+        maxWidth: 96, lineHeight: 1.3,
+      }}>
+        {item.latin}
+      </p>
+    </div>
+  );
+}
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -180,12 +254,9 @@ export function FloralCard({ cycles, prediction, bare = false }: Props) {
   const style = PHASE_STYLE[activePhase];
   const { headline, items } = ALL_FLORALS[activePhase];
 
-  // Sort in-season items first
-  const sortedItems = [...items].sort((a, b) => {
-    const aIn = isInSeason(a, currentSeason) ? 0 : 1;
-    const bIn = isInSeason(b, currentSeason) ? 0 : 1;
-    return aIn - bIn;
-  });
+  const sortedItems = [...items].sort((a, b) =>
+    (isInSeason(a, currentSeason) ? 0 : 1) - (isInSeason(b, currentSeason) ? 0 : 1)
+  );
 
   const countOf = (f: Filter) => {
     if (f === 'all')      return sortedItems.length;
@@ -199,10 +270,6 @@ export function FloralCard({ cycles, prediction, bare = false }: Props) {
 
   const selectedItem = selected ? items.find(i => i.name === selected) ?? null : null;
   const handlePill = (name: string) => setSelected(prev => prev === name ? null : name);
-
-  const seasonLabel = items.some(i => i.seasons.length === 0)
-    ? null
-    : `${SEASON_EMOJI[currentSeason]} ${SEASON_LABEL[currentSeason]}`;
 
   const inner = (
     <>
@@ -240,8 +307,8 @@ export function FloralCard({ cycles, prediction, bare = false }: Props) {
       {/* Filter strip */}
       <div className="px-5 py-2.5 flex items-center gap-1.5 flex-wrap" style={{ borderBottom: '1px solid var(--color-peat-light)' }}>
         {(['all', 'seasonal', 'bouquet', 'potted', 'dried'] as Filter[]).map(f => {
-          const active = filter === f;
-          const count  = countOf(f);
+          const active     = filter === f;
+          const count      = countOf(f);
           const isSeasonal = f === 'seasonal';
           return (
             <button
@@ -272,8 +339,8 @@ export function FloralCard({ cycles, prediction, bare = false }: Props) {
       {/* Pill grid */}
       <div className="px-5 py-3 flex flex-wrap gap-2">
         {visible.map(item => {
-          const isSelected  = selected === item.name;
-          const inSeason    = isInSeason(item, currentSeason);
+          const isSelected = selected === item.name;
+          const inSeason   = isInSeason(item, currentSeason);
           const c = TYPE_COLOR[item.type];
           return (
             <button
@@ -298,36 +365,48 @@ export function FloralCard({ cycles, prediction, bare = false }: Props) {
         })}
       </div>
 
-      {/* Expanded detail */}
+      {/* Expanded detail with flower frame */}
       {selectedItem && (() => {
-        const inSeason = isInSeason(selectedItem, currentSeason);
+        const inSeason   = isInSeason(selectedItem, currentSeason);
         const seasonNote = selectedItem.seasons.length === 0
           ? 'Available year-round'
           : `Best in: ${selectedItem.seasons.map(s => `${SEASON_EMOJI[s]} ${SEASON_LABEL[s]}`).join(' · ')}`;
+        const c = TYPE_COLOR[selectedItem.type];
         return (
-          <div
-            className="mx-5 mb-3 rounded-xl px-4 py-3"
-            style={{
-              background: TYPE_COLOR[selectedItem.type].bg,
-              borderLeft: `3px solid ${TYPE_COLOR[selectedItem.type].border}`,
-            }}
-          >
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-base leading-none">{selectedItem.emoji}</span>
-              <span className="text-xs font-semibold" style={{ color: TYPE_COLOR[selectedItem.type].text }}>
-                {FILTER_LABELS[selectedItem.type]} · {selectedItem.name}
-              </span>
-              {inSeason && (
-                <span
-                  className="ml-auto text-xs px-2 py-0.5 rounded-full font-medium"
-                  style={{ background: 'var(--color-moss-light)', color: 'var(--color-moss-dark)', border: '1px solid var(--color-moss-base)', whiteSpace: 'nowrap' }}
-                >
-                  {SEASON_EMOJI[currentSeason]} In season
-                </span>
-              )}
+          <div className="mx-5 mb-3 rounded-xl overflow-hidden" style={{ border: `1px solid ${c.border}` }}>
+            {/* Frame + info row */}
+            <div className="flex gap-3 p-3" style={{ background: c.bg }}>
+              <FlowerFrame item={selectedItem} />
+              <div className="flex-1 min-w-0 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-start justify-between gap-1 mb-1">
+                    <span className="text-xs font-semibold leading-tight" style={{ color: c.text }}>
+                      {selectedItem.name}
+                    </span>
+                    {inSeason && (
+                      <span
+                        className="text-xs px-1.5 py-0.5 rounded-full font-medium shrink-0"
+                        style={{ background: 'var(--color-moss-light)', color: 'var(--color-moss-dark)', border: '1px solid var(--color-moss-base)' }}
+                      >
+                        {SEASON_EMOJI[currentSeason]}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs leading-relaxed" style={{ color: 'var(--color-peat-deep)' }}>
+                    {selectedItem.reason}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                  <span
+                    className="text-xs px-2 py-0.5 rounded-full"
+                    style={{ background: 'rgba(0,0,0,0.06)', color: c.text }}
+                  >
+                    {FILTER_LABELS[selectedItem.type]}
+                  </span>
+                  <span className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>{seasonNote}</span>
+                </div>
+              </div>
             </div>
-            <p className="text-xs leading-relaxed mb-2" style={{ color: 'var(--color-peat-deep)' }}>{selectedItem.reason}</p>
-            <p className="text-xs" style={{ color: 'var(--color-peat-mid)' }}>{seasonNote}</p>
           </div>
         );
       })()}
@@ -337,7 +416,7 @@ export function FloralCard({ cycles, prediction, bare = false }: Props) {
         <p className="text-xs" style={{ color: 'var(--color-peat-deep)' }}>
           {activePhase === 'unknown'
             ? 'Log a period to see floral ideas tailored to your current cycle phase.'
-            : `${seasonLabel ? `${seasonLabel} · ` : ''}Tap any flower to learn more · Availability varies by region.`}
+            : 'Tap any flower to see care notes · Availability varies by region.'}
         </p>
       </div>
     </>
