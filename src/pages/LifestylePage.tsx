@@ -10,7 +10,7 @@ import { PixelLoader } from '../components/ui/PixelLoader';
 type Tab = 'phase' | 'food';
 
 const TABS: { key: Tab; label: string }[] = [
-  { key: 'phase', label: 'By phase'    },
+  { key: 'phase', label: 'Wine pairings' },
   { key: 'food',  label: 'Food & wine' },
 ];
 
