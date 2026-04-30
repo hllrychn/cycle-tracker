@@ -224,6 +224,28 @@ export function WineFoodPairingCard({ cycles, prediction }: Props) {
         </p>
       </div>
 
+      {/* Phase picks summary */}
+      {hasPhase && (
+        <div className="px-5 py-3 space-y-2" style={{ borderBottom: '1px solid var(--color-peat-light)', background: `${meta.color}22` }}>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs font-medium shrink-0" style={{ color: meta.text }}>🍷 Wines</span>
+            {[...phaseW].map(wi => (
+              <span key={wi} className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: WINES[wi].color, color: WINES[wi].textColor }}>
+                {WINES[wi].label}
+              </span>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs font-medium shrink-0" style={{ color: meta.text }}>🍽️ Foods</span>
+            {[...phaseF].map(fi => (
+              <span key={fi} className="text-xs px-2 py-0.5 rounded-full" style={{ background: 'var(--color-peat-light)', color: 'var(--color-peat-deep)', border: '1px solid var(--color-peat-mid)' }}>
+                {FOODS[fi].emoji} {FOODS[fi].label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Scrollable matrix */}
       <div className="overflow-x-auto" onMouseLeave={() => { setHoveredRow(null); setHoveredCol(null); }}>
         <table style={{ borderCollapse: 'collapse', width: '100%', minWidth: 500, tableLayout: 'fixed' }}>
@@ -249,10 +271,11 @@ export function WineFoodPairingCard({ cycles, prediction }: Props) {
                       fontSize: 9, fontWeight: 400, lineHeight: 1.3, padding: '8px 5px',
                       borderRadius: 4, whiteSpace: 'nowrap', writingMode: 'vertical-rl',
                       transform: 'rotate(180deg)', height: 84,
-                      opacity: hasPhase && !isPhaseWine && hoveredCol === null ? 0.35 : 1,
+                      opacity: hasPhase && !isPhaseWine && hoveredCol === null ? 0.3 : 1,
                       transition: 'opacity 0.15s',
                       outline: isPhaseWine && hasPhase ? `2px solid ${w.color}` : undefined,
                       outlineOffset: 2,
+                      boxShadow: isPhaseWine && hasPhase ? `0 2px 8px ${w.color}55` : undefined,
                     }}>
                       {w.label}
                     </div>
@@ -273,10 +296,11 @@ export function WineFoodPairingCard({ cycles, prediction }: Props) {
                   style={{ background: isHoveredRow ? 'var(--color-peat-mid)' : rowBg, transition: 'background 0.1s' }}
                 >
                   <td style={{
-                    padding: '4px 8px 4px 12px', fontSize: 11,
+                    padding: '4px 8px 4px 10px', fontSize: 11,
                     color: hasPhase && !isPhaseFood && hoveredRow === null ? 'var(--color-peat-mid)' : 'var(--color-peat-deep)',
                     overflow: 'hidden',
                     borderBottom: '1px solid var(--color-peat-light)',
+                    borderLeft: isPhaseFood && hasPhase ? `3px solid ${meta.color === 'transparent' ? 'var(--color-peat-mid)' : meta.color}` : '3px solid transparent',
                     fontWeight: (isPhaseFood && hasPhase) || isHoveredRow ? 600 : 400,
                     transition: 'color 0.15s',
                   }}>
