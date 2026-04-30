@@ -79,18 +79,20 @@ export function CycleCalendar({ cycles, symptoms, prediction, recurringPeriods, 
         ? parseISO(lastCycle.end_date)
         : addDays(parseISO(lastCycle.start_date), prediction.avgPeriodDuration - 1);
 
-      // Always use current cycle's ovulation (nextPeriodStart - 14), never the advanced one
+      // Always use current cycle's ovulation (nextPeriodStart - 14), never the advanced one.
+      // Luteal boundary matches all other components: cycleDay > avgCycleLength - 11
+      // which equals subDays(nextPeriodStart, 11).
       const currentOvulation = subDays(prediction.nextPeriodStart, 14);
       const currentFertileStart = subDays(currentOvulation, 5);
-      const currentFertileEnd = addDays(currentOvulation, 1);
+      const currentLutealStart = subDays(prediction.nextPeriodStart, 11);
 
       if (isSameDay(date, currentOvulation)) {
         return { phase: 'ovulatory', isLogged: false, isOvulationDay: true };
       }
-      if (inRange(date, currentFertileStart, currentFertileEnd)) {
+      if (inRange(date, currentFertileStart, subDays(currentLutealStart, 1))) {
         return { phase: 'ovulatory', isLogged: false, isOvulationDay: false };
       }
-      if (inRange(date, addDays(currentFertileEnd, 1), addDays(prediction.nextPeriodStart, -1))) {
+      if (inRange(date, currentLutealStart, addDays(prediction.nextPeriodStart, -1))) {
         return { phase: 'luteal', isLogged: false, isOvulationDay: false };
       }
       if (inRange(date, addDays(lastEnd, 1), addDays(currentFertileStart, -1))) {
