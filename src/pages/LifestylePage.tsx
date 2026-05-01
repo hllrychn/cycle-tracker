@@ -8,12 +8,11 @@ import { FloralCard } from '../components/floral/FloralCard';
 import { format } from '../lib/dateUtils';
 import { PixelLoader } from '../components/ui/PixelLoader';
 
-type Tab = 'phase' | 'food' | 'floral';
+type Tab = 'phase' | 'food';
 
 const TABS: { key: Tab; label: string }[] = [
-  { key: 'phase',  label: 'Wine pairings'     },
-  { key: 'food',   label: 'Food & wine'       },
-  { key: 'floral', label: 'Floral arrangements' },
+  { key: 'phase', label: 'Wine pairings' },
+  { key: 'food',  label: 'Food & wine'  },
 ];
 
 export function LifestylePage() {
@@ -39,6 +38,7 @@ export function LifestylePage() {
         </p>
       </div>
 
+      {/* Wine card */}
       <div
         className="rounded-2xl overflow-hidden flex flex-col"
         style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-accent)' }}
@@ -63,10 +63,17 @@ export function LifestylePage() {
         </div>
 
         <div>
-          {tab === 'phase'  && <WinePairingCard  bare cycles={cycles} prediction={prediction} />}
-          {tab === 'food'   && <WineFoodPairingCard    cycles={cycles} prediction={prediction} />}
-          {tab === 'floral' && <FloralCard        bare cycles={cycles} prediction={prediction} />}
+          {tab === 'phase' && <WinePairingCard  bare cycles={cycles} prediction={prediction} />}
+          {tab === 'food'  && <WineFoodPairingCard    cycles={cycles} prediction={prediction} />}
         </div>
+      </div>
+
+      {/* Floral card — own container */}
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-phase-ovulation)' }}
+      >
+        <FloralCard bare cycles={cycles} prediction={prediction} />
       </div>
     </div>
   );
