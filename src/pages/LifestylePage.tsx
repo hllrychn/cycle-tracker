@@ -5,6 +5,7 @@ import { useSettings } from '../hooks/useSettings';
 import { WinePairingCard } from '../components/wine/WinePairingCard';
 import { WineFoodPairingCard } from '../components/wine/WineFoodPairingCard';
 import { FloralCard } from '../components/floral/FloralCard';
+import { FarmersMarketCard } from '../components/lifestyle/FarmersMarketCard';
 import { format } from '../lib/dateUtils';
 import { PixelLoader } from '../components/ui/PixelLoader';
 
@@ -74,6 +75,14 @@ export function LifestylePage() {
         style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-phase-ovulation)' }}
       >
         <FloralCard bare cycles={cycles} prediction={prediction} />
+      </div>
+
+      {/* Farmers market card — own container */}
+      <div
+        className="rounded-2xl overflow-hidden"
+        style={{ background: '#FFFFFF', boxShadow: '0 2px 8px rgba(46,40,32,0.08)', borderLeft: '4px solid var(--color-moss-base)' }}
+      >
+        <FarmersMarketCard bare cycles={cycles} prediction={prediction} />
       </div>
     </div>
   );
